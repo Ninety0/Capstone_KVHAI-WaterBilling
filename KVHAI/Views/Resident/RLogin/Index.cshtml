@@ -1,0 +1,101 @@
+﻿@{
+    Layout =null;
+}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Resident Login</title>
+
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-icon.css">
+    <link href="~/css/login.css" rel="stylesheet" />
+    <link href="~/css/header-font.css" rel="stylesheet" />
+
+</head>
+<body>
+    <div class="container vh-100">
+        <div class="container d-flex p-2">
+            <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:50px;height:50px;">
+            <span id="header">KVHAI</span>
+        </div>
+
+        <div class="container d-flex flex-column res-login">
+            <div class="container flex-grow-1 d-flex justify-content-center align-items-center">
+
+                @* CENTER FORM *@
+                <div class="row center-form">
+                    @* RIGHT SIDE *@
+                    <div class="col-12 p-2 ">
+                        <div class="container pe-2 ps-2">
+                            <div class="container center-text  d-flex mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="100px" height="100px" viewBox="0 0 24 24">
+                                    <path fill="#1b8ec9" d="M12 1L3 5v6c0 5.5 3.8 10.7 9 12c5.2-1.3 9-6.5 9-12V5zm4 14.8c0 .6-.6 1.2-1.3 1.2H9.2c-.6 0-1.2-.6-1.2-1.3v-3.5c0-.6.6-1.2 1.2-1.2V8.5C9.2 7.1 10.6 6 12 6s2.8 1.1 2.8 2.5V9h-1.3v-.5c0-.8-.7-1.3-1.5-1.3s-1.5.5-1.5 1.3V11h4.3c.6 0 1.2.6 1.2 1.3z" />
+                                </svg>
+                                <p class="ms-2 d-flex align-items-center">KVHAI Resident Portal</p>
+                            </div>
+
+
+                            <form class="">
+                                @Html.AntiForgeryToken()
+                                <!-- USERNAME -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="basic-addon1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4a4 4 0 1 1 0 8a4 4 0 0 1 0-8m0 16s8 0 8-2c0-2.4-3.9-5-8-5s-8 2.6-8 5c0 2 8 2 8 2" /></svg>
+                                    </span>
+                                    <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+                                </div>
+
+                                <!-- PASSWORD -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18 8h-1V7c0-2.757-2.243-5-5-5S7 4.243 7 7v1H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2M9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v1H9zm4 8.723V18h-2v-2.277c-.595-.346-1-.984-1-1.723a2 2 0 1 1 4 0c0 .738-.405 1.376-1 1.723" /></svg>
+                                    </span>
+                                    <input type="password" class="form-control" placeholder="Password" aria-label="Password">
+                                </div>
+                                <div class="container">
+                                    <div class="row ">
+                                        <div class="col">
+                                            <div class="mb-3 form-check">
+                                                <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                                                <label class="form-check-label" for="exampleCheck1">Remember Me</label>
+                                            </div>
+                                        </div>
+                                        <div class="col d-flex justify-content-end">
+                                            <div class="mb-3">
+                                                <a href="#" class="forgot">Forgot Password?</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary p-2 w-100" id="btn-login">Login</button>
+                            </form>
+
+                            <div class="row">
+                                <div class="col-5"><hr /></div>
+                                <div class="col-2 d-flex justify-content-center align-items-center">OR</div>
+                                <div class="col-5"><hr /></div>
+                            </div>
+
+                            <a class="btn p-2 w-100 mb-3" id="btn-sign">Sign Up</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        $('#btn-sign').on('click', () => {
+            var origin = window.location.origin;
+            var url = "/kvhai/resident/signup";
+            window.location.href = origin + url;
+        });
+    </script>
+</body>
+</html>

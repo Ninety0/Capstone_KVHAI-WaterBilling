@@ -1,0 +1,17 @@
+﻿/* Poetsen One Font */
+@font-face {
+  font-family: 'Poetsen One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/PoetsenOne.ttf') format('truetype');
+}
+
+/* Inter Font */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/Inter.ttf') format('truetype');
+}
