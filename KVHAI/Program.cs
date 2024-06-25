@@ -2,8 +2,6 @@ using KVHAI.CustomClass;
 using KVHAI.Models;
 using KVHAI.Repository;
 using KVHAI.Routes;
-using Microsoft.AspNetCore.Mvc;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +15,7 @@ builder.Services.AddTransient<InputSanitize>();
 
 // Register EmployeeRepository as a scoped service
 builder.Services.AddScoped<EmployeeRepository>();
+builder.Services.AddScoped<ResidentRepository>();
 
 var app = builder.Build();
 
@@ -38,7 +37,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
-    
+
     );
 
 ResidentRoute.RegisterRoute(app);

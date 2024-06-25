@@ -81,18 +81,23 @@
             color:#3D5170;
         }
 
+        .main-process {
+            height: calc(100vh - 200px);
+            overflow-y:auto;
+        }
+
     </style>
 </head>
 <body>
     <div class="container vh-100">
-        <div class="container d-flex p-4">
-            <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:100px;height:100px;">
+        <div class="container d-flex p-2 mb-3">
+            <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:80px;height:80px;">
             <span class="d-flex align-items-center" id="header">KVHAI</span>
         </div>
         
-        <div class="container main-form mt-5">
+        <div class="container main-form">
 
-            <div class="center-form ">
+            <div class="center-form">
                 <ul class="d-flex justify-content-center p-3 m-0">
                     <!-- PROCESS 1 -->
                     <li class="me-2 d-flex">
@@ -131,100 +136,125 @@
 
                 <div class="border"></div>
 
-                <!-- OCCUPANCY PROCESS -->
-                <div class="container mt-3 mb-3 d-none" id="occupancy">
-                    <h3>Occupancy:</h3>
-
-                    <select class="form-select form-select-lg mb-3" aria-label="Large select example" required>
-                        <option disabled selected hidden>Select</option>
-                        <option value="1">Owner</option>
-                        <option value="2">Renter</option>
-                    </select>
-
-                    <div class="d-flex justify-content-end">
-                        <a class="btn p-2 mb-3 btn-next" id="">Next</a>
-                    </div>
-                </div>
-                
-
-                <!--END OCCUPANCY PROCESS -->
-
-                <!-- INFORMATION PROCESS -->
-                <div class="container">
-                    <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
-                        <h3>Information Details</h3>
-                    </div>
+                <div class="container-fluid main-process">
                     <form autocomplete="off">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">Last Name</label>
-                                    <input type="text" class="form-control" id="fname">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">First Name</label>
-                                    <input type="text" class="form-control" id="fname">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">Middle Name</label>
-                                    <input type="text" class="form-control" id="fname">
-                                </div>
+
+                        <!-- OCCUPANCY PROCESS -->
+                        <div class="container mt-3 mb-3 " id="occupancy">
+                            <h3>Occupancy:</h3>
+
+                            <select class="form-select form-select-lg mb-3" aria-label="Large select example" required>
+                                <option disabled selected hidden>Select</option>
+                                <option value="1">Owner</option>
+                                <option value="2">Renter</option>
+                            </select>
+
+                            <div class="d-flex justify-content-end">
+                                <a class="btn p-2 mb-3 btn-next" id="">Next</a>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">Phone Number</label>
-                                    <input type="text" class="form-control" id="fname">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">Email</label>
-                                    <input type="text" class="form-control" id="fname">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">Username</label>
-                                    <input type="text" class="form-control" id="fname">
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">Password</label>
-                                    <input type="text" class="form-control" id="fname">
+                        <!--END OCCUPANCY PROCESS -->
+                        <!-- INFORMATION PROCESS -->
+                        <div class="container">
+                            <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+                                <h3>Information Details</h3>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Block</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Lot</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Street</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">Confirm Password</label>
-                                    <input type="text" class="form-control" id="fname">
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Last Name</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">First Name</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Middle Name</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4 d-flex align-items-end justify-content-end">
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Phone Number</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Email</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Username</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Password</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Confirm Password</label>
+                                        <input type="text" class="form-control" id="fname">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end justify-content-end">
                                     <a class="btn p-2 mb-3 btn-next" id="">Next</a>
+                                </div>
                             </div>
+
                         </div>
 
-
+                        <button type="submit">TEST</button>
                     </form>
                 </div>
-                <!-- END INFORMATION PROCESS -->
+                    <!-- END INFORMATION PROCESS -->
 
+                </div>
             </div>
 
-        </div>
-
     </div>
+
 
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>

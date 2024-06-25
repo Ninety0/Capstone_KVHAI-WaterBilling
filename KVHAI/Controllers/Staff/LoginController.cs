@@ -1,8 +1,6 @@
-﻿using KVHAI.Models;
+﻿using KVHAI.CustomClass;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Mvc;
-using Ganss.Xss;
-using KVHAI.CustomClass;
 
 namespace KVHAI.Controllers
 {

@@ -7,13 +7,13 @@
             endpoint.MapControllerRoute(
                 name: "ResidentLogin",
                 pattern: "kvhai/resident/login",
-                defaults: new { controller = "RLogin", action = "Index" }
+                defaults: new { controller = "ResLogin", action = "Index" }
             );
 
             endpoint.MapControllerRoute(
                 name: "ResidentSignup",
                 pattern: "kvhai/resident/signup",
-                defaults: new { controller = "RLogin", action = "Signup" }
+                defaults: new { controller = "ResLogin", action = "Signup" }
             );
         }
     }
