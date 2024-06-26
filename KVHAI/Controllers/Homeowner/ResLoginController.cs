@@ -25,17 +25,18 @@ namespace KVHAI.Controllers.Homeowner
             return View("~/Views/Resident/Signup/Index.cshtml");
         }
 
-        //[HttpPost]
-        //public IActionResult Signup()
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        ViewBag.error = "Invalid Credentials";
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Signup(string data)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.error = "Invalid Credentials";
 
-        //        return RedirectToAction("Signup");
-        //    }
+                return RedirectToAction("Signup");
+            }
 
-        //    return RedirectToAction("Signup");
-        //}
+            return RedirectToAction("Signup");
+        }
     }
 }

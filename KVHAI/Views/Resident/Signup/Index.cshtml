@@ -112,18 +112,29 @@
             width: 20px;
             height: 20px;
             border-radius: 100%;
-            background-color: #63747B;
         }
         .make-circle::after{
-            content:'1';
+            content:'';
             font-weight:400;
-            color:#9DABB1;
             position:absolute;
             left: 50%; /* Move to the horizontal center */
             top: 50%; /* Move to the vertical center */
             transform: translate(-50%, -50%); /* Adjust for half of the element's size */
-  
         }
+
+        .make-circle.active{
+            background-color: #63747B;
+            color:white;
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+        }
+
+            .is-invalid:focus {
+                border-color: #dc3545;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            }
 
     </style>
 </head>
@@ -140,44 +151,33 @@
                 <ul class="d-flex justify-content-center p-3 m-0">
                     <!-- PROCESS 1 -->
                     <li class="me-2 d-flex">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
-                            <g fill="white" stroke="#9DABB1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0" />
-                                <path d="m10 10l2-2v8" />
-                            </g>
-                        </svg>
+                        <div class="make-circle active"></div>
+
                         <i class="process-seperator ms-2"></i>
 
                     </li>
 
                     <!-- PROCESS 2 -->
                     <li class="me-2 d-flex">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
-                            <g fill="white" stroke="#9DABB1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0" />
-                                <path d="M10 8h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h3" />
-                            </g>
-                        </svg>
+                        <div class="make-circle"></div>
+
                         <i class="process-seperator ms-2"></i>
 
                     </li>
 
                     <!-- PROCESS 3 -->
                     <li class="me-2 d-flex">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
-                            <g fill="white" stroke="#9DABB1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0" />
-                                <path d="M10 9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1" />
-                            </g>
-                        </svg>
+                        <div class="make-circle"></div>
+
                     </li>
                 </ul>
 
                 <div class="border"></div>
 
                 <div class="container-fluid main-process">
-                    <div class="make-circle"></div>
-                    <form autocomplete="off" class="needs-validation" novalidate>
+                    <form id="myForm" autocomplete="off" class="needs-validation" novalidate>
+
+                        @Html.AntiForgeryToken()
 
                         <!-- OCCUPANCY PROCESS -->
                         <div class="container tab mt-3 mb-3 " id="occupancy">
@@ -362,6 +362,10 @@
             })
         })()
     </script>
+
+    <script>
+        
+    </script>
     
     <script>
         var currentTab = 0;
@@ -370,8 +374,13 @@
 
         function IncrementTab() {
             if (currentTab < maxTab) {
-                currentTab++;
-                updateTabDisplay();
+                let isValid = validateCurrentTab();
+
+                if (isValid) {
+                    currentTab++;
+                    updateTabDisplay();
+                }
+
             }
 
             if (currentTab > minTab) {
@@ -384,6 +393,38 @@
                 next.style.setProperty('display', 'none');
             }
         }
+
+        function validateCurrentTab() {
+            const currentTabElement = document.querySelectorAll('.tab')[currentTab];
+            const form = document.querySelector('form');
+            const inputs = currentTabElement.querySelectorAll('input, select');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                if (!input.checkValidity()) {
+                    isValid = false;
+                    input.classList.add('was-validated');
+                } else {
+                    input.classList.remove('was-validated');
+                }
+            });
+
+            if (!isValid) {
+                // Trigger Bootstrap's validation styles
+                form.classList.add('was-validated');
+            }
+            return isValid;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('input', function () {
+                    this.classList.remove('is-invalid');
+                    this.form.classList.remove('was-validated');
+                });
+            });
+        });
 
         function DecrementTab() {
             if (currentTab > minTab) {
@@ -411,12 +452,55 @@
                     tab.style.display = 'none';
                 }
             });
+
+                activeClass();
+
+        }
+
+        function activeClass() {
+            const a = document.querySelectorAll('.make-circle');
+            a.forEach((circle, index) => {
+                if(index === currentTab) {
+                    circle.classList.add('active');
+                }
+                else {
+                    circle.classList.remove('active');
+                }
+
+            });
         }
 
         $(document).ready(function () {
             updateTabDisplay();
         })
 
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('#myForm').submit(function (e) {
+                e.preventDefault(); // Prevent the form from submitting normally
+
+                // Serialize the form data
+                var formData = $(this).serialize();
+
+                // Send the data using AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: window.location.origin + '/kvhai/resident/signup',
+                    data: formData,
+                    success: function (response) {
+                        console.log("succ");
+                        console.log(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("err");
+                        console.log(error);
+
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
