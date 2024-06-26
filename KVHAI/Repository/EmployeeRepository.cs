@@ -1,10 +1,7 @@
 ﻿using KVHAI.CustomClass;
 using KVHAI.Models;
-using System;
 using System.Data.SqlClient;
 using System.Text;
-using System.Threading;
-using System.Xml.Linq;
 
 namespace KVHAI.Repository
 {
@@ -15,7 +12,7 @@ namespace KVHAI.Repository
 
         public EmployeeRepository(DBConnect dbConnect, Hashing hash)
         {
-            _dbConnect = dbConnect;      
+            _dbConnect = dbConnect;
             _hash = hash;
         }
 
@@ -76,7 +73,7 @@ namespace KVHAI.Repository
                         command.Parameters.AddWithValue("@pass", pass);
                         command.Parameters.AddWithValue("@role", employee.Role);
                         command.Parameters.AddWithValue("@create", dt);
-                        
+
                         await command.ExecuteNonQueryAsync();
                     }
                 }
@@ -159,11 +156,9 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<String> GetEmployeeId()
+        public async Task<int> GetEmployeeId()
         {
-            string emp_id = "emp_";
-            string new_id = "";
-            int index = 0;
+            int new_id = 1;
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
@@ -173,28 +168,14 @@ namespace KVHAI.Repository
                     {
                         if (await reader.ReadAsync())
                         {
+                            var id = Convert.ToInt32(reader["emp_id"].ToString());
 
-                            //emp_0000001
-                            string myString = reader[0].ToString()??string.Empty;
-                            for (int i = 4; i < myString.Length; i++) //i = 4 to not include <emp_>
-                            {
-                                int number = myString[i] - '0'; //logic to return if number is zero
-                                if (number > 0)
-                                {
-                                    index = i;
-                                    break;
-                                }
-                            }
-
-                            var val_str = Convert.ToInt32(myString.Substring(index));
-                            val_str += 1;
-                            var new_val_str = emp_id + val_str.ToString("0000000"); //the number of zero after <emp_>
-
-                            new_id = new_val_str;
+                            new_id = id + 1;
                         }
+
                         else
                         {
-                            new_id = "emp_0000001";
+                            new_id = 1;
                         }
                     }
                 }
@@ -210,16 +191,16 @@ namespace KVHAI.Repository
             {
                 using (var command = new SqlCommand("SELECT * FROM employee_tb WHERE username=@user AND password=@pass", connection))
                 {
-                    command.Parameters.AddWithValue("@user",user);
-                    command.Parameters.AddWithValue("@pass",pass);
+                    command.Parameters.AddWithValue("@user", user);
+                    command.Parameters.AddWithValue("@pass", pass);
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
 
                         if (await reader.ReadAsync())
                         {
-                            var ps = reader[0].ToString()??string.Empty;
-                            return _hash.VerifyPassword(ps,pass);
+                            var ps = reader[0].ToString() ?? string.Empty;
+                            return _hash.VerifyPassword(ps, pass);
                         }
                     }
                 }

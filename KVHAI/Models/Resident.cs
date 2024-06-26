@@ -5,7 +5,6 @@ namespace KVHAI.Models
     public class Resident
     {
         public string Res_ID { get; set; } = string.Empty;
-        public string Address_ID { get; set; } = string.Empty;
 
         [Required]
         [StringLength(50)]
@@ -28,6 +27,14 @@ namespace KVHAI.Models
         public string Email { get; set; } = string.Empty;
 
         [Required]
+        [StringLength(5)]
+        public string Block { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(5)]
+        public string Lot { get; set; } = string.Empty;
+
+        [Required]
         [StringLength(50)]
         public string Username { get; set; } = string.Empty;
 
@@ -35,14 +42,15 @@ namespace KVHAI.Models
         [StringLength(50)]
         public string Password { get; set; } = string.Empty;
 
+
         [Required]
         [StringLength(50)]
         public string Date_Residency { get; set; } = string.Empty;
-        
+
         [Required]
         [StringLength(50)]
         public string Occupancy { get; set; } = string.Empty;
-        
+
         [Required]
         [StringLength(50)]
         public string Created_At { get; set; } = string.Empty;

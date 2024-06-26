@@ -68,13 +68,28 @@
             justify-content:center;
         }
 
-        .btn-next {
+        .btn-next, .btn-prev {
             font-family: "Poetsen One", sans-serif;
-            font-weight: 200;
+            font-weight: 400;
+            font-size: 1rem;
             font-style: normal;
             letter-spacing: 2px;
             background-color: #1B8EC9;
-            color:white;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            padding: 0.75rem, 0.375rem ;
+            line-height: 1.5;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 1px rgba(0, 0, 0, 0.075);
+            cursor: pointer;
+        }
+        .btn-prev {
+            background-color: #4C4C4C;
+            display:none;
+        }
+
+        .tab {
+            display: none;
         }
 
         h3 {
@@ -84,6 +99,30 @@
         .main-process {
             height: calc(100vh - 200px);
             overflow-y:auto;
+        }
+
+        .icon-next{
+            width: 50px;
+            height:20px;
+        }
+
+        .make-circle {
+            position: relative;
+            border: 2px solid #9DABB1;
+            width: 20px;
+            height: 20px;
+            border-radius: 100%;
+            background-color: #63747B;
+        }
+        .make-circle::after{
+            content:'1';
+            font-weight:400;
+            color:#9DABB1;
+            position:absolute;
+            left: 50%; /* Move to the horizontal center */
+            top: 50%; /* Move to the vertical center */
+            transform: translate(-50%, -50%); /* Adjust for half of the element's size */
+  
         }
 
     </style>
@@ -137,69 +176,85 @@
                 <div class="border"></div>
 
                 <div class="container-fluid main-process">
-                    <form autocomplete="off">
+                    <div class="make-circle"></div>
+                    <form autocomplete="off" class="needs-validation" novalidate>
 
                         <!-- OCCUPANCY PROCESS -->
-                        <div class="container mt-3 mb-3 " id="occupancy">
-                            <h3>Occupancy:</h3>
-
-                            <select class="form-select form-select-lg mb-3" aria-label="Large select example" required>
-                                <option disabled selected hidden>Select</option>
-                                <option value="1">Owner</option>
-                                <option value="2">Renter</option>
-                            </select>
-
-                            <div class="d-flex justify-content-end">
-                                <a class="btn p-2 mb-3 btn-next" id="">Next</a>
+                        <div class="container tab mt-3 mb-3 " id="occupancy">
+                            <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+                                <h3>Occupancy</h3>
                             </div>
+
+
+                            <div class="form-check mb-3">
+                                <select class="form-select form-select-lg mb-3" required>
+                                    <option value="" disabled selected hidden>Select</option>
+                                    <option value="1">Owner</option>
+                                    <option value="2">Renter</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a valid state.
+                                </div>
+                            </div>
+
+
                         </div>
 
 
                         <!--END OCCUPANCY PROCESS -->
                         <!-- INFORMATION PROCESS -->
-                        <div class="container">
+                        <div class="container tab" id="information">
                             <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
                                 <h3>Information Details</h3>
                             </div>
 
+                            @* ADDRESS *@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Block</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <label for="block" class="form-label fw-bold fs-6">Block</label>
+                                        <input type="number" class="form-control" id="block" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Lot</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <label for="lot" class="form-label fw-bold fs-6">Lot</label>
+                                        <input type="number" class="form-control" id="lot" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="fname" class="form-label fw-bold fs-6">Street</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <select class="form-select" aria-label="Default select example" required>
+                                            <option value="" disabled selected hidden>Select Street</option>
+                                            <option value="1">One</option>
+                                            <option value="2">Two</option>
+                                            <option value="3">Three</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
+                            @*END ADDRESS *@
 
+
+                            @* PERSONAL INFO *@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Last Name</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <label for="lname" class="form-label fw-bold fs-6">Last Name</label>
+                                        <input type="text" class="form-control" id="lname" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="fname" class="form-label fw-bold fs-6">First Name</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <input type="text" class="form-control" id="fname" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Middle Name</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <label for="mname" class="form-label fw-bold fs-6">Middle Name</label>
+                                        <input type="text" class="form-control" id="mname" required>
                                     </div>
                                 </div>
                             </div>
@@ -207,20 +262,24 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Phone Number</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <label for="" class="form-label fw-bold fs-6">Phone Number</label>
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="num-span">63</span>
+                                            <input type="text" class="form-control" placeholder="" required>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label fw-bold fs-6">Email</label>
+                                        <input type="email" class="form-control" id="email" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Email</label>
-                                        <input type="text" class="form-control" id="fname">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Username</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <label for="date_residency" class="form-label fw-bold fs-6">Date of Residency</label>
+                                        <input type="date" class="form-control" id="date_residency" required>
                                     </div>
                                 </div>
                             </div>
@@ -228,27 +287,48 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Password</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <label for="username" class="form-label fw-bold fs-6">Username</label>
+                                        <input type="text" class="form-control" id="username" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Confirm Password</label>
-                                        <input type="text" class="form-control" id="fname">
+                                        <label for="password" class="form-label fw-bold fs-6">Password</label>
+                                        <input type="password" class="form-control" id="password" required>
                                     </div>
                                 </div>
-                                <div class="col-md-4 d-flex align-items-end justify-content-end">
-                                    <a class="btn p-2 mb-3 btn-next" id="">Next</a>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
+                                        <input type="password" class="form-control" id="cpass" required>
+                                    </div>
                                 </div>
+
                             </div>
+                            @* END PERSONAL INFO *@
 
                         </div>
+                        <!-- END INFORMATION PROCESS -->
+                        <!-- PROOF PROCESS -->
+                        <div class="container tab" id="proof-validation">
+                            <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+                                <h3>Proof of Validation</h3>
+                            </div>
+                            <div class="input-group mb-3">
+                                <input type="file" class="form-control" id="inputGroupFile02" required>
+                                <label class="input-group-text" for="inputGroupFile02">Upload Proof</label>
+                            </div>
+                        </div>
+                        <!-- END PROOF PROCESS -->
+
 
                         <button type="submit">TEST</button>
                     </form>
+                    <div class="d-flex justify-content-end">
+                        <a class="p-2 mb-3 btn-prev me-2" id="prev-btn" onclick="DecrementTab()">Previous</a>
+                        <a class="p-2 mb-3 btn-next" id="next-btn" onclick="IncrementTab()">Next</a>
+                    </div>
                 </div>
-                    <!-- END INFORMATION PROCESS -->
 
                 </div>
             </div>
@@ -257,10 +337,86 @@
 
 
     <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+
+    @* VALIDATION FORM *@
     <script>
-        var occupy = $('#occupancy');
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
     </script>
     
+    <script>
+        var currentTab = 0;
+        var maxTab = 2;
+        var minTab = 0;
+
+        function IncrementTab() {
+            if (currentTab < maxTab) {
+                currentTab++;
+                updateTabDisplay();
+            }
+
+            if (currentTab > minTab) {
+                const prev = document.querySelector('.btn-prev');
+                prev.style.setProperty('display', 'block');
+            }
+
+            if (currentTab === maxTab) {
+                const next = document.querySelector('.btn-next');
+                next.style.setProperty('display', 'none');
+            }
+        }
+
+        function DecrementTab() {
+            if (currentTab > minTab) {
+                currentTab--;
+                updateTabDisplay();
+            }
+
+            if (currentTab === minTab) {
+                const prev = document.querySelector('.btn-prev');
+                prev.style.setProperty('display', 'none');
+            }
+
+            if (currentTab < maxTab) {
+                const next = document.querySelector('.btn-next');
+                next.style.setProperty('display', 'block');
+            }
+        }
+
+        function updateTabDisplay() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach((tab, index) => {
+                if (index === currentTab) {
+                    tab.style.display = 'block';
+                } else {
+                    tab.style.display = 'none';
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            updateTabDisplay();
+        })
+
+    </script>
 </body>
 </html>

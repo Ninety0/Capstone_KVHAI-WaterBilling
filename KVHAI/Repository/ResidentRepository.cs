@@ -31,17 +31,18 @@ namespace KVHAI.Repository
                         {
                             var _resident = new Resident();
                             _resident.Res_ID = reader[0]?.ToString() ?? string.Empty;
-                            _resident.Address_ID = reader[1]?.ToString() ?? string.Empty;
-                            _resident.Lname = reader[2]?.ToString() ?? string.Empty;
-                            _resident.Fname = reader[3]?.ToString() ?? string.Empty;
-                            _resident.Mname = reader[4]?.ToString() ?? string.Empty;
-                            _resident.Phone = reader[5]?.ToString() ?? string.Empty;
-                            _resident.Email = reader[6]?.ToString() ?? string.Empty;
-                            _resident.Username = reader[7]?.ToString() ?? string.Empty;
-                            _resident.Password = reader[8]?.ToString() ?? string.Empty;
-                            _resident.Date_Residency = reader[9]?.ToString() ?? string.Empty;
-                            _resident.Occupancy = reader[10]?.ToString() ?? string.Empty;
-                            _resident.Created_At = reader[11]?.ToString() ?? string.Empty;
+                            _resident.Lname = reader[1]?.ToString() ?? string.Empty;
+                            _resident.Fname = reader[2]?.ToString() ?? string.Empty;
+                            _resident.Mname = reader[3]?.ToString() ?? string.Empty;
+                            _resident.Phone = reader[4]?.ToString() ?? string.Empty;
+                            _resident.Email = reader[5]?.ToString() ?? string.Empty;
+                            _resident.Block = reader[6]?.ToString() ?? string.Empty;
+                            _resident.Lot = reader[7]?.ToString() ?? string.Empty;
+                            _resident.Username = reader[8]?.ToString() ?? string.Empty;
+                            _resident.Password = reader[9]?.ToString() ?? string.Empty;
+                            _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
+                            _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
+                            _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
                             resident.Add(_resident);
 
                         }
@@ -64,15 +65,16 @@ namespace KVHAI.Repository
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO resident_tb (res_id, address_id, lname, fname, mname, phone, email, username, password, date_residency, occupancy, created_at) VALUES(@id, @addr, @lname, @fname, @mname, @phone, @email, @user, @pass, @residency, @occupy, @create)", connection))
+                    using (var command = new SqlCommand("INSERT INTO resident_tb (res_id, lname, fname, mname, phone, email, block, lot, username, password, date_residency, occupancy, created_at) VALUES(@id, @lname, @fname, @mname, @phone, @email, @blk, @lot, @user, @pass, @residency, @occupy, @create)", connection))
                     {
                         command.Parameters.AddWithValue("@id", res_id);
-                        command.Parameters.AddWithValue("@addr", res_id);
                         command.Parameters.AddWithValue("@lname", resident.Lname);
                         command.Parameters.AddWithValue("@fname", resident.Fname);
                         command.Parameters.AddWithValue("@mname", resident.Mname);
                         command.Parameters.AddWithValue("@phone", resident.Phone);
                         command.Parameters.AddWithValue("@email", resident.Email);
+                        command.Parameters.AddWithValue("@email", resident.Block);
+                        command.Parameters.AddWithValue("@email", resident.Lot);
                         command.Parameters.AddWithValue("@user", resident.Username);
                         command.Parameters.AddWithValue("@pass", pass);
                         command.Parameters.AddWithValue("@pass", resident.Date_Residency);
@@ -161,11 +163,9 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<String> GetEmployeeId()
+        public async Task<int> GetEmployeeId()
         {
-            string emp_id = "res_";
-            string new_id = "";
-            int index = 0;
+            int new_id = 1;
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
@@ -175,28 +175,13 @@ namespace KVHAI.Repository
                     {
                         if (await reader.ReadAsync())
                         {
+                            int id = Convert.ToInt32(reader[0].ToString());
 
-                            //res_0000000001
-                            string myString = reader[0].ToString() ?? string.Empty;
-                            for (int i = 4; i < myString.Length; i++) //i = 4 to not include <res_>
-                            {
-                                int number = myString[i] - '0'; //logic to return if number is zero
-                                if (number > 0)
-                                {
-                                    index = i;
-                                    break;
-                                }
-                            }
-
-                            var val_str = Convert.ToInt32(myString.Substring(index));
-                            val_str += 1;
-                            var new_val_str = emp_id + val_str.ToString("000000000"); //the number of zero after <res_>
-
-                            new_id = new_val_str;
+                            new_id = id + 1;
                         }
                         else
                         {
-                            new_id = "res_0000000001";
+                            new_id = 1;
                         }
                     }
                 }
