@@ -1,8 +1,10 @@
 ﻿using KVHAI.CustomClass;
+using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KVHAI.Controllers.Homeowner
+
 {
     public class ResLoginController : Controller
     {
@@ -27,16 +29,28 @@ namespace KVHAI.Controllers.Homeowner
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Signup(string data)
+        public async Task<IActionResult> Signup(Resident formData)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                ViewBag.error = "Invalid Credentials";
+                if (formData == null || !ModelState.IsValid)
+                {
+                    ViewBag.error = "Invalid Data";
+                    return RedirectToAction("Signup");
+                }
 
+                int result = await _residentRepository.CreateEmployee(formData);
+                if (result == 0)
+                    return BadRequest(new { message = result });
+
+                return Ok(new { message = result });
+            }
+            catch (Exception)
+            {
+                ViewBag.error = "An error occurred while processing your request.";
                 return RedirectToAction("Signup");
             }
-
-            return RedirectToAction("Signup");
         }
+
     }
 }

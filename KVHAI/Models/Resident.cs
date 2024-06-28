@@ -51,7 +51,6 @@ namespace KVHAI.Models
         [StringLength(50)]
         public string Occupancy { get; set; } = string.Empty;
 
-        [Required]
         [StringLength(50)]
         public string Created_At { get; set; } = string.Empty;
     }

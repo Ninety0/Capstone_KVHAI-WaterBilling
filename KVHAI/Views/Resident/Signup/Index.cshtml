@@ -11,6 +11,7 @@
 
     <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-icon.css">
+    <link href="~/css/toastr.min.css" rel="stylesheet" />
     <link href="~/css/header-font.css" rel="stylesheet" />
 
 
@@ -136,17 +137,43 @@
                 box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
             }
 
+        .custom-alert{
+            position:absolute;
+        }
     </style>
 </head>
 <body>
+    @{
+        if (ViewBag.Success != null)
+        {
+            <div class="container-fluid custom-alert">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Registration Success!</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+            </div>
+        }
+
+        if (ViewBag.Error != null)
+        {
+            <div class="container-fluid custom-alert">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Registration Failed!</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+            </div>
+        }
+    }
+
     <div class="container vh-100">
         <div class="container d-flex p-2 mb-3">
             <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:80px;height:80px;">
             <span class="d-flex align-items-center" id="header">KVHAI</span>
         </div>
-        
-        <div class="container main-form">
 
+        <div class="container main-form">
             <div class="center-form">
                 <ul class="d-flex justify-content-center p-3 m-0">
                     <!-- PROCESS 1 -->
@@ -187,7 +214,7 @@
 
 
                             <div class="form-check mb-3">
-                                <select class="form-select form-select-lg mb-3" required>
+                                <select id="Occupancy" name="Occupancy" class="form-select form-select-lg mb-3" required>
                                     <option value="" disabled selected hidden>Select</option>
                                     <option value="1">Owner</option>
                                     <option value="2">Renter</option>
@@ -212,14 +239,14 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="block" class="form-label fw-bold fs-6">Block</label>
-                                        <input type="number" class="form-control" id="block" required>
+                                        <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                                        <input type="number" class="form-control" id="Block" name="Block" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="lot" class="form-label fw-bold fs-6">Lot</label>
-                                        <input type="number" class="form-control" id="lot" required>
+                                        <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                                        <input type="number" class="form-control" id="Lot" name="Lot" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -241,20 +268,20 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="lname" class="form-label fw-bold fs-6">Last Name</label>
-                                        <input type="text" class="form-control" id="lname" required>
+                                        <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
+                                        <input type="text" class="form-control" id="Lname" name="Lname" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">First Name</label>
-                                        <input type="text" class="form-control" id="fname" required>
+                                        <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
+                                        <input type="text" class="form-control" id="Fname" name="Fname" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="mname" class="form-label fw-bold fs-6">Middle Name</label>
-                                        <input type="text" class="form-control" id="mname" required>
+                                        <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
+                                        <input type="text" class="form-control" id="Mname" name="Mname" required>
                                     </div>
                                 </div>
                             </div>
@@ -262,24 +289,24 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="" class="form-label fw-bold fs-6">Phone Number</label>
+                                        <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
                                         <div class="input-group mb-3">
                                             <span class="input-group-text" id="num-span">63</span>
-                                            <input type="text" class="form-control" placeholder="" required>
+                                            <input id="Phone" name="Phone" type="text" class="form-control" placeholder="" required>
                                         </div>
                                     </div>
 
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="email" class="form-label fw-bold fs-6">Email</label>
-                                        <input type="email" class="form-control" id="email" required>
+                                        <label for="Email" class="form-label fw-bold fs-6">Email</label>
+                                        <input type="email" class="form-control" id="Email" name="Email" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="date_residency" class="form-label fw-bold fs-6">Date of Residency</label>
-                                        <input type="date" class="form-control" id="date_residency" required>
+                                        <label for="Date_Residency" class="form-label fw-bold fs-6">Date of Residency</label>
+                                        <input type="date" class="form-control" id="Date_Residency" name="Date_Residency" required>
                                     </div>
                                 </div>
                             </div>
@@ -287,14 +314,14 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="username" class="form-label fw-bold fs-6">Username</label>
-                                        <input type="text" class="form-control" id="username" required>
+                                        <label for="Username" class="form-label fw-bold fs-6">Username</label>
+                                        <input type="text" class="form-control" id="Username" name="Username" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="password" class="form-label fw-bold fs-6">Password</label>
-                                        <input type="password" class="form-control" id="password" required>
+                                        <label for="Password" class="form-label fw-bold fs-6">Password</label>
+                                        <input type="password" class="form-control" id="Password" name="Password" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -315,14 +342,14 @@
                                 <h3>Proof of Validation</h3>
                             </div>
                             <div class="input-group mb-3">
-                                <input type="file" class="form-control" id="inputGroupFile02" required>
+                                <input type="file" class="form-control" id="Image" accept="image/*" required>
                                 <label class="input-group-text" for="inputGroupFile02">Upload Proof</label>
                             </div>
                         </div>
                         <!-- END PROOF PROCESS -->
 
 
-                        <button type="submit">TEST</button>
+                        <button type="submit" id="btn-register">TEST</button>
                     </form>
                     <div class="d-flex justify-content-end">
                         <a class="p-2 mb-3 btn-prev me-2" id="prev-btn" onclick="DecrementTab()">Previous</a>
@@ -330,8 +357,8 @@
                     </div>
                 </div>
 
-                </div>
             </div>
+        </div>
 
     </div>
 
@@ -339,6 +366,7 @@
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/js/toastr.min.js"></script>
 
     @* VALIDATION FORM *@
     <script>
@@ -364,9 +392,9 @@
     </script>
 
     <script>
-        
+
     </script>
-    
+
     <script>
         var currentTab = 0;
         var maxTab = 2;
@@ -453,14 +481,14 @@
                 }
             });
 
-                activeClass();
+            activeClass();
 
         }
 
         function activeClass() {
             const a = document.querySelectorAll('.make-circle');
             a.forEach((circle, index) => {
-                if(index === currentTab) {
+                if (index === currentTab) {
                     circle.classList.add('active');
                 }
                 else {
@@ -478,29 +506,117 @@
 
     <script>
         $(document).ready(function () {
-            $('#myForm').submit(function (e) {
-                e.preventDefault(); // Prevent the form from submitting normally
+            $('#btn-register').click(function (e) {
+                e.preventDefault();
 
-                // Serialize the form data
-                var formData = $(this).serialize();
+                var form = document.getElementById('myForm');
+                var formData = new FormData(form);
 
-                // Send the data using AJAX
+                toastr.options = {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-right', // Position: toast-top-right, toast-top-left, toast-bottom-right, toast-bottom-left
+                    timeOut: 3000 // Timeout duration in milliseconds (e.g., 3000ms = 3 seconds)
+                };
+
                 $.ajax({
                     type: 'POST',
                     url: window.location.origin + '/kvhai/resident/signup',
+                    contentType: false,
+                    processData: false,
                     data: formData,
                     success: function (response) {
-                        console.log("succ");
+                        alert("success");
                         console.log(response);
+                        if (response.message = 0) {
+                            toastr.error(response.message, 'Error');
+                        }
+                        else
+                        {
+                            toastr.success(response.message, 'Success');
+                        }
                     },
                     error: function (xhr, status, error) {
-                        console.log("err");
-                        console.log(error);
-
+                        alert("error");
+                        console.log(xhr.responseText);
                     }
                 });
             });
         });
+
     </script>
+
+    <script>
+        /*$(document).ready(function () {
+            $('#btn-register').click(function (e) {
+                e.preventDefault(); // Prevent the form from submitting normally
+
+                var date = new Date($('#Date_Residency').val());
+                var formattedDate = new Intl.DateTimeFormat('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                }).format(date);
+
+                var data = {
+                    Lname: $('#Lname').val(),
+                    Fname: $('#Fname').val(),
+                    Mname: $('#Mname').val(),
+                    Phone: $('#Phone').val(),
+                    Email: $('#Email').val(),
+                    Block: $('#Block').val(),
+                    Lot: $('#Lot').val(),
+                    Username: $('#Username').val(),
+                    Password: $('#Password').val(),
+                    Date_Residency: formattedDate,
+                    Occupancy: $('#Occupancy').val()
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: window.location.origin + '/kvhai/resident/signup',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        alert("success");
+                        console.log(response);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("error");
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+        });
+        */
+
+    </script>
+
+    @*<script>
+            $(document).ready(function () {
+                $('#myForm').submit(function (e) {
+                    e.preventDefault(); // Prevent the form from submitting normally
+
+                    // Serialize the form data
+                    var formData = $(this).serialize();
+
+                    // Send the data using AJAX
+                    $.ajax({
+                        type: 'POST',
+                        url: window.location.origin + '/kvhai/resident/signup',
+                        data: formData,
+                        success: function (response) {
+                            console.log("succ");
+                            console.log(response);
+                        },
+                        error: function (xhr, status, error) {
+                            console.log("err");
+                            console.log(error);
+
+                        }
+                    });
+                });
+            });
+        </script>*@
 </body>
 </html>

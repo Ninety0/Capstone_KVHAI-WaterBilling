@@ -9,11 +9,13 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         private readonly Hashing _hash;
+        private readonly InputSanitize _sanitize;
 
-        public ResidentRepository(DBConnect dbconn, Hashing hash)
+        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize)
         {
             _dbConnect = dbconn;
             _hash = hash;
+            _sanitize = sanitize;
         }
 
         public async Task<List<Resident>> GetAllEmployeesAsync()
@@ -54,42 +56,44 @@ namespace KVHAI.Repository
         }
 
         //address id need to update the code
-        public async Task CreateEmployee(Resident resident)
+        public async Task<int> CreateEmployee(Resident resident)
         {
+            SanitizeFormData(resident);
             var res_id = await GetEmployeeId();
             var pass = _hash.HashPassword(resident.Password);
             var dt = GetTimeDate();
-
+            var phone = "63" + resident.Phone;
 
             try
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO resident_tb (res_id, lname, fname, mname, phone, email, block, lot, username, password, date_residency, occupancy, created_at) VALUES(@id, @lname, @fname, @mname, @phone, @email, @blk, @lot, @user, @pass, @residency, @occupy, @create)", connection))
+                    using (var command = new SqlCommand("INSERT INTO resident_tb (lname, fname, mname, phone, email, block, lot, username, password, date_residency, occupancy, created_at) VALUES(@lname, @fname, @mname, @phone, @email, @blk, @lot, @user, @pass, @residency, @occupy, @create)", connection))
                     {
-                        command.Parameters.AddWithValue("@id", res_id);
+                        //command.Parameters.AddWithValue("@id", res_id);
                         command.Parameters.AddWithValue("@lname", resident.Lname);
                         command.Parameters.AddWithValue("@fname", resident.Fname);
                         command.Parameters.AddWithValue("@mname", resident.Mname);
-                        command.Parameters.AddWithValue("@phone", resident.Phone);
+                        command.Parameters.AddWithValue("@phone", phone);
                         command.Parameters.AddWithValue("@email", resident.Email);
-                        command.Parameters.AddWithValue("@email", resident.Block);
-                        command.Parameters.AddWithValue("@email", resident.Lot);
+                        command.Parameters.AddWithValue("@blk", resident.Block);
+                        command.Parameters.AddWithValue("@lot", resident.Lot);
                         command.Parameters.AddWithValue("@user", resident.Username);
                         command.Parameters.AddWithValue("@pass", pass);
-                        command.Parameters.AddWithValue("@pass", resident.Date_Residency);
+                        command.Parameters.AddWithValue("@residency", resident.Date_Residency);
                         command.Parameters.AddWithValue("@occupy", resident.Occupancy);
                         command.Parameters.AddWithValue("@create", dt);
 
                         await command.ExecuteNonQueryAsync();
+
+                        return 1;
                     }
                 }
             }
             catch (Exception)
             {
-                throw;
+                return 0;
             }
-
         }
 
         public async Task UpdateCategory(Resident resident)
@@ -193,6 +197,21 @@ namespace KVHAI.Repository
         private string GetTimeDate()
         {
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        private void SanitizeFormData(Resident formData)
+        {
+            formData.Lname = _sanitize.HTMLSanitizer(formData.Lname);
+            formData.Fname = _sanitize.HTMLSanitizer(formData.Fname);
+            formData.Mname = _sanitize.HTMLSanitizer(formData.Mname);
+            formData.Phone = _sanitize.HTMLSanitizer(formData.Phone);
+            formData.Email = _sanitize.HTMLSanitizer(formData.Email);
+            formData.Block = _sanitize.HTMLSanitizer(formData.Block);
+            formData.Lot = _sanitize.HTMLSanitizer(formData.Lot);
+            formData.Username = _sanitize.HTMLSanitizer(formData.Username);
+            formData.Password = _sanitize.HTMLSanitizer(formData.Password);
+            formData.Date_Residency = _sanitize.HTMLSanitizer(formData.Date_Residency);
+            formData.Occupancy = _sanitize.HTMLSanitizer(formData.Occupancy);
         }
     }
 }
