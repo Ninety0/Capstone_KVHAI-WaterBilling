@@ -33,6 +33,8 @@
     function updateButtonVisibility() {
         $('.btn-prev').toggle(currentTab > minTab);
         $('.btn-next').toggle(currentTab < maxTab);
+        $('#btn-register').toggle(currentTab == maxTab);
+
     }
 
     function updateTabDisplay() {
@@ -60,7 +62,7 @@
             }
 
             if (input.id === 'cpass' && !ConfirmPassword()) {
-                isValid = false;
+                isValid = true;
             }
         });
 

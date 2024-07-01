@@ -25,6 +25,10 @@
             font-size: .8rem;
         }
 
+        button{
+            border:none;
+        }
+
         #header {
             /*color: #60a5fa;*/
             font-family: "Poetsen One", sans-serif;
@@ -69,7 +73,9 @@
             justify-content:center;
         }
 
-        .btn-next, .btn-prev {
+        .btn-next, .btn-prev, #btn-register {
+            position:absolute;
+            bottom:-1.5rem;
             font-family: "Poetsen One", sans-serif;
             font-weight: 400;
             font-size: 1rem;
@@ -84,9 +90,22 @@
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 1px rgba(0, 0, 0, 0.075);
             cursor: pointer;
         }
+        .btn-next:hover, .btn-prev:hover {
+            transform: translateY(3px);
+            box-shadow: 0 14px 28px rgba(131, 232, 186, 0.25), 0 10px 10px rgba(131, 232, 186, 0.22), 0 0 120px -10px var(--clr-green);
+        }
+
+        #btn-register{
+            position:absolute;
+            display:none;
+            right:0;
+            margin-right:1rem;
+        }
+
         .btn-prev {
             background-color: #4C4C4C;
-            display:none;
+            display: none;
+            right:4.5rem;
         }
 
         .tab {
@@ -98,6 +117,7 @@
         }
 
         .main-process {
+            position:relative;
             height: calc(100vh - 200px);
             overflow-y:auto;
         }
@@ -355,11 +375,11 @@
                         <!-- END PROOF PROCESS -->
 
 
-                        <button type="submit" id="btn-register">TEST</button>
+                        <button class="p-2" type="submit" id="btn-register">TEST</button>
                     </form>
                     <div class="d-flex justify-content-end">
-                        <a class="p-2 mb-3 btn-prev me-2" id="prev-btn" onclick="DecrementTab()">Previous</a>
-                        <a class="p-2 mb-3 btn-next" id="next-btn">Next</a>
+                        <button class="p-2 mb-3 btn-prev me-2" id="prev-btn">Previous</button>
+                        <button class="p-2 mb-3 btn-next" id="next-btn">Next</button>
                     </div>
                 </div>
 
