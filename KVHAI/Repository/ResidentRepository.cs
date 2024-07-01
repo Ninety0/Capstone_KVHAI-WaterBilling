@@ -10,12 +10,14 @@ namespace KVHAI.Repository
         private readonly DBConnect _dbConnect;
         private readonly Hashing _hash;
         private readonly InputSanitize _sanitize;
+        private readonly ImageUploadRepository _uploadRepository;
 
-        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize)
+        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize, ImageUploadRepository uploadRepository)
         {
             _dbConnect = dbconn;
             _hash = hash;
             _sanitize = sanitize;
+            _uploadRepository = uploadRepository;
         }
 
         public async Task<List<Resident>> GetAllEmployeesAsync()
@@ -56,44 +58,34 @@ namespace KVHAI.Repository
         }
 
         //address id need to update the code
-        public async Task<int> CreateEmployee(Resident resident)
+        public async Task<int> CreateResident(Resident resident, SqlTransaction transaction, SqlConnection connection)
         {
             SanitizeFormData(resident);
-            var res_id = await GetEmployeeId();
+            int resID = 0;
             var pass = _hash.HashPassword(resident.Password);
             var dt = GetTimeDate();
             var phone = "63" + resident.Phone;
 
-            try
+            using (var command = new SqlCommand("INSERT INTO resident_tb (lname, fname, mname, phone, email, block, lot, username, password, date_residency, occupancy, created_at) OUTPUT INSERTED.res_id VALUES(@lname, @fname, @mname, @phone, @email, @blk, @lot, @user, @pass, @residency, @occupy, @create)", connection, transaction))
             {
-                using (var connection = await _dbConnect.GetOpenConnectionAsync())
-                {
-                    using (var command = new SqlCommand("INSERT INTO resident_tb (lname, fname, mname, phone, email, block, lot, username, password, date_residency, occupancy, created_at) VALUES(@lname, @fname, @mname, @phone, @email, @blk, @lot, @user, @pass, @residency, @occupy, @create)", connection))
-                    {
-                        //command.Parameters.AddWithValue("@id", res_id);
-                        command.Parameters.AddWithValue("@lname", resident.Lname);
-                        command.Parameters.AddWithValue("@fname", resident.Fname);
-                        command.Parameters.AddWithValue("@mname", resident.Mname);
-                        command.Parameters.AddWithValue("@phone", phone);
-                        command.Parameters.AddWithValue("@email", resident.Email);
-                        command.Parameters.AddWithValue("@blk", resident.Block);
-                        command.Parameters.AddWithValue("@lot", resident.Lot);
-                        command.Parameters.AddWithValue("@user", resident.Username);
-                        command.Parameters.AddWithValue("@pass", pass);
-                        command.Parameters.AddWithValue("@residency", resident.Date_Residency);
-                        command.Parameters.AddWithValue("@occupy", resident.Occupancy);
-                        command.Parameters.AddWithValue("@create", dt);
+                //command.Parameters.AddWithValue("@id", res_id);
+                command.Parameters.AddWithValue("@lname", resident.Lname);
+                command.Parameters.AddWithValue("@fname", resident.Fname);
+                command.Parameters.AddWithValue("@mname", resident.Mname);
+                command.Parameters.AddWithValue("@phone", phone);
+                command.Parameters.AddWithValue("@email", resident.Email);
+                command.Parameters.AddWithValue("@blk", resident.Block);
+                command.Parameters.AddWithValue("@lot", resident.Lot);
+                command.Parameters.AddWithValue("@user", resident.Username);
+                command.Parameters.AddWithValue("@pass", pass);
+                command.Parameters.AddWithValue("@residency", resident.Date_Residency);
+                command.Parameters.AddWithValue("@occupy", resident.Occupancy);
+                command.Parameters.AddWithValue("@create", dt);
 
-                        await command.ExecuteNonQueryAsync();
+                resID = (int?)(await command.ExecuteScalarAsync()) ?? 0;
 
-                        return 1;
-                    }
-                }
             }
-            catch (Exception)
-            {
-                return 0;
-            }
+            return resID;
         }
 
         public async Task UpdateCategory(Resident resident)
@@ -167,37 +159,31 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<int> GetEmployeeId()
+        public async Task<int> GetResidentId()
         {
-            int new_id = 1;
+            int id = 1;
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand("select res_id from resident_tb", connection))
+                using (var command = new SqlCommand("select res_id from resident_tb ORDER BY res_id DESC", connection))
                 {
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         if (await reader.ReadAsync())
                         {
-                            int id = Convert.ToInt32(reader[0].ToString());
-
-                            new_id = id + 1;
-                        }
-                        else
-                        {
-                            new_id = 1;
+                            id = Convert.ToInt32(reader[0].ToString());
                         }
                     }
                 }
             }
-
-            return new_id;
+            return id;
         }
 
         private string GetTimeDate()
         {
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
+
 
         private void SanitizeFormData(Resident formData)
         {
@@ -212,6 +198,44 @@ namespace KVHAI.Repository
             formData.Password = _sanitize.HTMLSanitizer(formData.Password);
             formData.Date_Residency = _sanitize.HTMLSanitizer(formData.Date_Residency);
             formData.Occupancy = _sanitize.HTMLSanitizer(formData.Occupancy);
+        }
+
+
+        public async Task<int> CreateResidentandUploadImage(Resident formData, IFormFile file, string webRootPath)
+        {
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        int residentID = await CreateResident(formData, transaction, connection);
+                        if (residentID > 0)
+                        {
+                            int imageResult = await _uploadRepository.ImageUpload(file, webRootPath, residentID, transaction, connection);
+
+                            if (imageResult == 0)
+                            {
+                                throw new Exception("Image upload failed");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("There was an error submitting the form");
+                        }
+
+                        transaction.Commit();
+                        return 1;
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        // Log the exception here
+                        return 0;
+                    }
+                }
+            }
+
         }
     }
 }

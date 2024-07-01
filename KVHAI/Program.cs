@@ -16,6 +16,7 @@ builder.Services.AddTransient<InputSanitize>();
 // Register EmployeeRepository as a scoped service
 builder.Services.AddScoped<EmployeeRepository>();
 builder.Services.AddScoped<ResidentRepository>();
+builder.Services.AddScoped<ImageUploadRepository>();
 
 var app = builder.Build();
 

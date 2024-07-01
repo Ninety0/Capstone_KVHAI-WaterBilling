@@ -7,11 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\js\residentSignup.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <_ContentIncludedByDefault Remove="wwwroot\css\toastr.min.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\js\residentSignup.js" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Views\Staff\" />
+    <Folder Include="wwwroot\proof_img\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\js\residentSignup.js" />
   </ItemGroup>
 
   <ItemGroup>

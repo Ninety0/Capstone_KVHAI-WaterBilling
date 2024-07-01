@@ -202,7 +202,7 @@
                 <div class="border"></div>
 
                 <div class="container-fluid main-process">
-                    <form id="myForm" autocomplete="off" class="needs-validation" novalidate>
+                    <form id="myForm" autocomplete="off" class="needs-validation" enctype="multipart/form-data" novalidate>
 
                         @Html.AntiForgeryToken()
 
@@ -240,13 +240,13 @@
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="Block" class="form-label fw-bold fs-6">Block</label>
-                                        <input type="number" class="form-control" id="Block" name="Block" required>
+                                        <input type="number" min="1" class="form-control" id="Block" name="Block" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
-                                        <input type="number" class="form-control" id="Lot" name="Lot" required>
+                                        <input type="number" min="1" class="form-control" id="Lot" name="Lot" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -269,19 +269,19 @@
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
-                                        <input type="text" class="form-control" id="Lname" name="Lname" required>
+                                        <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
-                                        <input type="text" class="form-control" id="Fname" name="Fname" required>
+                                        <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
-                                        <input type="text" class="form-control" id="Mname" name="Mname" required>
+                                        <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required>
                                     </div>
                                 </div>
                             </div>
@@ -291,8 +291,12 @@
                                     <div class="mb-3">
                                         <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
                                         <div class="input-group mb-3">
+                                            @*<select class="form-select input-group-text" id="num-span" aria-label="Default select example">
+                                                <option selected value="63">63</option>
+                                                <option value="0">0</option>
+                                            </select>*@
                                             <span class="input-group-text" id="num-span">63</span>
-                                            <input id="Phone" name="Phone" type="text" class="form-control" placeholder="" required>
+                                            <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required>
                                         </div>
                                     </div>
 
@@ -300,7 +304,7 @@
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="Email" class="form-label fw-bold fs-6">Email</label>
-                                        <input type="email" class="form-control" id="Email" name="Email" required>
+                                        <input type="email" maxlength="50" class="form-control" id="Email" name="Email" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -315,20 +319,22 @@
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="Username" class="form-label fw-bold fs-6">Username</label>
-                                        <input type="text" class="form-control" id="Username" name="Username" required>
+                                        <input type="text" maxlength="50" class="form-control" id="Username" name="Username" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="Password" class="form-label fw-bold fs-6">Password</label>
-                                        <input type="password" class="form-control" id="Password" name="Password" required>
+                                        <input type="password" maxlength="50" class="form-control" id="Password" name="Password" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
-                                        <input type="password" class="form-control" id="cpass" required>
+                                        <input type="password" maxlength="50" class="form-control" id="cpass" required>
+                                        <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
                                     </div>
+                                    
                                 </div>
 
                             </div>
@@ -353,7 +359,7 @@
                     </form>
                     <div class="d-flex justify-content-end">
                         <a class="p-2 mb-3 btn-prev me-2" id="prev-btn" onclick="DecrementTab()">Previous</a>
-                        <a class="p-2 mb-3 btn-next" id="next-btn" onclick="IncrementTab()">Next</a>
+                        <a class="p-2 mb-3 btn-next" id="next-btn">Next</a>
                     </div>
                 </div>
 
@@ -367,256 +373,7 @@
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
     <script src="~/js/toastr.min.js"></script>
+    <script src="~/js/residentSignup.js"></script>
 
-    @* VALIDATION FORM *@
-    <script>
-        (() => {
-            'use strict'
-
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            const forms = document.querySelectorAll('.needs-validation')
-
-
-            // Loop over them and prevent submission
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-
-                    form.classList.add('was-validated')
-                }, false)
-            })
-        })()
-    </script>
-
-    <script>
-
-    </script>
-
-    <script>
-        var currentTab = 0;
-        var maxTab = 2;
-        var minTab = 0;
-
-        function IncrementTab() {
-            if (currentTab < maxTab) {
-                let isValid = validateCurrentTab();
-
-                if (isValid) {
-                    currentTab++;
-                    updateTabDisplay();
-                }
-
-            }
-
-            if (currentTab > minTab) {
-                const prev = document.querySelector('.btn-prev');
-                prev.style.setProperty('display', 'block');
-            }
-
-            if (currentTab === maxTab) {
-                const next = document.querySelector('.btn-next');
-                next.style.setProperty('display', 'none');
-            }
-        }
-
-        function validateCurrentTab() {
-            const currentTabElement = document.querySelectorAll('.tab')[currentTab];
-            const form = document.querySelector('form');
-            const inputs = currentTabElement.querySelectorAll('input, select');
-            let isValid = true;
-
-            inputs.forEach(input => {
-                if (!input.checkValidity()) {
-                    isValid = false;
-                    input.classList.add('was-validated');
-                } else {
-                    input.classList.remove('was-validated');
-                }
-            });
-
-            if (!isValid) {
-                // Trigger Bootstrap's validation styles
-                form.classList.add('was-validated');
-            }
-            return isValid;
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const inputs = document.querySelectorAll('input, select');
-            inputs.forEach(input => {
-                input.addEventListener('input', function () {
-                    this.classList.remove('is-invalid');
-                    this.form.classList.remove('was-validated');
-                });
-            });
-        });
-
-        function DecrementTab() {
-            if (currentTab > minTab) {
-                currentTab--;
-                updateTabDisplay();
-            }
-
-            if (currentTab === minTab) {
-                const prev = document.querySelector('.btn-prev');
-                prev.style.setProperty('display', 'none');
-            }
-
-            if (currentTab < maxTab) {
-                const next = document.querySelector('.btn-next');
-                next.style.setProperty('display', 'block');
-            }
-        }
-
-        function updateTabDisplay() {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach((tab, index) => {
-                if (index === currentTab) {
-                    tab.style.display = 'block';
-                } else {
-                    tab.style.display = 'none';
-                }
-            });
-
-            activeClass();
-
-        }
-
-        function activeClass() {
-            const a = document.querySelectorAll('.make-circle');
-            a.forEach((circle, index) => {
-                if (index === currentTab) {
-                    circle.classList.add('active');
-                }
-                else {
-                    circle.classList.remove('active');
-                }
-
-            });
-        }
-
-        $(document).ready(function () {
-            updateTabDisplay();
-        })
-
-    </script>
-
-    <script>
-        $(document).ready(function () {
-            $('#btn-register').click(function (e) {
-                e.preventDefault();
-
-                var form = document.getElementById('myForm');
-                var formData = new FormData(form);
-
-                toastr.options = {
-                    closeButton: true,
-                    progressBar: true,
-                    positionClass: 'toast-top-right', // Position: toast-top-right, toast-top-left, toast-bottom-right, toast-bottom-left
-                    timeOut: 3000 // Timeout duration in milliseconds (e.g., 3000ms = 3 seconds)
-                };
-
-                $.ajax({
-                    type: 'POST',
-                    url: window.location.origin + '/kvhai/resident/signup',
-                    contentType: false,
-                    processData: false,
-                    data: formData,
-                    success: function (response) {
-                        alert("success");
-                        console.log(response);
-                        if (response.message = 0) {
-                            toastr.error(response.message, 'Error');
-                        }
-                        else
-                        {
-                            toastr.success(response.message, 'Success');
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        alert("error");
-                        console.log(xhr.responseText);
-                    }
-                });
-            });
-        });
-
-    </script>
-
-    <script>
-        /*$(document).ready(function () {
-            $('#btn-register').click(function (e) {
-                e.preventDefault(); // Prevent the form from submitting normally
-
-                var date = new Date($('#Date_Residency').val());
-                var formattedDate = new Intl.DateTimeFormat('en-US', {
-                    month: '2-digit',
-                    day: '2-digit',
-                    year: 'numeric'
-                }).format(date);
-
-                var data = {
-                    Lname: $('#Lname').val(),
-                    Fname: $('#Fname').val(),
-                    Mname: $('#Mname').val(),
-                    Phone: $('#Phone').val(),
-                    Email: $('#Email').val(),
-                    Block: $('#Block').val(),
-                    Lot: $('#Lot').val(),
-                    Username: $('#Username').val(),
-                    Password: $('#Password').val(),
-                    Date_Residency: formattedDate,
-                    Occupancy: $('#Occupancy').val()
-                };
-
-                $.ajax({
-                    type: 'POST',
-                    url: window.location.origin + '/kvhai/resident/signup',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    success: function (response) {
-                        alert("success");
-                        console.log(response);
-                    },
-                    error: function (xhr, status, error) {
-                        alert("error");
-                        console.log(xhr.responseText);
-                    }
-                });
-            });
-        });
-        */
-
-    </script>
-
-    @*<script>
-            $(document).ready(function () {
-                $('#myForm').submit(function (e) {
-                    e.preventDefault(); // Prevent the form from submitting normally
-
-                    // Serialize the form data
-                    var formData = $(this).serialize();
-
-                    // Send the data using AJAX
-                    $.ajax({
-                        type: 'POST',
-                        url: window.location.origin + '/kvhai/resident/signup',
-                        data: formData,
-                        success: function (response) {
-                            console.log("succ");
-                            console.log(response);
-                        },
-                        error: function (xhr, status, error) {
-                            console.log("err");
-                            console.log(error);
-
-                        }
-                    });
-                });
-            });
-        </script>*@
 </body>
 </html>
