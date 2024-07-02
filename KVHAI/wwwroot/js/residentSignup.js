@@ -17,7 +17,6 @@
             currentTab++;
             updateTabDisplay();
         }
-
         updateButtonVisibility();
     }
 
@@ -48,27 +47,35 @@
 
     function validateCurrentTab() {
         const currentTabElement = document.querySelectorAll('.tab')[currentTab];
-        const form = document.querySelector('form');
         const inputs = currentTabElement.querySelectorAll('input, select');
-
         let isValid = true;
 
         inputs.forEach(input => {
-            if (!input.checkValidity()) {
-                isValid = false;
-                input.classList.add('was-validated');
+            if (input.id === 'cpass') {
+                // Handle confirm password separately
+                if (!ConfirmPassword()) {
+                    isValid = false;
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                }
             } else {
-                input.classList.remove('was-validated');
-            }
+                // Handle other inputs
+                if (!input.checkValidity()) {
+                    isValid = false;
+                    input.classList.add('is-invalid');
 
-            if (input.id === 'cpass' && !ConfirmPassword()) {
-                isValid = true;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
             }
         });
 
-        form.classList.toggle('was-validated', !isValid);
+        
+
         return isValid;
     }
+    
 
 
     function ConfirmPassword() {
@@ -78,14 +85,14 @@
         //console.log("cpass element:", $('#cpass').length);
         //console.log("cpass value:", $('#cpass').val());
 
-        const pass = $('#Password').val();
-        const cpass = $('#cpass').val();
-        const errorMsg = $('#err-msg');
+        const pass = document.getElementById('Password').value;
+        const cpass = document.getElementById('cpass');
+        const errorMsg = document.getElementById('err-msg');
 
-        const isValid = pass === cpass;
+        const isValid = pass === cpass.value;
 
-        $('#cpass').toggleClass('is-invalid', !isValid);
-        errorMsg.toggle(!isValid);
+        cpass.classList.toggle('is-invalid', !isValid);
+        errorMsg.style.display = isValid ? 'none' : 'block';
 
         //if (!isValid) {
         //    alert("GGWP");
@@ -114,10 +121,13 @@
             data: formData,
             success: function (response) {
                 console.log(response);
-                if (response.message == 0) {
-                    toastr.error('There was an error saving the resident and the image.');
+                const errorMessage = 'There was an error saving the resident and the image.';
+                const successMessage = 'Registration Successful.';
+
+                if (response.message.inclues('error')) {
+                    toastr.error(errorMessage);
                 } else {
-                    toastr.success('Registration Successful.');
+                    toastr.success(successMessage);
                 }
             },
             error: function (xhr, status, error) {
@@ -141,3 +151,32 @@
         timeOut: 3000
     };
 });
+
+
+/*
+
+function validateCurrentTab() {
+        const currentTabElement = document.querySelectorAll('.tab')[currentTab];
+        const form = document.querySelector('form');
+        const inputs = currentTabElement.querySelectorAll('input, select');
+
+        let isValid = true;
+
+        inputs.forEach(input => {
+            if (!input.checkValidity()) {
+                isValid = false;
+                input.classList.add('was-validated');
+            } else {
+                input.classList.remove('was-validated');
+            }
+
+            if (input.id === 'cpass' && !ConfirmPassword()) {
+                isValid = false;
+            }
+        });
+
+        form.classList.toggle('is-invalid', !isValid);
+        form.classList.toggle('was-validated', !isValid);
+        return isValid;
+    }
+*/

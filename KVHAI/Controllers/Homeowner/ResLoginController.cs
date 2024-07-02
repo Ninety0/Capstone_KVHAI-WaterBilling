@@ -45,14 +45,13 @@ namespace KVHAI.Controllers.Homeowner
                 int result = await _residentRepository.CreateResidentandUploadImage(formData, file, _environment.WebRootPath);
 
                 if (result == 0)
-                    return BadRequest(new { message = result });
+                    return BadRequest(new { message = "There was an error saving the resident and the image." });
 
-                return Ok(new { message = result });
+                return Ok(new { message = "Registration Successful." });
             }
             catch (Exception)
             {
-                ViewBag.error = "An error occurred while processing your request.";
-                return RedirectToAction("Signup");
+                return BadRequest(new { message = "An error occurred while processing your request." });
             }
         }
 

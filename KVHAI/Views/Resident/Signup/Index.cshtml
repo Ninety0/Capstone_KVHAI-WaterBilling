@@ -13,179 +13,9 @@
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-icon.css">
     <link href="~/css/toastr.min.css" rel="stylesheet" />
     <link href="~/css/header-font.css" rel="stylesheet" />
-
-
-    <style>
-        body {
-            -webkit-text-size-adjust: 100%;
-            font-family: "Inter", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 200;
-            font-style: normal;
-            font-size: .8rem;
-        }
-
-        button{
-            border:none;
-        }
-
-        #header {
-            /*color: #60a5fa;*/
-            font-family: "Poetsen One", sans-serif;
-            font-weight: 400;
-            font-style: normal;
-            letter-spacing: .5rem;
-            font-size: 3rem;
-            color: #1B8EC9;
-        }
-
-        .center-form {
-            border: 1px solid gray;
-            border-radius: 10px;
-            box-shadow: 1px 1px 4px 7px rgba(0, 0, 0, .25);
-            width:100%;
-        }
-
-        .main-form{
-            /*height: calc(100vh - 70px);*/
-            display:flex;
-            align-items:center;
-            justify-content:center;
-        }
-
-        .center-text {
-            font-family: "Poetsen One", sans-serif;
-            font-weight: 400;
-            font-style: normal;
-            font-size: 2rem;
-        }
-
-        ul{
-            list-style-type: none;
-        }
-
-        .process-seperator {
-            display: flex;
-            border: 1px solid #9DABB1;
-            width: 20px;
-            height:1px;
-            align-self: center;
-            justify-content:center;
-        }
-
-        .btn-next, .btn-prev, #btn-register {
-            position:absolute;
-            bottom:-1.5rem;
-            font-family: "Poetsen One", sans-serif;
-            font-weight: 400;
-            font-size: 1rem;
-            font-style: normal;
-            letter-spacing: 2px;
-            background-color: #1B8EC9;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            padding: 0.75rem, 0.375rem ;
-            line-height: 1.5;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 1px rgba(0, 0, 0, 0.075);
-            cursor: pointer;
-        }
-        .btn-next:hover, .btn-prev:hover {
-            transform: translateY(3px);
-            box-shadow: 0 14px 28px rgba(131, 232, 186, 0.25), 0 10px 10px rgba(131, 232, 186, 0.22), 0 0 120px -10px var(--clr-green);
-        }
-
-        #btn-register{
-            position:absolute;
-            display:none;
-            right:0;
-            margin-right:1rem;
-        }
-
-        .btn-prev {
-            background-color: #4C4C4C;
-            display: none;
-            right:4.5rem;
-        }
-
-        .tab {
-            display: none;
-        }
-
-        h3 {
-            color:#3D5170;
-        }
-
-        .main-process {
-            position:relative;
-            height: calc(100vh - 200px);
-            overflow-y:auto;
-        }
-
-        .icon-next{
-            width: 50px;
-            height:20px;
-        }
-
-        .make-circle {
-            position: relative;
-            border: 2px solid #9DABB1;
-            width: 20px;
-            height: 20px;
-            border-radius: 100%;
-        }
-        .make-circle::after{
-            content:'';
-            font-weight:400;
-            position:absolute;
-            left: 50%; /* Move to the horizontal center */
-            top: 50%; /* Move to the vertical center */
-            transform: translate(-50%, -50%); /* Adjust for half of the element's size */
-        }
-
-        .make-circle.active{
-            background-color: #63747B;
-            color:white;
-        }
-
-        .is-invalid {
-            border-color: #dc3545;
-        }
-
-            .is-invalid:focus {
-                border-color: #dc3545;
-                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-            }
-
-        .custom-alert{
-            position:absolute;
-        }
-    </style>
+    <link href="/css/residentSignup.css" rel="stylesheet" />
 </head>
 <body>
-    @{
-        if (ViewBag.Success != null)
-        {
-            <div class="container-fluid custom-alert">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Registration Success!</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-
-            </div>
-        }
-
-        if (ViewBag.Error != null)
-        {
-            <div class="container-fluid custom-alert">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Registration Failed!</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-
-            </div>
-        }
-    }
 
     <div class="container vh-100">
         <div class="container d-flex p-2 mb-3">
@@ -240,7 +70,7 @@
                                     <option value="2">Renter</option>
                                 </select>
                                 <div class="invalid-feedback">
-                                    Please select a valid state.
+                                    Required.
                                 </div>
                             </div>
 
@@ -258,19 +88,25 @@
                             @* ADDRESS *@
                             <div class="row">
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Block" class="form-label fw-bold fs-6">Block</label>
                                         <input type="number" min="1" class="form-control" id="Block" name="Block" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
                                         <input type="number" min="1" class="form-control" id="Lot" name="Lot" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="fname" class="form-label fw-bold fs-6">Street</label>
                                         <select class="form-select" aria-label="Default select example" required>
                                             <option value="" disabled selected hidden>Select Street</option>
@@ -278,6 +114,9 @@
                                             <option value="2">Two</option>
                                             <option value="3">Three</option>
                                         </select>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -287,69 +126,93 @@
                             @* PERSONAL INFO *@
                             <div class="row">
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
                                         <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
                                         <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
                                         <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
-                                        <div class="input-group mb-3">
+                                        <div class="form-check input-group mb-3">
                                             @*<select class="form-select input-group-text" id="num-span" aria-label="Default select example">
-                                                <option selected value="63">63</option>
-                                                <option value="0">0</option>
-                                            </select>*@
+            <option selected value="63">63</option>
+            <option value="0">0</option>
+        </select>*@
                                             <span class="input-group-text" id="num-span">63</span>
                                             <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required>
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
                                         </div>
                                     </div>
 
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Email" class="form-label fw-bold fs-6">Email</label>
                                         <input type="email" maxlength="50" class="form-control" id="Email" name="Email" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Date_Residency" class="form-label fw-bold fs-6">Date of Residency</label>
                                         <input type="date" class="form-control" id="Date_Residency" name="Date_Residency" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Username" class="form-label fw-bold fs-6">Username</label>
                                         <input type="text" maxlength="50" class="form-control" id="Username" name="Username" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class="form-check mb-3">
                                         <label for="Password" class="form-label fw-bold fs-6">Password</label>
                                         <input type="password" maxlength="50" class="form-control" id="Password" name="Password" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mb-3">
+                                    <div class=" mb-3">
                                         <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
                                         <input type="password" maxlength="50" class="form-control" id="cpass" required>
                                         <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
@@ -367,18 +230,20 @@
                             <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
                                 <h3>Proof of Validation</h3>
                             </div>
-                            <div class="input-group mb-3">
+                            <div class="input-group-sm form-check mb-3">
                                 <input type="file" class="form-control" id="Image" accept="image/*" required>
-                                <label class="input-group-text" for="inputGroupFile02">Upload Proof</label>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
                             </div>
                         </div>
                         <!-- END PROOF PROCESS -->
 
 
-                        <button class="p-2" type="submit" id="btn-register">TEST</button>
                     </form>
-                    <div class="d-flex justify-content-end">
+                    <div class="container btn-buttons">
                         <button class="p-2 mb-3 btn-prev me-2" id="prev-btn">Previous</button>
+                        <button class="p-2 mb-3" type="submit" id="btn-register">TEST</button>
                         <button class="p-2 mb-3 btn-next" id="next-btn">Next</button>
                     </div>
                 </div>
