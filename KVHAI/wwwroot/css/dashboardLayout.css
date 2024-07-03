@@ -1,0 +1,165 @@
+﻿body {
+    background-color: #f8fafc;
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 200;
+    font-style: normal;
+    font-size: 1rem;
+}
+
+button {
+    border: none;
+}
+
+#header {
+    /*color: #60a5fa;*/
+    font-family: "Poetsen One", sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    letter-spacing: .5rem;
+    font-size: 2rem;
+    color: #f8fafc;
+    display:none;
+}
+
+    #header:hover {
+        color: #64B51A;
+    }
+
+.kvhai-img {
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    border-radius: 100%;
+    padding:3px;
+    /*transition: transform linear;*/
+    transition-duration: 1s;
+}
+
+
+    .kvhai-img:hover {
+        transform: rotate(180deg);
+    }
+
+.sidebar {
+    height: 100vh;
+    /*position: sticky;*/
+    box-shadow: 3px 0px 10px 4px rgba(0, 0, 0,.25);
+    background-color: #052771;
+    width: 19rem;
+    position: relative;
+}
+
+.stick {
+    border: 1px solid #E1E5EB;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.caret-down {
+    background-color: transparent;
+    font-size: 1.5rem;
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.center-form {
+    position: relative;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.header-top {
+    position: sticky;
+    top: 0;
+    /*background-color:white*/
+}
+
+.mobile-nav {
+    background-color: #052771;
+}
+
+.hamburger {
+    background-color: transparent;
+    position: relative;
+    width: 30px;
+    height: 20px;
+    padding: 0;
+}
+
+.hamburger-line {
+    display: block;
+    border: 1px solid white;
+    height: 1px;
+    width: 100%;
+    padding: 1px;
+    border-radius: 6px;
+}
+
+    .hamburger-line::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: block;
+        border: 1px solid white;
+        height: 1px;
+        width: 100%;
+        padding: 1px;
+        border-radius: 6px;
+    }
+
+    .hamburger-line::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        display: block;
+        border: 1px solid white;
+        height: 1px;
+        width: 100%;
+        padding: 1px;
+        border-radius: 6px;
+    }   
+
+/*sm*/
+@media (min-width:576px) {
+    
+    #header {
+        display: block;
+    }
+    .hamburger {
+        background-color: transparent;
+        position: relative;
+        width: 40px;
+        height: 20px;
+        padding: 0;
+    }
+}
+
+/*md*/
+@media (min-width: 768px) {
+    body {
+        font-size: 1.2rem;
+    }
+}
+
+/*lg*/
+@media (min-width: 992px) {
+    
+    .kvhai-img {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+/*xl*/
+@media (min-width: 1200px) {
+    body {
+        font-size: 1.5rem;
+    }
+}
+
+/*xxl*/
+@media(min-width:1400px) {
+}

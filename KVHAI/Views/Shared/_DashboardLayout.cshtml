@@ -1,0 +1,146 @@
+﻿
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Dashboard Layout</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link href="/css/header-font.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/dashboardLayout.css" />
+
+    <style>
+        ul li a{
+            font-weight:600;
+            color:white;
+            text-decoration:none;
+        }
+        ul li a:hover {
+            color:#64B51A;
+            width:100%;
+        }
+
+        .btn-navs {
+            font-family: "Poetsen One", sans-serif;
+            font-weight: 600;
+            font-style: normal;
+            letter-spacing: .5rem;
+            background-color: transparent;
+            color: white;
+            font-weight: 600;
+            padding: 5px;
+            text-transform: capitalize;
+        }
+
+        .active {
+            /*background-color: #64B51A;*/
+            background-color: white;
+            color: #1a2e05;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper d-flex">
+        <!-- SIDEBAR LEFT-->
+        <div class="d-none d-lg-block sidebar">
+            <div class="container-fluid mt-2 d-flex flex-column align-items-center">
+                <img src="/img/kvhai.png" class="kvhai-img me-2" alt="Alternate Text" />
+                <span id="header" class="">KVHAI</span>
+            </div>
+            <div class="container-fluid mt-5 d-flex flex-column p-0">
+                @RenderSection("sidebar")
+
+                @{
+                    @*int index = 0;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (index == i)
+                        {
+                            <button class="btn-navs active">TEST@(i+1)</button>
+                            continue;
+                        }
+                        <button class="btn-navs">TEST@(i+1)</button>
+                    }*@
+                }
+
+                @*<a href="#">Dashboard</a>*@
+            </div>
+        </div>
+
+        <!--MAIN CONTENT RIGHT-->
+        <div class="container-fluid center-form">
+
+            <!-- HEADER -->
+            <div class="d-none  d-lg-flex justify-content-end header-top">
+                <div class="d-flex align-items-center p-2">
+                    <i class="">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M14.235 19c.865 0 1.322 1.024.745 1.668A4 4 0 0 1 12 22a4 4 0 0 1-2.98-1.332c-.552-.616-.158-1.579.634-1.661l.11-.006zM12 2c1.358 0 2.506.903 2.875 2.141l.046.171l.008.043a8.01 8.01 0 0 1 4.024 6.069l.028.287L19 11v2.931l.021.136a3 3 0 0 0 1.143 1.847l.167.117l.162.099c.86.487.56 1.766-.377 1.864L20 18H4c-1.028 0-1.387-1.364-.493-1.87a3 3 0 0 0 1.472-2.063L5 13.924l.001-2.97A8 8 0 0 1 8.822 4.5l.248-.146l.01-.043a3 3 0 0 1 2.562-2.29l.182-.017z" />
+                        </svg>
+                    </i>
+                </div>
+                <div class="stick"></div>
+                <div class=" d-flex align-items-center p-2">
+                    <span class="fw-bold">
+                        Full Name
+                    </span>
+                    <div class="dropdown">
+                        <button class="dropdown-toggle caret-down" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid">
+                <hr class="border border-1 m-0" style="color: #94a3b8;" />
+            </div>
+
+            <!-- MOBILE NAV -->
+            <div class="mobile-nav">
+                <nav class="navbar navbar-expand-lg d-lg-none">
+                    <div class="p-0 container-fluid">
+                        <div class="d-flex align-items-center ms-3">
+                            <img src="/img/kvhai.png" class="kvhai-img me-2" alt="Alternate Text" />
+                            <a class="navbar-brand" href="#" id="header">KVHAI</a>
+                        </div>
+                        <button class="hamburger me-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="hamburger-line"></span>
+                        </button>
+                        <div class="collapse navbar-collapse mt-5" id="navbarNav">
+                            @RenderSection("mobilenav")
+                        </div>
+                    </div>
+                </nav>
+
+            </div>
+
+            <!-- BODY CONTENT -->
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.querySelector('#toggle-menu');
+        const topNavbar = document.querySelector('#top-navbar');
+
+        if (toggleBtn && topNavbar) {
+            toggleBtn.addEventListener('click', function () {
+                topNavbar.classList.toggle('show');
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -16,6 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\Staff\Cashier2\" />
+    <Folder Include="Controllers\Staff\Cashier1\" />
+    <Folder Include="Controllers\Staff\Waterworks\" />
+    <Folder Include="Controllers\Staff\Clerk\" />
+    <Folder Include="Controllers\Staff\Admin\" />
     <Folder Include="Views\Staff\" />
     <Folder Include="wwwroot\proof_img\" />
   </ItemGroup>
