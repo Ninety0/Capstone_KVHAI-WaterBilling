@@ -9,6 +9,18 @@
                 pattern: "kvhai/staff/login",
                 defaults: new { controller = "Login", action = "Index" }
             );
+
+            endpoint.MapControllerRoute(
+                name: "AdminDashboard",
+                pattern: "kvhai/staff/admin/dashboard",
+                defaults: new { controller = "AdminDashboard", action = "Index" }
+            );
+
+            endpoint.MapControllerRoute(
+                name: "AdminAccounts",
+                pattern: "kvhai/staff/admin/accounts",
+                defaults: new { controller = "AdminAccount", action = "Index" }
+            );
         }
     }
 }

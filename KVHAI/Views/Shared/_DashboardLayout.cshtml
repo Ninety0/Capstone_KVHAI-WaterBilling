@@ -4,40 +4,41 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Dashboard Layout</title>
+    <title>@ViewBag.Title</title>
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <link href="/css/header-font.css" rel="stylesheet" />
     <link rel="stylesheet" href="/css/dashboardLayout.css" />
+    @RenderSection("head",required:false)
+<style>
+    .content-container {
+        background-color: #f8fafc;
+        box-shadow: 0 0 5px 5px rgba(0,0,0,.25);
+        border-radius: 6px;
+    }
 
-    <style>
-        ul li a{
-            font-weight:600;
-            color:white;
-            text-decoration:none;
-        }
-        ul li a:hover {
-            color:#64B51A;
-            width:100%;
-        }
+    .header-border {
+        border: 1px solid #1f2937;
+        /*width: calc(100% - 20px);*/
+    }
 
-        .btn-navs {
-            font-family: "Poetsen One", sans-serif;
-            font-weight: 600;
-            font-style: normal;
-            letter-spacing: .5rem;
-            background-color: transparent;
-            color: white;
-            font-weight: 600;
-            padding: 5px;
-            text-transform: capitalize;
-        }
+    .content-header {
+        display: flex;
+        justify-content: center;
+        text-transform: uppercase;
+        font-family: "Poetsen One", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-size: 2rem;
+        color: #18181b;
+    }
 
-        .active {
-            /*background-color: #64B51A;*/
-            background-color: white;
-            color: #1a2e05;
-        }
-    </style>
+    span.title {
+        font-weight: 400;
+        text-transform: uppercase;
+        color: #6b7280;
+        font-size:20px;
+    }
+</style>
 </head>
 <body>
     <div class="wrapper d-flex">
@@ -48,22 +49,7 @@
                 <span id="header" class="">KVHAI</span>
             </div>
             <div class="container-fluid mt-5 d-flex flex-column p-0">
-                @RenderSection("sidebar")
-
-                @{
-                    @*int index = 0;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        if (index == i)
-                        {
-                            <button class="btn-navs active">TEST@(i+1)</button>
-                            continue;
-                        }
-                        <button class="btn-navs">TEST@(i+1)</button>
-                    }*@
-                }
-
-                @*<a href="#">Dashboard</a>*@
+                @RenderSection("sidebar", required:false)
             </div>
         </div>
 
@@ -72,6 +58,19 @@
 
             <!-- HEADER -->
             <div class="d-none  d-lg-flex justify-content-end header-top">
+                <div class="flex-grow-1  align-content-center">
+                    <div class="container  ms-3">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+                                <g fill="none" stroke="#6b7280" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                                    <path d="m14.68 20.5l5.21-5.21a1.212 1.212 0 0 0 0-1.724l-5.21-5.209" />
+                                    <path d="M3.751 3.5v7.286a3.643 3.643 0 0 0 3.643 3.643h12.847" />
+                                </g>
+                            </svg>
+                        </span>
+                        <span class="title">@ViewBag.Title</span>
+                    </div>
+                </div>
                 <div class="d-flex align-items-center p-2">
                     <i class="">
                         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
@@ -110,7 +109,9 @@
                             <span class="hamburger-line"></span>
                         </button>
                         <div class="collapse navbar-collapse mt-5" id="navbarNav">
-                            @RenderSection("mobilenav")
+                            <div class="d-flex flex-column">
+                                @RenderSection("mobilenav",required:false)
+                            </div>
                         </div>
                     </div>
                 </nav>
@@ -118,7 +119,7 @@
             </div>
 
             <!-- BODY CONTENT -->
-            <div class="container-fluid">
+            <div class="container-fluid p-3 content-wrapper">
                 @RenderBody()
             </div>
         </div>

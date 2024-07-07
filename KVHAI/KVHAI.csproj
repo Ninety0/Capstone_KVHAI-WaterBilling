@@ -18,15 +18,19 @@
   <ItemGroup>
     <Folder Include="Controllers\Staff\Cashier2\" />
     <Folder Include="Controllers\Staff\Cashier1\" />
-    <Folder Include="Controllers\Staff\Waterworks\" />
     <Folder Include="Controllers\Staff\Clerk\" />
-    <Folder Include="Controllers\Staff\Admin\" />
-    <Folder Include="Views\Staff\" />
+    <Folder Include="Controllers\Staff\Waterworks\" />
+    <Folder Include="Views\Staff\Waterworks\" />
+    <Folder Include="Views\Staff\Cashier2\" />
+    <Folder Include="Views\Staff\Cashier1\" />
+    <Folder Include="Views\Staff\Clerk\" />
     <Folder Include="wwwroot\proof_img\" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="wwwroot\js\residentSignup.js" />
+    <None Include="wwwroot\lib\evo-calendar\js\evo-calendar.js" />
+    <None Include="wwwroot\lib\evo-calendar\js\evo-calendar.min.js" />
   </ItemGroup>
 
   <ItemGroup>

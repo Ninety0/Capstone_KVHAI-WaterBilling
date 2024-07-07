@@ -1,0 +1,115 @@
+﻿@{
+    //Layout = "";
+    ViewBag.Title = "Admin Dashboard";
+}
+
+@section head{
+    <link href="/lib/evo-calendar/css/evo-calendar.css" rel="stylesheet" />
+    <link href="/lib/evo-calendar/css/evo-calendar.midnight-blue.min.css" rel="stylesheet" />
+    <link href="/lib/evo-calendar/css/evo-calendar.royal-navy.min.css" rel="stylesheet" />
+}
+
+@section Scripts{
+    <script src="~/lib/chartjs/chart.umd.min.js"></script>
+    <script src="~/lib/evo-calendar/js/evo-calendar.min.js"></script>
+    <script>
+        myEvents = [
+            {
+                id: "blk41-143",
+                name: "Reading",
+                description: "lorem ipsum",
+                date: "07/06/2024",
+                type: "holiday",
+                everyYear: true
+            },
+            // more events here
+        ],
+            $('#calendar').evoCalendar({
+                'todayHighlight': true,
+                'eventDisplayDefault': false,
+                theme: 'Orange Coral',
+                sidebarDisplayDefault: false,
+                format: 'mm/dd/yyyy',
+                badge: "Important",
+                titleFormat: 'MM yyyy',
+                eventHeaderFormat: 'MM d, yyyy',
+                calendarEvents: myEvents
+            });
+
+        $(document).ready(function (e) {
+            $('#calendar').evoCalendar({
+                settingName: "task"
+            })
+
+            $('.day').on('click', () => {
+                //const a = document.getElementsByClassName('');
+                //a.classList.toggle('rotate');
+                $(".evo-calendar").toggleClass("event-hide");
+            });
+
+            $(document).on('click', (e) => {
+                if (!$(e.target).closest('.calendar-events').length && !$(e.target).closest('.evo-calendar').length) {
+                    $(".evo-calendar").addClass("event-hide");
+                }
+            });
+        })
+    </script>
+
+    <!--CHART JS SCRIPTS-->
+    <script>
+        const ctx = document.getElementById('myChart');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [12, 19, 3, 5, 2, 3],
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1,
+                    borderColor: '#052771'
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+}
+
+@section sidebar{
+    <button class="btn-navs active">Dashboard</button>
+    <button class="btn-navs ">TEST2</button>
+    <button class="btn-navs ">TEST3</button>
+}
+@section mobilenav{
+    <button class="btn-navs active">TEST1</button>
+    <button class="btn-navs ">TEST2</button>
+    <button class="btn-navs ">TEST3</button>
+}
+
+<div class="row row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly">
+    <div class="col-xl-7 content-container">
+        <div class="p-2">
+            <span class="content-header">Water Consumption Analytics</span>
+        </div>
+        <div class="header-border"></div>
+        <div class="container">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+    <div class="col-xl-4 content-container">
+        <div class="p-2">
+            <span class="content-header">Task</span>
+        </div>
+        <div class="header-border"></div>
+        <!--EVO CALENDAR-->
+        <div id="calendar"></div>
+    </div>
+</div>

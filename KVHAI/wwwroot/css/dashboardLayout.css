@@ -1,50 +1,57 @@
-﻿body {
+﻿/* Global Styles */
+body {
     background-color: #f8fafc;
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
     font-weight: 200;
     font-style: normal;
     font-size: 1rem;
+    max-height:100vh;
 }
 
+.content-wrapper{
+    height:calc(100vh - 60px);
+    overflow-y:auto;
+}
+
+/* Button Styles */
 button {
     border: none;
 }
 
+/* Header Styles */
 #header {
-    /*color: #60a5fa;*/
     font-family: "Poetsen One", sans-serif;
     font-weight: 600;
     font-style: normal;
     letter-spacing: .5rem;
     font-size: 2rem;
     color: #f8fafc;
-    display:none;
+    display: none;
 }
 
-    #header:hover {
-        color: #64B51A;
-    }
+#header:hover {
+    color: #64B51A;
+}
 
+/* Image Styles */
 .kvhai-img {
     width: 50px;
     height: 50px;
     background-color: white;
     border-radius: 100%;
-    padding:3px;
-    /*transition: transform linear;*/
+    padding: 3px;
     transition-duration: 1s;
 }
 
+.kvhai-img:hover {
+    transform: rotate(180deg);
+}
 
-    .kvhai-img:hover {
-        transform: rotate(180deg);
-    }
-
+/* Sidebar Styles */
 .sidebar {
     height: 100vh;
-    /*position: sticky;*/
-    box-shadow: 3px 0px 10px 4px rgba(0, 0, 0,.25);
+    box-shadow: 3px 0px 10px 4px rgba(0, 0, 0, .25);
     background-color: #052771;
     width: 19rem;
     position: relative;
@@ -52,33 +59,33 @@ button {
 
 .stick {
     border: 1px solid #E1E5EB;
-    margin-left: 3px;
-    margin-right: 3px;
+    margin: 3px;
 }
 
+/* Button and Form Styles */
 .caret-down {
     background-color: transparent;
     font-size: 1.5rem;
-    margin-right: 0;
-    margin-left: 0;
+    margin: 0;
 }
 
 .center-form {
     position: relative;
-    padding-right: 0;
-    padding-left: 0;
+    padding: 0;
 }
 
+/* Header Top Styles */
 .header-top {
-    position: sticky;
+    /*position: fixed;*/
     top: 0;
-    /*background-color:white*/
 }
 
+/* Mobile Navigation Styles */
 .mobile-nav {
     background-color: #052771;
 }
 
+/* Hamburger Menu Styles */
 .hamburger {
     background-color: transparent;
     position: relative;
@@ -96,41 +103,64 @@ button {
     border-radius: 6px;
 }
 
-    .hamburger-line::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        display: block;
-        border: 1px solid white;
-        height: 1px;
-        width: 100%;
-        padding: 1px;
-        border-radius: 6px;
-    }
+.hamburger-line::before, .hamburger-line::after{
+    content: '';
+    position: absolute;
+    left: 0;
+    display: block;
+    border: 1px solid white;
+    height: 1px;
+    width: 100%;
+    padding: 1px;
+    border-radius: 6px;
+}
 
-    .hamburger-line::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        display: block;
-        border: 1px solid white;
-        height: 1px;
-        width: 100%;
-        padding: 1px;
-        border-radius: 6px;
-    }   
+.hamburger-line::before {
+    top: 0;
+}
+
+.hamburger-line::after {
+    bottom: 0;
+}
+
+
+/* Navigation Link Styles */
+ul li a {
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+}
+
+ul li a:hover {
+    color: #64B51A;
+    width: 100%;
+}
+
+/* Navigation Button Styles */
+.btn-navs {
+    font-family: "Poetsen One", sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    letter-spacing: .5rem;
+    background-color: transparent;
+    color: white;
+    padding: 5px;
+    text-transform: capitalize;
+}
+
+/* Active State Styles */
+.active {
+    background-color: white;
+    color: #1a2e05;
+}
+
 
 /*sm*/
 @media (min-width:576px) {
-    
     #header {
         display: block;
     }
     .hamburger {
-        background-color: transparent;
-        position: relative;
         width: 40px;
         height: 20px;
         padding: 0;
