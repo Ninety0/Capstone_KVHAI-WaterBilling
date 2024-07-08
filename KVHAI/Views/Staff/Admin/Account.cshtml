@@ -1,31 +1,197 @@
-﻿@{
+﻿@model List<Resident>
+@{
     ViewBag.Title = "Accounts";
 }
 
 @section head{
     <style>
-        .link-header{
-            text-decoration:none;
+        .link-header {
+            text-decoration: none;
             font-size: 20px;
-            color:black;
+            color: #6b7280;
+            font-weight: 400;
         }
 
-        span .link-header{
+        a.link-header {
+            margin-right: 1rem;
+        }
+
+        span .link-header.active {
+            background-color: #052771;
+            padding: 5px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+        }
+
+            span .link-header.active:hover {
+                color: white;
+            }
+
+        span .link-header:hover {
+            color: #052771;
+        }
+
+        .account-header {
+            background-color: #e2e8f0;
+        }
+
+        #staff, #resident {
+            display: none;
         }
     </style>
 }
 
-<div class="container border">
-    <div class="col-xl-7 content-container w-100">
-        <div class="p-2">
-            <div class="container d-flex">
-                <span><a class="link-header" href="#">HOME</a></span>
-                <span><a class="link-header" href="#">HOME</a></span>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            // Hide all sections initially
+            $('section').hide();
+
+            // Show the default section (Staff)
+            $('#staff').show();
+
+            // Handle click events on header links
+            $('.link-header').click(function (e) {
+                e.preventDefault();
+
+                // Remove 'active' class from all links
+                $('.link-header').removeClass('active');
+
+                // Add 'active' class to clicked link
+                $(this).addClass('active');
+
+                // Get the target section from the href attribute
+                var targetSection = $(this).attr('href');
+
+                console.log(targetSection)
+                // Hide all sections
+                $('section').hide();
+
+                // Show the target section
+                $(targetSection).show();
+
+
+                //IMAGE GET MEHTOD
+                $('.load-image').on('click', function() {
+                    var residentId = $(this).siblings('#res_id').val();
+                    console.log(residentId);
+
+                    // Store the residentId in a data attribute of the modal
+                    $('#staticBackdrop').data('resident-id', residentId);
+                });
+
+                // Add this new event listener
+                $('#staticBackdrop').on('show.bs.modal', function (e) {
+                    var modal = $(this);
+                    var residentId = modal.data('resident-id');
+
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetImageBase64", "AdminAccount")',
+                        data: { id: residentId },
+                        success: function(result) {
+                            if (result.success) {
+                                $('#modalImage').attr('src', 'data:image/jpeg;base64,' + result.imageBase64);
+                                $('#modalImage').show();
+                            } else {
+                                alert('Failed to load image.');
+                            }
+                        },
+                        error: function() {
+                            alert('An error occurred while loading the image.');
+                        }
+                    });
+                });
+
+            // Optional: Implement lazy loading on scroll
+
+
+            });
+        });
+    </script>
+}
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Resident Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="image-container">
+                    <img id="modalImage" alt="Resident Image" style="max-width: 100%; max-height: 100%;">
+                </div>
             </div>
         </div>
-        <div class="header-border"></div>
-        <div class="container">
-            <canvas id="myChart"></canvas>
+    </div>
+</div>
+
+<div class="container">
+    <div class="col-xl-7 content-container w-100">
+        <div class="p-3 account-header">
+            <div class="container d-flex">
+                <span><a class="link-header active" href="#staff">Staff</a></span>
+                <span><a class="link-header" href="#resident">Resident</a></span>
+            </div>
+        </div>
+        <div class="container mt-3">
+
+            <!-- STAFF SECTION -->
+            <section id="staff">
+            </section>
+
+
+            <!--RESIDENT SECITON-->
+            <section id="resident">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Full Name</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Occupancy</th>
+                                <th scope="col">Residency</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Image</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                            @{
+                                int index = 1;
+                                foreach (var item in Model)
+                                {
+                                    var date = DateTime.Parse(item.Date_Residency);
+                                    <tr>
+                                        <th scope="row">@index</th>
+                                        <td>@string.Join(", ", item.Lname, item.Fname, item.Mname)</td>
+                                        <td>@item.Phone</td>
+                                        <td>@item.Email</td>
+                                        <td>@string.Join(" ", "Blk", item.Block, "Lot", item.Lot)</td>
+                                        <td>@item.Occupancy</td>
+                                        <td>@date.ToString("dd MMM yyyy")</td>
+                                        <td>@item.Activated</td>
+                                        <td>
+                                            <input type="hidden" id="res_id" name="id" value="@item.Res_ID" />
+                                            <button class="btn btn-primary btn-sm load-image" data-bs-toggle="modal" data-bs-target="#staticBackdrop">View Image</button>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+
+                                    index++;
+                                }
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
     </div>
 </div>

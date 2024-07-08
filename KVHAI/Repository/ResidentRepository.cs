@@ -20,7 +20,7 @@ namespace KVHAI.Repository
             _uploadRepository = uploadRepository;
         }
 
-        public async Task<List<Resident>> GetAllEmployeesAsync()
+        public async Task<List<Resident>> GetAllResidentAsync()
         {
             var resident = new List<Resident>();
 
@@ -47,6 +47,7 @@ namespace KVHAI.Repository
                             _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
                             _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
                             _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
+                            _resident.Activated = (reader[13].ToString() == "false") ? "disable" : "activated";
                             resident.Add(_resident);
 
                         }
@@ -55,6 +56,19 @@ namespace KVHAI.Repository
             }
 
             return resident;
+        }
+
+        public async Task<string> GetImagePathAsync(string resId)
+        {
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand("SELECT path_file FROM proof_img_tb WHERE res_id = @id", connection))
+                {
+                    command.Parameters.AddWithValue("@id", resId);
+                    var result = await command.ExecuteScalarAsync();
+                    return result?.ToString() ?? string.Empty;
+                }
+            }
         }
 
         //address id need to update the code
@@ -66,7 +80,7 @@ namespace KVHAI.Repository
             var dt = GetTimeDate();
             var phone = "63" + resident.Phone;
 
-            using (var command = new SqlCommand("INSERT INTO resident_tb (lname, fname, mname, phone, email, block, lot, username, password, date_residency, occupancy, created_at) OUTPUT INSERTED.res_id VALUES(@lname, @fname, @mname, @phone, @email, @blk, @lot, @user, @pass, @residency, @occupy, @create)", connection, transaction))
+            using (var command = new SqlCommand("INSERT INTO resident_tb (lname, fname, mname, phone, email, block, lot, username, password, date_residency, occupancy, created_at,activated) OUTPUT INSERTED.res_id VALUES(@lname, @fname, @mname, @phone, @email, @blk, @lot, @user, @pass, @residency, @occupy, @create,@active)", connection, transaction))
             {
                 //command.Parameters.AddWithValue("@id", res_id);
                 command.Parameters.AddWithValue("@lname", resident.Lname);
@@ -81,6 +95,7 @@ namespace KVHAI.Repository
                 command.Parameters.AddWithValue("@residency", resident.Date_Residency);
                 command.Parameters.AddWithValue("@occupy", resident.Occupancy);
                 command.Parameters.AddWithValue("@create", dt);
+                command.Parameters.AddWithValue("@active", "false");
 
                 resID = (int?)(await command.ExecuteScalarAsync()) ?? 0;
 

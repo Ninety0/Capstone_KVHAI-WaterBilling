@@ -53,5 +53,10 @@ namespace KVHAI.Models
 
         [StringLength(50)]
         public string Created_At { get; set; } = string.Empty;
+
+
+        public string Activated { get; set; } = string.Empty;
+
+
     }
 }

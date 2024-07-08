@@ -124,7 +124,7 @@
                 const errorMessage = 'There was an error saving the resident and the image.';
                 const successMessage = 'Registration Successful.';
 
-                if (response.message.inclues('error')) {
+                if (response.message.includes('error')) {
                     toastr.error(errorMessage);
                 } else {
                     toastr.success(successMessage);
