@@ -15,3 +15,11 @@
   font-display: swap;
   src: url('../fonts/Inter.ttf') format('truetype');
 }
+
+/* Inter Font */
+@font-face {
+    font-family: "Roboto Mono", monospace;
+    font-style: normal;
+    font-weight: 100 700;
+    src: url('../fonts/RobotoMono.ttf') format('truetype');
+}

@@ -1,4 +1,12 @@
 ﻿$(document).ready(function () {
+    // Toastr options
+    toastr.options = {
+        closeButton: true,
+        progressBar: true,
+        positionClass: 'toast-top-right',
+        timeOut: 3000
+    };
+
     var currentTab = 0;
     var maxTab = 2;
     var minTab = 0;
@@ -126,7 +134,11 @@
 
                 if (response.message.includes('error')) {
                     toastr.error(errorMessage);
-                } else {
+                }
+                else if (response.message.includes('exist')) {
+                    toastr.error('Email or Username already taken.');
+                }
+                else {
                     toastr.success(successMessage);
                 }
             },
@@ -143,13 +155,7 @@
         $(this).closest('form').removeClass('was-validated');
     });
 
-    // Toastr options
-    toastr.options = {
-        closeButton: true,
-        progressBar: true,
-        positionClass: 'toast-top-right',
-        timeOut: 3000
-    };
+    
 });
 
 

@@ -47,7 +47,7 @@ namespace KVHAI.Repository
                             _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
                             _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
                             _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
-                            _resident.Activated = (reader[13].ToString() == "false") ? "disable" : "activated";
+                            _resident.Activated = (reader[13].ToString() == "false") ? "pending" : "activated";
                             resident.Add(_resident);
 
                         }
@@ -103,6 +103,27 @@ namespace KVHAI.Repository
             return resID;
         }
 
+        public async Task<bool> UserExists(Resident resident)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT COUNT(*) FROM resident_tb WHERE email = @email OR username= @user", connection))
+                    {
+                        command.Parameters.AddWithValue("@email", resident.Email);
+                        command.Parameters.AddWithValue("@user", resident.Username);
+                        int count = (int)command.ExecuteScalar();
+                        return count > 0;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public async Task UpdateCategory(Resident resident)
         {
             var hasValue = !string.IsNullOrEmpty(resident.Password);
@@ -143,6 +164,27 @@ namespace KVHAI.Repository
                         }
 
                         command.Parameters.AddWithValue("@occupy", resident.Occupancy);
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task UpdateStatus(Resident resident)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("UPDATE resident_tb set activated =@activate WHERE res_id = @id", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", resident.Res_ID);
+                        command.Parameters.AddWithValue("@user", resident.Activated);
 
                         await command.ExecuteNonQueryAsync();
                     }

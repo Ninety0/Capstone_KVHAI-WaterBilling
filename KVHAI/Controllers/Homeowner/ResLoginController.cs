@@ -42,6 +42,11 @@ namespace KVHAI.Controllers.Homeowner
                     return BadRequest(new { message = 0 });
                 }
 
+                if (await _residentRepository.UserExists(formData))
+                {
+                    return Ok(new { message = "exist" });
+                }
+
                 int result = await _residentRepository.CreateResidentandUploadImage(formData, file, _environment.WebRootPath);
 
                 if (result == 0)

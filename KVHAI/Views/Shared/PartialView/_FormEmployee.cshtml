@@ -1,0 +1,129 @@
+﻿@{
+    string action = ViewBag.Action ?? string.Empty;
+}
+
+<div class="modal fade" id="modal-employee" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Employee Account</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-emp" autocomplete="off" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="container tab" id="information">
+                        <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+                            <h3>Information Details</h3>
+                        </div>
+
+                        @* PERSONAL INFO *@
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
+                                    <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
+                                    <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
+                                    <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
+                                    <div class="form-check input-group mb-3 ps-0">
+                                        <span class="input-group-text" id="num-span">63</span>
+                                        <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="Email" class="form-label fw-bold fs-6">Email</label>
+                                    <input type="email" maxlength="50" class="form-control" id="Email" name="Email" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="Block" class="form-label fw-bold fs-6">Role</label>
+                                    <input type="number" min="1" class="form-control" id="Role" name="Role" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="Username" class="form-label fw-bold fs-6">Username</label>
+                                    <input type="text" maxlength="50" class="form-control" id="Username" name="Username" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="Password" class="form-label fw-bold fs-6">Password</label>
+                                    <input type="password" maxlength="50" class="form-control" id="Password" name="Password" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-3">
+                                    <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
+                                    <input type="password" maxlength="50" class="form-control" id="cpass" required>
+                                    <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        @* END PERSONAL INFO *@
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="btn-register">Register</button>
+                    <button type="button" id="btn-test">TEST</button>
+
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

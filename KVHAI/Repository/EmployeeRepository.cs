@@ -50,20 +50,51 @@ namespace KVHAI.Repository
             return employees;
         }
 
-        public async Task CreateEmployee(Employee employee)
+        public async Task<List<Employee>> GetSingleEmployee(string id)
         {
-            var emp_id = await GetEmployeeId();
+            var employees = new List<Employee>();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand("SELECT * FROM employee_tb where emp_id = @id", connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        while (await reader.ReadAsync())
+                        {
+                            var employee = new Employee();
+                            employee.Emp_ID = reader[0]?.ToString() ?? string.Empty;
+                            employee.Lname = reader[1]?.ToString() ?? string.Empty;
+                            employee.Fname = reader[2]?.ToString() ?? string.Empty;
+                            employee.Mname = reader[3]?.ToString() ?? string.Empty;
+                            employee.Phone = reader[4]?.ToString() ?? string.Empty;
+                            employee.Email = reader[5]?.ToString() ?? string.Empty;
+                            employee.Username = reader[6]?.ToString() ?? string.Empty;
+                            employee.Password = reader[7]?.ToString() ?? string.Empty;
+                            employee.Role = reader[8]?.ToString() ?? string.Empty;
+                            employee.Created_At = reader[9]?.ToString() ?? string.Empty;
+                            employees.Add(employee);
+
+                        }
+                    }
+                }
+            }
+
+            return employees;
+        }
+
+        public async Task<int> CreateEmployee(Employee employee)
+        {
             var pass = _hash.HashPassword(employee.Password);
             var dt = GetTimeDate();
-
-
             try
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO employee_tb (emp_id, lname, fname, mname, phone, email, username, password, role, created_at) VALUES(@id, @lname, @fname, @mname, @phone, @email, @user, @pass, @role, @create)", connection))
+                    using (var command = new SqlCommand("INSERT INTO employee_tb (lname, fname, mname, phone, email, username, password, role, created_at) VALUES(@lname, @fname, @mname, @phone, @email, @user, @pass, @role, @create)", connection))
                     {
-                        command.Parameters.AddWithValue("@id", emp_id);
                         command.Parameters.AddWithValue("@lname", employee.Lname);
                         command.Parameters.AddWithValue("@fname", employee.Fname);
                         command.Parameters.AddWithValue("@mname", employee.Mname);
@@ -75,14 +106,37 @@ namespace KVHAI.Repository
                         command.Parameters.AddWithValue("@create", dt);
 
                         await command.ExecuteNonQueryAsync();
+
+                        return 1;
                     }
                 }
             }
             catch (Exception)
             {
-                throw;
+                return 0;
             }
 
+        }
+
+        public async Task<bool> UserExists(Employee employee)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT COUNT(*) FROM employee_tb WHERE email = @email OR username= @user", connection))
+                    {
+                        command.Parameters.AddWithValue("@email", employee.Email);
+                        command.Parameters.AddWithValue("@user", employee.Username);
+                        int count = (int)command.ExecuteScalar();
+                        return count > 0;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public async Task UpdateCategory(Employee employee)

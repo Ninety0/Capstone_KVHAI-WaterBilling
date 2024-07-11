@@ -1,9 +1,11 @@
-﻿@model List<Resident>
+﻿@*@model List<Resident>*@
+@model ModelBinding
 @{
     ViewBag.Title = "Accounts";
 }
 
 @section head{
+
     <style>
         .link-header {
             text-decoration: none;
@@ -39,95 +41,164 @@
         #staff, #resident {
             display: none;
         }
+
+        #modalImage {
+            height: 400px;
+            width: 100%;
+        }
     </style>
 }
 
 @section scripts{
+    <script src="~/js/employeeSignup.js">
+    </script>
     <script>
         $(document).ready(function () {
-            // Hide all sections initially
-            $('section').hide();
 
-            // Show the default section (Staff)
-            $('#staff').show();
+            function hidePreloader() {
+                const loader = $('#loader');
+                setTimeout(function () {
+                    $('#loader').addClass('d-none');
+                }, 2000);
 
-            // Handle click events on header links
-            $('.link-header').click(function (e) {
+            }
+            function showPreloader() {
+                const loader = $('#loader');
+                loader.removeClass('d-none');
+                setTimeout(function () {
+                    $('#loader').addClass('d-none');
+                }, 2000);
+            }
+
+            /*   NAVBAR    */
+            $('section').hide(); // Hide all sections initially
+
+
+            $('#staff').show(); // Show the default section (Staff)
+
+
+            $('.link-header').click(function (e) { // Handle click events on header links
                 e.preventDefault();
 
-                // Remove 'active' class from all links
-                $('.link-header').removeClass('active');
 
-                // Add 'active' class to clicked link
-                $(this).addClass('active');
+                $('.link-header').removeClass('active');// Remove 'active' class from all links
 
-                // Get the target section from the href attribute
-                var targetSection = $(this).attr('href');
+
+                $(this).addClass('active');// Add 'active' class to clicked link
+
+
+                var targetSection = $(this).attr('href');// Get the target section from the href attribute
 
                 console.log(targetSection)
-                // Hide all sections
-                $('section').hide();
 
-                // Show the target section
-                $(targetSection).show();
+                $('section').hide(); // Hide all sections
 
 
-                //IMAGE GET MEHTOD
-                $('.load-image').on('click', function() {
+                $(targetSection).show(); // Show the target section
+                /* END  NAVBAR    */
+
+
+                /*IMAGE GET METHOD*/
+                $('.load-image').on('click', function () {
                     var residentId = $(this).siblings('#res_id').val();
-                    console.log(residentId);
 
-                    // Store the residentId in a data attribute of the modal
-                    $('#staticBackdrop').data('resident-id', residentId);
+                    if (residentId) { // Check if residentId has a value
+                        $('#staticBackdrop').data('resident-id', residentId); // Store the residentId in a data attribute of the modal
+
+                        // Show preloader before triggering the modal to open
+                        // Trigger the modal to open
+                        $('#staticBackdrop').modal(showPreloader(),'show');
+                    } else {
+                        alert('No resident ID found.');
+                    }
                 });
+                /*END IMAGE METHOD*/
 
                 // Add this new event listener
-                $('#staticBackdrop').on('show.bs.modal', function (e) {
+                $('#staticBackdrop').on('shown.bs.modal', function (e) { // changed to 'shown.bs.modal'
                     var modal = $(this);
                     var residentId = modal.data('resident-id');
 
-                    $.ajax({
-                        type: 'GET',
-                        url: '@Url.Action("GetImageBase64", "AdminAccount")',
-                        data: { id: residentId },
-                        success: function(result) {
-                            if (result.success) {
-                                $('#modalImage').attr('src', 'data:image/jpeg;base64,' + result.imageBase64);
-                                $('#modalImage').show();
-                            } else {
-                                alert('Failed to load image.');
+                    if (residentId) {
+                        $.ajax({
+                            type: 'GET',
+                            url: '@Url.Action("GetImageBase64", "AdminAccount")',
+                            data: { id: residentId },
+                            success: function(result) {
+                                if (result.success) {
+                                    $('#modalImage').attr('src', 'data:image/jpeg;base64,' + result.imageBase64);
+                                    $('#modalImage').show();
+                                } else {
+                                    alert('Failed to load image.');
+                                }
+                                //hidePreloader(); // Hide preloader after the image is successfully loaded
+                            },
+                            error: function() {
+                                alert('An error occurred while loading the image.');
+                                hidePreloader(); // Hide preloader if there's an error
                             }
-                        },
-                        error: function() {
-                            alert('An error occurred while loading the image.');
-                        }
-                    });
+                        });
+                    } else {
+                        hidePreloader(); // Hide preloader if there's no residentId
+                        alert('No resident ID available.');
+                    }
                 });
 
-            // Optional: Implement lazy loading on scroll
-
-
+                // Hide preloader when the modal is hidden
+                $('#staticBackdrop').on('hidden.bs.modal', function () {
+                    // Reset modal content when it's closed
+                    $('#modalImage').attr('src', '').hide();
+                    $('#imagePreloader').show();
+                });
             });
         });
+
+
     </script>
 }
 
-<!-- Modal -->
+<div class="d-none border" id="loader">
+    @await Html.PartialAsync("PartialView/_Preloader")
+</div>
+
+@if (ViewBag.Success != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!--/////////////////////-->
+<!-- Modal IMAGE-->
+<!--/////////////////////-->
+
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Resident Image</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="image-container">
-                    <img id="modalImage" alt="Resident Image" style="max-width: 100%; max-height: 100%;">
+                <div class="image-container d-flex">
+                    <img id="modalImage" alt="Resident Image">
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!--/////////////////////-->
+<!--END Modal IMAGE-->
+<!--/////////////////////-->
+<!--/////////////////////-->
+<!-- Modal FORM -->
+
+@await Html.PartialAsync("PartialView/_FormEmployee")
+
+
+<!-- END Modal FORM -->
+<!--/////////////////////-->
+
 
 <div class="container">
     <div class="col-xl-7 content-container w-100">
@@ -141,11 +212,80 @@
 
             <!-- STAFF SECTION -->
             <section id="staff">
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-employee">
+                            <i class="fa-solid fa-plus"></i>
+                            <span class="fw-bold ms-2" style="font-size:1rem;">NEW</span>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <nav class="navbar bg-body-tertiary">
+                            <div class="container-fluid">
+                                <input class="form-control me-2 w-100" type="search" placeholder="Search" aria-label="Search">
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover" id="tableData">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Full Name</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Username</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Created</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                            @{
+                                int indexx = 1;
+                                foreach (var item in Model.Employees)
+                                {
+                                    <tr>
+                                        <th scope="row">@indexx</th>
+                                        <td>@string.Join(", ", item.Lname, item.Fname, item.Mname)</td>
+                                        <td>@item.Phone</td>
+                                        <td>@item.Email</td>
+                                        <td>@item.Username</td>
+                                        <td>@item.Role</td>
+                                        <td>@item.Created_At</td>
+                                        <td>
+                                            <div class="d-flex ">
+                                                <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="modal" data-bs-target="#modal-employee">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm ms-2 " data-id="@item.Emp_ID">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    indexx++;
+                                }
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
             </section>
 
 
             <!--RESIDENT SECITON-->
             <section id="resident">
+                <div class="container-fluid d-flex justify-content-end">
+                    <nav class="navbar bg-body-tertiary">
+                        <div class="container-fluid">
+                            <input class="form-control me-2 w-100" type="search" placeholder="Search" aria-label="Search">
+                        </div>
+                    </nav>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
@@ -165,7 +305,7 @@
                         <tbody class="table-group-divider">
                             @{
                                 int index = 1;
-                                foreach (var item in Model)
+                                foreach (var item in Model.Residents)
                                 {
                                     var date = DateTime.Parse(item.Date_Residency);
                                     <tr>
@@ -179,9 +319,25 @@
                                         <td>@item.Activated</td>
                                         <td>
                                             <input type="hidden" id="res_id" name="id" value="@item.Res_ID" />
-                                            <button class="btn btn-primary btn-sm load-image" data-bs-toggle="modal" data-bs-target="#staticBackdrop">View Image</button>
+                                            <button class="btn btn-primary btn-sm load-image" data-bs-toggle="modal" data-bs-target="#staticBackdrop">view</button>
                                         </td>
-                                        <td></td>
+                                        <td class="">
+                                            <div class="d-flex align-items-center justify-content-around">
+                                                <button class="btn btn-success btn-sm " data-id="@item.Res_ID">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+                                                        <g fill="none" fill-rule="evenodd">
+                                                            <path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
+                                                            <path fill="currentColor" d="M21.546 5.111a1.5 1.5 0 0 1 0 2.121L10.303 18.475a1.6 1.6 0 0 1-2.263 0L2.454 12.89a1.5 1.5 0 1 1 2.121-2.121l4.596 4.596L19.424 5.111a1.5 1.5 0 0 1 2.122 0" />
+                                                        </g>
+                                                    </svg>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm ms-2" data-id="@item.Res_ID">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
 
                                     index++;
@@ -190,6 +346,26 @@
 
                         </tbody>
                     </table>
+                </div>
+
+                <div class="container-fluid">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            <li class="page-item">
+                                <a class="page-link" href="#" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </section>
         </div>

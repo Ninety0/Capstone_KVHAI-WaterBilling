@@ -1,0 +1,66 @@
+.preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    background-color: #cbd5e1;
+    z-index: 9999; /* Make sure it overlays everything */
+    display: grid;
+    place-items: center;
+}
+
+    .preloader img {
+        width: 150px;
+        height: 150px;
+        animation: myAnim infinite linear 0s 1 normal forwards;
+    }
+
+.preloader.loader-hid{
+    opacity:0;
+    visibility:hidden;
+
+}
+
+.preloadText {
+    font-family: "Roboto Mono", monospace;
+    width: 100%;
+    animation: typing 2s steps(8), myAnim 2s ease 0s 1 normal forwards;
+    white-space: nowrap;
+    font-size: 7rem;
+    text-transform: uppercase;
+    letter-spacing: .8rem;
+    color: #0f172a;
+    border: 5px solid #0f172a;
+}
+
+    .preloadText::after {
+        content: '';
+        border-right: 3px #0f172a;
+        animation: blink .5s step-end infinite alternate;
+    }
+
+@keyframes typing {
+    from {
+        width: 0
+    }
+}
+
+@keyframes blink {
+    50% {
+        border-color: transparent
+    }
+}
+
+@keyframes myAnim {
+    0%, 50%, 100% {
+        opacity: 1;
+    }
+
+    25%, 75% {
+        opacity: 0;
+    }
+}

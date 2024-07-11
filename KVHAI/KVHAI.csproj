@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\js\employeeSignup.js" />
     <Content Remove="wwwroot\js\residentSignup.js" />
   </ItemGroup>
 
@@ -28,9 +29,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\js\employeeSignup.js" />
     <None Include="wwwroot\js\residentSignup.js" />
     <None Include="wwwroot\lib\evo-calendar\js\evo-calendar.js" />
     <None Include="wwwroot\lib\evo-calendar\js\evo-calendar.min.js" />
+    <None Include="wwwroot\lib\webfonts\fa-brands-400.woff2" />
+    <None Include="wwwroot\lib\webfonts\fa-regular-400.woff2" />
+    <None Include="wwwroot\lib\webfonts\fa-solid-900.woff2" />
+    <None Include="wwwroot\lib\webfonts\fa-v4compatibility.woff2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +44,13 @@
     <PackageReference Include="HtmlSanitizer" Version="8.0.865" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\css\employeeRegistration.css">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
