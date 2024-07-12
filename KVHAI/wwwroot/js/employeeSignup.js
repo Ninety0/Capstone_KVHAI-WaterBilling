@@ -1,38 +1,14 @@
 ﻿$(document).ready(function () {
 
-    $('.edit-btn').on('click', function () {
-        var id = $(this).data('id');
-        alert('Edit button clicked for Employee ID:' + id);
-        var arr = {
-            id: id
-        }
-        $.ajax({
-            type: 'GET',
-            url: '/adminaccount/GetEmployees',
-            data: arr,
-            success: function (response) {
-                console.log(response);
-                if (response.length > 0) {
-                    var emp = response[0]; // Access the first element of the array
+    //Global Variable
+    let emp_id = 0;
 
-                    $('#employeeId').val(emp.emp_ID);
-                    $('#Fname').val(emp.fname);
-                    $('#Lname').val(emp.lname);
-                    $('#Mname').val(emp.mname);
-                    $('#Phone').val(emp.phone);
-                    $('#Email').val(emp.email);
-                    $('#Role').val(emp.role);
-                    $('#employeeModal').modal('show');
-                }
-                else {
-                    toastr.error('Failed to load employee data.');
-                }
-            },
-            error: function (xhr, status, error) {
-                toastr.error('Failed to load employee data.');
-            }
+    $('#btn-test').on('click', () => {
+        const form = $('#form-emp');
+        const inputs = form.find('input, select');
+        inputs.each(function () {
+            console.log(this.id);
         });
-        // Add your edit logic here
     });
 
     // Toastr options
@@ -46,37 +22,65 @@
     // Event listeners
     $('#cpass').on('change', ConfirmPassword);
     $('#btn-register').click(handleRegistration);
+    $('#btn-update').click(UpdateEmployee);
 
 
-    function validateCurrentTab() {
-        const inputs = document.querySelectorAll('input, select');
+    function validateCurrentTab(action) {
+        const form = $('#form-emp'); // jQuery
+        const inputs = form.find('input, select'); // jQuery
+
         let isValid = true;
 
-        inputs.forEach(input => {
-            if (input.id === 'cpass') {
-                // Handle confirm password separately
-                if (!ConfirmPassword()) {
-                    isValid = false;
-                    input.classList.add('is-invalid');
+        inputs.each(function () {
+            const input = $(this); // Store jQuery object reference for `this`
+
+            if (action === "update") {
+                if (this.id === 'cpass') {
+                    // Handle confirm password separately
+                    if (!ConfirmPassword()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                } else if (this.id === 'Password') {
+                    if ($('#Password').val() === '') {
+                        input.removeClass('is-invalid');
+                        isValid = true;
+                    }
                 } else {
-                    input.classList.remove('is-invalid');
+                    // Handle other inputs
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
                 }
             } else {
-                // Handle other inputs
-                if (!input.checkValidity()) {
-                    isValid = false;
-                    input.classList.add('is-invalid');
-
+                if (this.id === 'cpass') {
+                    // Handle confirm password separately
+                    if (!ConfirmPassword()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
                 } else {
-                    input.classList.remove('is-invalid');
+                    // Handle other inputs
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
                 }
             }
         });
 
-        
-
         return isValid;
     }
+
     
 
 
@@ -95,10 +99,11 @@
         return isValid;
     }
 
+    //POST METHOD TO INSERT NEW EMPLOYEE 
     function handleRegistration(e) {
         e.preventDefault();
 
-        if (!validateCurrentTab()) {
+        if (!validateCurrentTab("register")) {
             toastr.error('Please fill out all required fields correctly.');
             return;
         }
@@ -148,40 +153,45 @@
         $(this).closest('form').removeClass('was-validated');
     });
 
+
+    //POST METHOD TO UPDATE EMPLOYEE
     function UpdateEmployee(e) {
         e.preventDefault();
 
-        if (!validateCurrentTab()) {
+        if (!validateCurrentTab("update")) {
             toastr.error('Please fill out all required fields correctly.');
             return;
         }
 
-        //var formData = new FormData($('#form-emp')[0]);
-        var formData = $('#form-emp').serialize();
-        console.log(formData);
+        // Gather form data using FormData
+        var formData = new FormData($('#form-emp')[0]);
+        formData.append('Emp_ID', emp_id);
+
+        // Serialize form data into JSON format (assuming you want JSON)
 
         $.ajax({
             type: 'POST',
-            url: "/adminaccount/RegisterEmployee",
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8', // when we use .serialize() this generates the data in query string format. this needs the default contentType (default content type is: contentType: 'application/x-www-form-urlencoded; charset=UTF-8') so it is optional, you can remove it
+            url: "/adminaccount/UpdateEmployee",
+            contentType: false,
+            processData: false,
             data: formData,
             success: function (response) {
-                if (response?.message?.includes('exist')) {
-                    toastr.error('Email or Username already taken.');
+                if (response?.message?.includes('error')) {
+                    toastr.error('There was an error updating credentials.');
                     return;
                 }
 
-                toastr.success('Registration Successful.');
+                toastr.success('Update Account Successfully.');
                 // Update your table here if needed
+
                 $('#modal-employee').modal('hide');
                 $(".modal-backdrop").remove();
 
-                var result = $(response).find("#tableData").html();
+                // Assuming the response contains HTML table data:
+                var tableData = $(response).find("#tableData").html();
                 console.log("RESPONSE WHEN SUCCESS");
-                console.log(result);
-                $('#tableData').html(result);
-
-
+                console.log(tableData);
+                $('#tableData').html(tableData);
             },
             error: function (xhr, status, error) {
                 console.log(xhr.responseText);
@@ -194,4 +204,53 @@
             $('#form-emp')[0].reset();
         });
     }
+
+
+
+    //GET METHOD TO FETCH DATA
+    $('.edit-btn').on('click', function () {
+        $('#btn-update').removeClass('d-none');
+        $('#btn-register').addClass('d-none');
+
+        emp_id = $(this).data('id');
+        alert('Edit button clicked for Employee ID:' + emp_id);
+        var arr = {
+            id: emp_id
+        }
+        $.ajax({
+            type: 'GET',
+            url: '/adminaccount/GetEmployees',
+            data: arr,
+            success: function (response) {
+                console.log(response);
+                if (response.length > 0) {
+                    var emp = response[0]; // Access the first element of the array
+
+                    $('#employeeId').val(emp.emp_ID);
+                    $('#Fname').val(emp.fname);
+                    $('#Lname').val(emp.lname);
+                    $('#Mname').val(emp.mname);
+                    $('#Phone').val(emp.phone);
+                    $('#Email').val(emp.email);
+                    $('#Username').val(emp.username);
+                    $('#Role').val(emp.role);
+                    $('#employeeModal').modal('show');
+                }
+                else {
+                    toastr.error('Failed to load employee data.');
+                }
+            },
+            error: function (xhr, status, error) {
+                toastr.error('Failed to load employee data.');
+            }
+        });
+        // Add your edit logic here
+        $('#modal-employee').on('hidden.bs.modal', function () {
+            // Reset modal content when it's closed
+            $('#form-emp')[0].reset();
+            $('#btn-update').addClass('d-none');
+            $('#btn-register').removeClass('d-none');
+
+        });
+    });
 });

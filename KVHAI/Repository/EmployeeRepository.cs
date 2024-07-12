@@ -139,7 +139,7 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task UpdateCategory(Employee employee)
+        public async Task<int> UpdateEmployee(Employee employee)
         {
             var hasValue = !string.IsNullOrEmpty(employee.Password);
 
@@ -180,13 +180,15 @@ namespace KVHAI.Repository
 
                         command.Parameters.AddWithValue("@role", employee.Role);
 
-                        await command.ExecuteNonQueryAsync();
+                        int result = await command.ExecuteNonQueryAsync();
+                        return result;
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Console.WriteLine(ex.Message);
+                return 0;
             }
         }
 

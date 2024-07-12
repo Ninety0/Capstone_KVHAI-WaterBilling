@@ -29,16 +29,6 @@ namespace KVHAI.Controllers.Staff.Admin
             return View("~/Views/Staff/Admin/Account.cshtml", viewModel);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetEmployees(string id)
-        {
-            var employee = await _employeeRepository.GetSingleEmployee(id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-            return Ok(employee);
-        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -63,6 +53,40 @@ namespace KVHAI.Controllers.Staff.Admin
             {
                 return BadRequest(new { message = "An error occurred while processing your request." });
             }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateEmployee(Employee formData)
+        {
+            try
+            {
+
+                int result = await _employeeRepository.UpdateEmployee(formData);
+
+                if (result == 0)
+                    return BadRequest(new { message = "There was an error updating credentials" });
+
+                //return Ok(new { message = "Registration Successful." });
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "An error occurred while processing your request." });
+            }
+        }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetEmployees(string id)
+        {
+            var employee = await _employeeRepository.GetSingleEmployee(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            return Ok(employee);
         }
 
         [HttpGet]
