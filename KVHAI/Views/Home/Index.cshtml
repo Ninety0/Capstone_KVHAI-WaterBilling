@@ -2,30 +2,142 @@
     ViewData["Title"] = "Home Page";
 }
 
+@section scripts{
+    <script>
+        function pagination_action(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
+            //var _search = document.getElementById('input_search').value;
+            //var date = $('#selectedDateRange').val();
+            //var start_date = moment(date.substring(0, 10));
+            //var end_date = moment(date.substring(13, 23));
+
+            var array = {
+                //search: _search,
+                page_index: i
+                //DateStart: start_date.format('YYYY-MM-DD'),
+                //DateEnd: end_date.format('YYYY-MM-DD')
+            };
+
+            //console.log(start_date.format('YYYY-MM-DD'));
+            //console.log(end_date.format('YYYY-MM-DD'))
+            //console.log(array);
+
+            $.ajax({
+                url: window.location.origin + '/adminaccount/myPagination',
+                type: "POST",
+                data: array,
+                success: function (response) {
+                    var result = $(response).find("#tableData").html();
+                    console.log(result);
+                    $('#tableData').html(result)
+                },
+                error: function (xhr, status, error_m) {
+                    alert(status);
+                }
+            });
+        }
+        //Force to trigger page_load -> ginagamit ko tong codes na ito pag ayaw gumana ng page_load
+        //document.addEventListener('DOMContentLoaded', function () {
+        //    pagination_action();
+        //}, false);
+
+    </script>
+}
+
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+<div class="container border border-danger">
+    <div class="table-responsive">
+        <table class="table table-hover" id="tableData">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Full Name</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Created</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                @{
+                    if (Model.ModelList.Count > 0)
+                    {
+                        int indexx = Model.Index + 1;
+                        foreach (var item in Model.ModelList)
+                        {
+                            <tr>
+                                <th scope="row">@indexx</th>
+                                <td>@string.Join(", ", item.Lname, item.Fname, item.Mname)</td>
+                                <td>@item.Phone</td>
+                                <td>@item.Email</td>
+                                <td>@item.Username</td>
+                                <td>@item.Role</td>
+                                <td>@item.Created_At</td>
+                                <td>
+                                    <div class="d-flex ">
+                                        <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                            <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                            <i class="fa-regular fa-pen-to-square"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm ms-2 delete-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
 
+                            indexx++;
+                        }
+                    }
+                    else
+                    {
+                        <p>NO RECORDS</p>
+                    }
+                    <tr>
+                        <td colspan="12">
+                            <div class="container border border-danger">
+                                <div class="row">
+                                    <div class="col">
+                                        <span class="lead">Number of Data: @Model.NumberOfData</span>
+                                    </div>
+                                    <div class="col">
+                                        @Model.Pagenation
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                }
+
+            </tbody>
+        </table>
+        
+    </div>
+</div>
 @section sidebar{
     <button class="btn-navs active">TEST</button>
-} 
+}
 @section mobilenav{
     @*<ul class="navbar-nav d">
-        <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Home</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">Features</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">Pricing</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-        </li>
-    </ul>*@
-        <button class="btn-navs active">TEST1</button>
-        <button class="btn-navs ">TEST2</button>
-        <button class="btn-navs ">TEST3</button>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Features</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Pricing</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+            </li>
+        </ul>*@
+    <button class="btn-navs active">TEST1</button>
+    <button class="btn-navs ">TEST2</button>
+    <button class="btn-navs ">TEST3</button>
 } 

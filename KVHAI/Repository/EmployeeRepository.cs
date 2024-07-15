@@ -16,6 +16,41 @@ namespace KVHAI.Repository
             _hash = hash;
         }
 
+        //CREATE
+        public async Task<int> CreateEmployee(Employee employee)
+        {
+            var pass = _hash.HashPassword(employee.Password);
+            var dt = GetTimeDate();
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("INSERT INTO employee_tb (lname, fname, mname, phone, email, username, password, role, created_at) VALUES(@lname, @fname, @mname, @phone, @email, @user, @pass, @role, @create)", connection))
+                    {
+                        command.Parameters.AddWithValue("@lname", employee.Lname);
+                        command.Parameters.AddWithValue("@fname", employee.Fname);
+                        command.Parameters.AddWithValue("@mname", employee.Mname);
+                        command.Parameters.AddWithValue("@phone", employee.Phone);
+                        command.Parameters.AddWithValue("@email", employee.Email);
+                        command.Parameters.AddWithValue("@user", employee.Username);
+                        command.Parameters.AddWithValue("@pass", pass);
+                        command.Parameters.AddWithValue("@role", employee.Role);
+                        command.Parameters.AddWithValue("@create", dt);
+
+                        await command.ExecuteNonQueryAsync();
+
+                        return 1;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+
+        }
+
+        //READ
         public async Task<List<Employee>> GetAllEmployeesAsync()
         {
             var employees = new List<Employee>();
@@ -50,95 +85,7 @@ namespace KVHAI.Repository
             return employees;
         }
 
-        public async Task<List<Employee>> GetSingleEmployee(string id)
-        {
-            var employees = new List<Employee>();
-
-            using (var connection = await _dbConnect.GetOpenConnectionAsync())
-            {
-                using (var command = new SqlCommand("SELECT * FROM employee_tb where emp_id = @id", connection))
-                {
-                    command.Parameters.AddWithValue("@id", id);
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-
-                        while (await reader.ReadAsync())
-                        {
-                            var employee = new Employee();
-                            employee.Emp_ID = reader[0]?.ToString() ?? string.Empty;
-                            employee.Lname = reader[1]?.ToString() ?? string.Empty;
-                            employee.Fname = reader[2]?.ToString() ?? string.Empty;
-                            employee.Mname = reader[3]?.ToString() ?? string.Empty;
-                            employee.Phone = reader[4]?.ToString() ?? string.Empty;
-                            employee.Email = reader[5]?.ToString() ?? string.Empty;
-                            employee.Username = reader[6]?.ToString() ?? string.Empty;
-                            employee.Password = reader[7]?.ToString() ?? string.Empty;
-                            employee.Role = reader[8]?.ToString() ?? string.Empty;
-                            employee.Created_At = reader[9]?.ToString() ?? string.Empty;
-                            employees.Add(employee);
-
-                        }
-                    }
-                }
-            }
-
-            return employees;
-        }
-
-        public async Task<int> CreateEmployee(Employee employee)
-        {
-            var pass = _hash.HashPassword(employee.Password);
-            var dt = GetTimeDate();
-            try
-            {
-                using (var connection = await _dbConnect.GetOpenConnectionAsync())
-                {
-                    using (var command = new SqlCommand("INSERT INTO employee_tb (lname, fname, mname, phone, email, username, password, role, created_at) VALUES(@lname, @fname, @mname, @phone, @email, @user, @pass, @role, @create)", connection))
-                    {
-                        command.Parameters.AddWithValue("@lname", employee.Lname);
-                        command.Parameters.AddWithValue("@fname", employee.Fname);
-                        command.Parameters.AddWithValue("@mname", employee.Mname);
-                        command.Parameters.AddWithValue("@phone", employee.Phone);
-                        command.Parameters.AddWithValue("@email", employee.Email);
-                        command.Parameters.AddWithValue("@user", employee.Username);
-                        command.Parameters.AddWithValue("@pass", pass);
-                        command.Parameters.AddWithValue("@role", employee.Role);
-                        command.Parameters.AddWithValue("@create", dt);
-
-                        await command.ExecuteNonQueryAsync();
-
-                        return 1;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                return 0;
-            }
-
-        }
-
-        public async Task<bool> UserExists(Employee employee)
-        {
-            try
-            {
-                using (var connection = await _dbConnect.GetOpenConnectionAsync())
-                {
-                    using (var command = new SqlCommand("SELECT COUNT(*) FROM employee_tb WHERE email = @email OR username= @user", connection))
-                    {
-                        command.Parameters.AddWithValue("@email", employee.Email);
-                        command.Parameters.AddWithValue("@user", employee.Username);
-                        int count = (int)command.ExecuteScalar();
-                        return count > 0;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
+        //UPDATE
         public async Task<int> UpdateEmployee(Employee employee)
         {
             var hasValue = !string.IsNullOrEmpty(employee.Password);
@@ -192,25 +139,86 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task DeleteCategory(int id)
+        //DELETE
+        public async Task<int> DeleteEmployee(int id)
         {
             try
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("DELETE FROM Category WHERE emp_id=@id", connection))
+                    using (var command = new SqlCommand("DELETE FROM employee_tb WHERE emp_id=@id", connection))
                     {
                         command.Parameters.AddWithValue("@id", id);
 
-                        await command.ExecuteNonQueryAsync();
+                        int result = await command.ExecuteNonQueryAsync();
+                        return result;
                     }
                 }
             }
             catch (Exception)
             {
-                throw;
+                return 0;
             }
         }
+
+        //RETURN SINGLE EMPLOYEE
+        public async Task<List<Employee>> GetSingleEmployee(string id)
+        {
+            var employees = new List<Employee>();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand("SELECT * FROM employee_tb where emp_id = @id", connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        while (await reader.ReadAsync())
+                        {
+                            var employee = new Employee();
+                            employee.Emp_ID = reader[0]?.ToString() ?? string.Empty;
+                            employee.Lname = reader[1]?.ToString() ?? string.Empty;
+                            employee.Fname = reader[2]?.ToString() ?? string.Empty;
+                            employee.Mname = reader[3]?.ToString() ?? string.Empty;
+                            employee.Phone = reader[4]?.ToString() ?? string.Empty;
+                            employee.Email = reader[5]?.ToString() ?? string.Empty;
+                            employee.Username = reader[6]?.ToString() ?? string.Empty;
+                            employee.Password = reader[7]?.ToString() ?? string.Empty;
+                            employee.Role = reader[8]?.ToString() ?? string.Empty;
+                            employee.Created_At = reader[9]?.ToString() ?? string.Empty;
+                            employees.Add(employee);
+
+                        }
+                    }
+                }
+            }
+
+            return employees;
+        }
+
+        //VALIDATE EXISTING USER
+        public async Task<bool> UserExists(Employee employee)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT COUNT(*) FROM employee_tb WHERE email = @email OR username= @user", connection))
+                    {
+                        command.Parameters.AddWithValue("@email", employee.Email);
+                        command.Parameters.AddWithValue("@user", employee.Username);
+                        int count = (int)command.ExecuteScalar();
+                        return count > 0;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
 
         public async Task<int> GetEmployeeId()
         {
@@ -270,5 +278,54 @@ namespace KVHAI.Repository
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
+
+        //SAMPLE DATAS
+        public async Task<List<Employee>> GetAllEmployeesAsync(int offset, int limit)
+        {
+            var employees = new List<Employee>();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand($"SELECT * FROM employee_tb ORDER BY emp_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
+                {
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        while (await reader.ReadAsync())
+                        {
+                            var employee = new Employee();
+                            employee.Emp_ID = reader[0]?.ToString() ?? string.Empty;
+                            employee.Lname = reader[1]?.ToString() ?? string.Empty;
+                            employee.Fname = reader[2]?.ToString() ?? string.Empty;
+                            employee.Mname = reader[3]?.ToString() ?? string.Empty;
+                            employee.Phone = reader[4]?.ToString() ?? string.Empty;
+                            employee.Email = reader[5]?.ToString() ?? string.Empty;
+                            employee.Username = reader[6]?.ToString() ?? string.Empty;
+                            employee.Password = reader[7]?.ToString() ?? string.Empty;
+                            employee.Role = reader[8]?.ToString() ?? string.Empty;
+                            employee.Created_At = reader[9]?.ToString() ?? string.Empty;
+                            employees.Add(employee);
+
+                        }
+                    }
+                }
+            }
+
+            return employees;
+        }
+
+        public async Task<int> CountEmployeeData()
+        {
+            int result = 0;
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand($"SELECT COUNT(*) FROM employee_tb", connection))
+                {
+                    result = (int)command.ExecuteScalar();
+
+                    return result;
+                }
+            }
+        }
     }
 }

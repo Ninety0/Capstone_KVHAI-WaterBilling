@@ -257,10 +257,11 @@
                                         <td>@item.Created_At</td>
                                         <td>
                                             <div class="d-flex ">
-                                                <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="modal" data-bs-target="#modal-employee">
+                                                <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                                    <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </button>
-                                                <button class="btn btn-danger btn-sm ms-2 " data-id="@item.Emp_ID">
+                                                <button class="btn btn-danger btn-sm ms-2 delete-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
                                                     <i class="fa-solid fa-trash-can"></i>
                                                 </button>
                                             </div>

@@ -1,4 +1,5 @@
-﻿using KVHAI.Models;
+﻿using KVHAI.CustomClass;
+using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace KVHAI.Controllers.Staff.Admin
     {
         private readonly EmployeeRepository _employeeRepository;
         private readonly ResidentRepository _residentRepository;
+        private readonly Pagination<Employee> _pagination;
         private readonly IWebHostEnvironment _environment;
 
         public AdminAccountController(EmployeeRepository employeeRepository, ResidentRepository residentRepository, IWebHostEnvironment environment)
@@ -15,18 +17,36 @@ namespace KVHAI.Controllers.Staff.Admin
             _employeeRepository = employeeRepository;
             _residentRepository = residentRepository;
             _environment = environment;
+            _pagination = new Pagination<Employee>();
         }
 
         public async Task<IActionResult> Index()
         {
-            var residents = await _residentRepository.GetAllResidentAsync();
-            var employee = await _employeeRepository.GetAllEmployeesAsync();
-            var viewModel = new ModelBinding
-            {
-                Residents = residents,
-                Employees = employee
-            };
-            return View("~/Views/Staff/Admin/Account.cshtml", viewModel);
+            //var residents = await _residentRepository.GetAllResidentAsync();
+            //var viewModel = new ModelBinding
+            //{
+            //    Residents = residents,
+            //    Employees = employee
+            //};
+            _pagination.ModelList = await _employeeRepository.GetAllEmployeesAsync(0, 20);
+            _pagination.NumberOfData = await _employeeRepository.CountEmployeeData();
+            _pagination.ScriptName = "pagination_action";
+            _pagination.set(10, 10, 1);
+            //return PartialView("~/Views/ItemManage/Index.cshtml", page_v1);
+            return View("~/Views/Home/Index.cshtml", _pagination);
+            //return View("~/Views/Staff/Admin/Account.cshtml", _pagination);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> myPagination(int page_index)
+        {
+            _pagination.NumberOfData = await _employeeRepository.CountEmployeeData();
+            _pagination.ScriptName = "pagination_action";
+            _pagination.set(20, 10, page_index);
+            var offset = _pagination.Offset;
+            _pagination.ModelList = await _employeeRepository.GetAllEmployeesAsync(offset, 20);
+            return View("~/Views/Home/Index.cshtml", _pagination);
+
         }
 
 
@@ -104,6 +124,17 @@ namespace KVHAI.Controllers.Staff.Admin
             string base64ImageRepresentation = Convert.ToBase64String(imageArray);
 
             return Json(new { success = true, imageBase64 = base64ImageRepresentation });
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteEmployee(int id)
+        {
+            var employee = await _employeeRepository.DeleteEmployee(id);
+            if (employee == 0)
+            {
+                return BadRequest(new { message = "error" });
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

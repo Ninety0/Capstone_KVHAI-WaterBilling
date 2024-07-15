@@ -1,5 +1,6 @@
 ﻿$(document).ready(function () {
-
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
     //Global Variable
     let emp_id = 0;
 
@@ -202,18 +203,51 @@
         $('#modal-employee').on('hidden.bs.modal', function () {
             // Reset modal content when it's closed
             $('#form-emp')[0].reset();
+            $('#btn-update').addClass('d-none');
+            $('#btn-register').removeClass('d-none');
         });
     }
 
+    //POST METHOD TO DELETE EMPLOYEE
+    $(document).on('click', '.delete-btn', function () {
 
+        emp_id = $(this).data('id');
+        alert('Edit button clicked for Employee ID:' + emp_id);
+        var arr = {
+            id: emp_id
+        }
+        $.ajax({
+            type: 'DELETE',
+            url: '/adminaccount/DeleteEmployee',
+            data: arr,
+            success: function (response) {
+                console.log(response);
+                if (response?.message?.includes('error')) {
+                    toastr.error('There was an error deleting the account.');
+                    return;
+                }
+
+                toastr.success('Delete Successfully.');
+
+                var result = $(response).find("#tableData").html();
+                console.log("RESPONSE WHEN SUCCESS");
+                console.log(result);
+                $('#tableData').html(result);
+            },
+            error: function (xhr, status, error) {
+                toastr.error('An error occurred while processing your request.');
+            }
+        });
+
+    });
 
     //GET METHOD TO FETCH DATA
-    $('.edit-btn').on('click', function () {
+    $(document).on('click', '.edit-btn', function () {
         $('#btn-update').removeClass('d-none');
         $('#btn-register').addClass('d-none');
 
         emp_id = $(this).data('id');
-        alert('Edit button clicked for Employee ID:' + emp_id);
+        //alert('Edit button clicked for Employee ID:' + emp_id);
         var arr = {
             id: emp_id
         }
@@ -234,7 +268,8 @@
                     $('#Email').val(emp.email);
                     $('#Username').val(emp.username);
                     $('#Role').val(emp.role);
-                    $('#employeeModal').modal('show');
+                    $('#modal-employee').modal('show');
+
                 }
                 else {
                     toastr.error('Failed to load employee data.');
@@ -244,13 +279,10 @@
                 toastr.error('Failed to load employee data.');
             }
         });
-        // Add your edit logic here
+
         $('#modal-employee').on('hidden.bs.modal', function () {
             // Reset modal content when it's closed
             $('#form-emp')[0].reset();
-            $('#btn-update').addClass('d-none');
-            $('#btn-register').removeClass('d-none');
-
         });
     });
 });
