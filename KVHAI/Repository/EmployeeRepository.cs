@@ -279,7 +279,7 @@ namespace KVHAI.Repository
         }
 
 
-        //SAMPLE DATAS
+        //WITHOUT SEARCH
         public async Task<List<Employee>> GetAllEmployeesAsync(int offset, int limit)
         {
             var employees = new List<Employee>();
@@ -288,6 +288,44 @@ namespace KVHAI.Repository
             {
                 using (var command = new SqlCommand($"SELECT * FROM employee_tb ORDER BY emp_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
                 {
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        while (await reader.ReadAsync())
+                        {
+                            var employee = new Employee();
+                            employee.Emp_ID = reader[0]?.ToString() ?? string.Empty;
+                            employee.Lname = reader[1]?.ToString() ?? string.Empty;
+                            employee.Fname = reader[2]?.ToString() ?? string.Empty;
+                            employee.Mname = reader[3]?.ToString() ?? string.Empty;
+                            employee.Phone = reader[4]?.ToString() ?? string.Empty;
+                            employee.Email = reader[5]?.ToString() ?? string.Empty;
+                            employee.Username = reader[6]?.ToString() ?? string.Empty;
+                            employee.Password = reader[7]?.ToString() ?? string.Empty;
+                            employee.Role = reader[8]?.ToString() ?? string.Empty;
+                            employee.Created_At = reader[9]?.ToString() ?? string.Empty;
+                            employees.Add(employee);
+
+                        }
+                    }
+                }
+            }
+
+            return employees;
+        }
+
+        //WITH SEARCH
+        public async Task<List<Employee>> GetAllEmployeesAsync(string search, int offset, int limit)//string category, 
+        {
+            var employees = new List<Employee>();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand($"SELECT * FROM employee_tb WHERE role LIKE @search ORDER BY emp_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY", connection))
+                {
+                    command.Parameters.AddWithValue("@search", "%" + search + "%");
+                    command.Parameters.AddWithValue("@offset", offset);
+                    command.Parameters.AddWithValue("@limit", limit);
                     using (var reader = await command.ExecuteReaderAsync())
                     {
 

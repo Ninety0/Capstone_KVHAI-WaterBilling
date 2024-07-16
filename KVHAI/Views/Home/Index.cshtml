@@ -64,10 +64,10 @@
             </thead>
             <tbody class="table-group-divider">
                 @{
-                    if (Model.ModelList.Count > 0)
+                    if (Model.ModelList1 != null)
                     {
                         int indexx = Model.Index + 1;
-                        foreach (var item in Model.ModelList)
+                        foreach (var item in Model.ModelList1)
                         {
                             <tr>
                                 <th scope="row">@indexx</th>

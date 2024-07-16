@@ -9,7 +9,6 @@ namespace KVHAI.Controllers.Staff.Admin
     {
         private readonly EmployeeRepository _employeeRepository;
         private readonly ResidentRepository _residentRepository;
-        private readonly Pagination<Employee> _pagination;
         private readonly IWebHostEnvironment _environment;
 
         public AdminAccountController(EmployeeRepository employeeRepository, ResidentRepository residentRepository, IWebHostEnvironment environment)
@@ -17,36 +16,67 @@ namespace KVHAI.Controllers.Staff.Admin
             _employeeRepository = employeeRepository;
             _residentRepository = residentRepository;
             _environment = environment;
-            _pagination = new Pagination<Employee>();
         }
 
         public async Task<IActionResult> Index()
         {
-            //var residents = await _residentRepository.GetAllResidentAsync();
-            //var viewModel = new ModelBinding
-            //{
-            //    Residents = residents,
-            //    Employees = employee
-            //};
-            _pagination.ModelList = await _employeeRepository.GetAllEmployeesAsync(0, 20);
-            _pagination.NumberOfData = await _employeeRepository.CountEmployeeData();
-            _pagination.ScriptName = "pagination_action";
-            _pagination.set(10, 10, 1);
-            //return PartialView("~/Views/ItemManage/Index.cshtml", page_v1);
-            return View("~/Views/Home/Index.cshtml", _pagination);
-            //return View("~/Views/Staff/Admin/Account.cshtml", _pagination);
+            //EMPLOYEE
+            var pagination1 = new Pagination<Employee>
+            {
+                ModelList = await _employeeRepository.GetAllEmployeesAsync(0, 20),
+                NumberOfData = await _employeeRepository.CountEmployeeData(),
+                ScriptName = "pagination_action"
+            };
+            pagination1.set(20, 10, 1);
+
+            //RESIDENT
+            var pagination2 = new Pagination<Resident>
+            {
+                ModelList = await _residentRepository.GetAllResidentAsync(0, 10),
+                NumberOfData = await _residentRepository.CountResidentData(),
+                ScriptName = "pagination_action1"
+            };
+            pagination2.set(10, 10, 1);
+
+            var viewmodel = new ModelBinding
+            {
+                EmployeePagination = pagination1,
+                ResidentPagination = pagination2
+            };
+
+            return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> myPagination(int page_index)
+        public async Task<IActionResult> myPagination(string search, int page_index)
         {
-            _pagination.NumberOfData = await _employeeRepository.CountEmployeeData();
-            _pagination.ScriptName = "pagination_action";
-            _pagination.set(20, 10, page_index);
-            var offset = _pagination.Offset;
-            _pagination.ModelList = await _employeeRepository.GetAllEmployeesAsync(offset, 20);
-            return View("~/Views/Home/Index.cshtml", _pagination);
+            var empSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
+            //EMPLOYEE
+            var pagination1 = new Pagination<Employee>
+            {
+                NumberOfData = await _employeeRepository.CountEmployeeData(),
+                ScriptName = "pagination_action"
+            };
+            pagination1.set(20, 10, page_index);
+            pagination1.ModelList = await _employeeRepository.GetAllEmployeesAsync(empSearch, pagination1.Offset, 20);
 
+            //RESIDENT
+            var pagination2 = new Pagination<Resident>
+            {
+                NumberOfData = await _residentRepository.CountResidentData(),
+                ScriptName = "pagination_action1"
+            };
+            pagination2.set(10, 10, 1);
+            pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10);
+
+            var viewmodel = new ModelBinding
+            {
+                EmployeePagination = pagination1,
+                ResidentPagination = pagination2
+            };
+
+
+            return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
         }
 
 

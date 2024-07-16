@@ -25,7 +25,7 @@ namespace KVHAI.CustomClass
         public void set(int showEntries, int numberOfPagination, int currentPage)//List<T> modelList
         {
             //this.ModelList = modelList;
-            this.ShowEntry = showEntries;
+            this.ShowEntry = NumberOfData < showEntries ? NumberOfData : showEntries;
             this.CurrentPage = currentPage;         //500 / 10    = 50
             this.MaxPage = Math.Ceiling((double)NumberOfData / Convert.ToDouble(showEntries));//number of pagination 1,2,3...n
             //this.PageStart = (int)Math.Floor((double)(currentPage - 1) / showEntries) * showEntries + 1;//1

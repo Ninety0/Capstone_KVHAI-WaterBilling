@@ -294,5 +294,98 @@ namespace KVHAI.Repository
             }
 
         }
+
+
+        //WITH SEARCH
+        public async Task<List<Resident>> GetAllResidentAsync(int offset, int limit)
+        {
+            var residents = new List<Resident>();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand($"SELECT * FROM resident_tb ORDER BY res_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
+                {
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        while (await reader.ReadAsync())
+                        {
+                            var _resident = new Resident();
+                            _resident.Res_ID = reader[0]?.ToString() ?? string.Empty;
+                            _resident.Lname = reader[1]?.ToString() ?? string.Empty;
+                            _resident.Fname = reader[2]?.ToString() ?? string.Empty;
+                            _resident.Mname = reader[3]?.ToString() ?? string.Empty;
+                            _resident.Phone = reader[4]?.ToString() ?? string.Empty;
+                            _resident.Email = reader[5]?.ToString() ?? string.Empty;
+                            _resident.Block = reader[6]?.ToString() ?? string.Empty;
+                            _resident.Lot = reader[7]?.ToString() ?? string.Empty;
+                            _resident.Username = reader[8]?.ToString() ?? string.Empty;
+                            _resident.Password = reader[9]?.ToString() ?? string.Empty;
+                            _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
+                            _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
+                            _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
+                            _resident.Activated = (reader[13].ToString() == "false") ? "pending" : "activated";
+                            residents.Add(_resident);
+
+                        }
+                    }
+                }
+            }
+
+            return residents;
+        }
+
+        //WITHOUT SEARCH
+        //public async Task<List<Resident>> GetAllResidentAsync(int offset, int limit)
+        //{
+        //    var residents = new List<Resident>();
+
+        //    using (var connection = await _dbConnect.GetOpenConnectionAsync())
+        //    {
+        //        using (var command = new SqlCommand($"SELECT * FROM resident_tb ORDER BY res_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
+        //        {
+        //            using (var reader = await command.ExecuteReaderAsync())
+        //            {
+
+        //                while (await reader.ReadAsync())
+        //                {
+        //                    var _resident = new Resident();
+        //                    _resident.Res_ID = reader[0]?.ToString() ?? string.Empty;
+        //                    _resident.Lname = reader[1]?.ToString() ?? string.Empty;
+        //                    _resident.Fname = reader[2]?.ToString() ?? string.Empty;
+        //                    _resident.Mname = reader[3]?.ToString() ?? string.Empty;
+        //                    _resident.Phone = reader[4]?.ToString() ?? string.Empty;
+        //                    _resident.Email = reader[5]?.ToString() ?? string.Empty;
+        //                    _resident.Block = reader[6]?.ToString() ?? string.Empty;
+        //                    _resident.Lot = reader[7]?.ToString() ?? string.Empty;
+        //                    _resident.Username = reader[8]?.ToString() ?? string.Empty;
+        //                    _resident.Password = reader[9]?.ToString() ?? string.Empty;
+        //                    _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
+        //                    _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
+        //                    _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
+        //                    _resident.Activated = (reader[13].ToString() == "false") ? "pending" : "activated";
+        //                    residents.Add(_resident);
+
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    return residents;
+        //}
+
+        public async Task<int> CountResidentData()
+        {
+            int result = 0;
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand($"SELECT COUNT(*) FROM resident_tb", connection))
+                {
+                    result = (int)command.ExecuteScalar();
+
+                    return result;
+                }
+            }
+        }
     }
 }
