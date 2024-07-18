@@ -6,7 +6,7 @@
 }
 
 @section head{
-
+    <link href="/lib/just-select/justselect.css" rel="stylesheet" />
     <style>
         .link-header {
             text-decoration: none;
@@ -47,12 +47,81 @@
             height: 400px;
             width: 100%;
         }
+
+        .search-wrapper{
+            display:flex;
+            width:100%;
+            border-radius:6px;
+            height:50px;
+            background-color:white;
+            box-shadow: 0 0 10px 3px rgba(0,0,0,.15);
+        }
+        .search-wrapper .left{
+            display:flex;
+            flex:1;
+            align-items:center;
+            position:relative;
+            height:100%;
+            padding-left:10px;
+        }
+
+        .left span i {
+            color: #9e9ea7;
+        }
+
+        #emp-search {
+            position: absolute;
+            background-color: transparent;
+            padding-left: 60px;
+            border: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+        input[type=search]:focus {
+            outline: 2px solid rgba(5, 39, 113,.3);
+            border-radius: 6px;
+        }
+
+        .search-wrapper .vertical-divider {
+            display:flex;
+            align-self:center;
+            height:50%;
+            width: 3px;
+            margin-right: 24px;
+            background: #e7e7e9;
+        }
+
+        .search-wrapper .right {
+            display: flex;
+            align-items: center;
+            position: relative;
+            width:20%;
+        }
+
+        .search-option{
+            height:100%;
+            width:100%;
+            border:0;
+            margin-right:.5rem;
+        }
+
+        .search-option:focus{
+            outline:none;
+        }
+        
     </style>
 }
 
 @section scripts{
+    <script src="~/lib/just-select/justselect.js"></script>
     <script src="~/js/employeeSignup.js">
     </script>
+    <script type="text/javascript">
+        
+    </script>
+
     <script>
         $(document).ready(function () {
 
@@ -166,12 +235,14 @@
 
         function pagination_action(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
             var _search = $('#emp-search').val();
+            var _category = $('#category').val();
             //var date = $('#selectedDateRange').val();
             //var start_date = moment(date.substring(0, 10));
             //var end_date = moment(date.substring(13, 23));
 
             var array = {
                 search: _search,
+                category: _category.toLowerCase(),
                 page_index: i
                 //DateStart: start_date.format('YYYY-MM-DD'),
                 //DateEnd: end_date.format('YYYY-MM-DD')
@@ -207,14 +278,6 @@
     @await Html.PartialAsync("PartialView/_Preloader")
 </div>
 
-@if (ViewBag.Success != null)
-{
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <strong>Holy guacamole!</strong> You should check in on some of those fields below.
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-
 <!--/////////////////////-->
 <!-- Modal IMAGE-->
 <!--/////////////////////-->
@@ -245,21 +308,31 @@
             <section id="staff">
                 <div class="row d-flex align-items-center">
                     <div class="col">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-employee">
+                        <div class="search-wrapper">
+                            <div class="left">
+                                <span><i class="fa-solid fa-magnifying-glass ms-2 me-2"></i></span>
+                                <input type="search" id="emp-search" placeholder="Search...">
+                            </div>
+                            <div class="vertical-divider"></div>
+                            <div class="right">
+                                <select class="justselect" id="category">
+                                    <option selected value="lname">Surname</option>
+                                    <option value="email">Email</option>
+                                    <option value="role">Role</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col d-flex mt-3 justify-content-sm-start mt-sm-0 justify-content-md-end">
+                        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#modal-employee" style="background-color: #030712; color:white;">
                             <i class="fa-solid fa-plus"></i>
-                            <span class="fw-bold ms-2" style="font-size:1rem;">NEW</span>
+                            <span class="fw-bold ms-2" style="font-size:1rem;">Staff Account</span>
                         </button>
                     </div>
-                    <div class="col">
-                        <nav class="navbar bg-body-tertiary">
-                            <div class="container-fluid">
-                                <input id="emp-search" class="form-control me-2 w-100" type="search" placeholder="Search" aria-label="Search">
-                            </div>
-                        </nav>
-                    </div>
+
                 </div>
 
-                <div class="table-responsive">
+                <div class="table-responsive mt-4">
                     <table class="table" id="tableData">
                         <thead>
                             <tr>
@@ -275,37 +348,50 @@
                         </thead>
                         <tbody class="table-group-divider">
                             @{
-                                int indexx = Model.EmployeePagination.Index + 1;
-                                foreach (var item in Model.EmployeePagination.ModelList)
+
+                                if (Model.EmployeePagination.NumberOfData < 1)
                                 {
                                     <tr>
-                                        <th scope="row">@indexx</th>
-                                        <td>@string.Join(", ", item.Lname, item.Fname, item.Mname)</td>
-                                        <td>@item.Phone</td>
-                                        <td>@item.Email</td>
-                                        <td>@item.Username</td>
-                                        <td>@item.Role</td>
-                                        <td>@item.Created_At</td>
-                                        <td>
-                                            <div class="d-flex ">
-                                                <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
-                                                    <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
-                                                    <i class="fa-regular fa-pen-to-square"></i>
-                                                </button>
-                                                <button class="btn btn-danger btn-sm ms-2 delete-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
-                                                    <i class="fa-solid fa-trash-can"></i>
-                                                </button>
-                                            </div>
-                                        </td>
+                                        <td class="text-center text-uppercase p-5" colspan="8"><strong>No Data Found!</strong></td>
                                     </tr>
-
-                                    indexx++;
                                 }
+                                else
+                                {
+                                    int indexx = Model.EmployeePagination.Index + 1;
+
+                                    foreach (var item in Model.EmployeePagination.ModelList)
+                                    {
+                                        <tr>
+                                            <th scope="row">@indexx</th>
+                                            <td>@string.Join(", ", item.Lname, item.Fname, item.Mname)</td>
+                                            <td>@item.Phone</td>
+                                            <td>@item.Email</td>
+                                            <td>@item.Username</td>
+                                            <td>@item.Role</td>
+                                            <td>@item.Created_At</td>
+                                            <td>
+                                                <div class="d-flex ">
+                                                    <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                                        <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                                        <i class="fa-regular fa-pen-to-square"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm ms-2 delete-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        indexx++;
+                                    }
+                                }
+
+
                             }
                             <tr>
                                 <td colspan="8">
-                                    <div class="container d-flex align-content-center border border-danger">
-                                         @Model.EmployeePagination.Pagenation
+                                    <div class="container d-flex align-self-center">
+                                        @Model.EmployeePagination.Pagenation
                                     </div>
                                 </td>
                             </tr>

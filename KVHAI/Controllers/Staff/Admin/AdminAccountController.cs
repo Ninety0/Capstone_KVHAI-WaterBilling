@@ -23,11 +23,11 @@ namespace KVHAI.Controllers.Staff.Admin
             //EMPLOYEE
             var pagination1 = new Pagination<Employee>
             {
-                ModelList = await _employeeRepository.GetAllEmployeesAsync(0, 20),
+                ModelList = await _employeeRepository.GetAllEmployeesAsync(0, 10),
                 NumberOfData = await _employeeRepository.CountEmployeeData(),
                 ScriptName = "pagination_action"
             };
-            pagination1.set(20, 10, 1);
+            pagination1.set(pagination1.ModelList.Count, 5, 1);
 
             //RESIDENT
             var pagination2 = new Pagination<Resident>
@@ -36,7 +36,7 @@ namespace KVHAI.Controllers.Staff.Admin
                 NumberOfData = await _residentRepository.CountResidentData(),
                 ScriptName = "pagination_action1"
             };
-            pagination2.set(10, 10, 1);
+            pagination2.set(10, 5, 1);
 
             var viewmodel = new ModelBinding
             {
@@ -48,17 +48,17 @@ namespace KVHAI.Controllers.Staff.Admin
         }
 
         [HttpPost]
-        public async Task<IActionResult> myPagination(string search, int page_index)
+        public async Task<IActionResult> myPagination(string search, string category, int page_index)
         {
             var empSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
             //EMPLOYEE
             var pagination1 = new Pagination<Employee>
             {
-                NumberOfData = await _employeeRepository.CountEmployeeData(),
+                NumberOfData = await _employeeRepository.CountEmployeeData(category, search),
                 ScriptName = "pagination_action"
             };
-            pagination1.set(20, 10, page_index);
-            pagination1.ModelList = await _employeeRepository.GetAllEmployeesAsync(empSearch, pagination1.Offset, 20);
+            pagination1.set(10, 5, page_index);
+            pagination1.ModelList = await _employeeRepository.GetAllEmployeesAsync(empSearch, category, pagination1.Offset, 10);
 
             //RESIDENT
             var pagination2 = new Pagination<Resident>
@@ -66,7 +66,7 @@ namespace KVHAI.Controllers.Staff.Admin
                 NumberOfData = await _residentRepository.CountResidentData(),
                 ScriptName = "pagination_action1"
             };
-            pagination2.set(10, 10, 1);
+            pagination2.set(10, 5, 1);
             pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10);
 
             var viewmodel = new ModelBinding

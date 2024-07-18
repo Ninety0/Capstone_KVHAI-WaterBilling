@@ -315,15 +315,20 @@ namespace KVHAI.Repository
         }
 
         //WITH SEARCH
-        public async Task<List<Employee>> GetAllEmployeesAsync(string search, int offset, int limit)//string category, 
+        public async Task<List<Employee>> GetAllEmployeesAsync(string search, string category, int offset, int limit)//string category, 
         {
             var employees = new List<Employee>();
 
+            string query = $"SELECT * FROM employee_tb WHERE {category} LIKE @search ORDER BY emp_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
+
+
+
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand($"SELECT * FROM employee_tb WHERE role LIKE @search ORDER BY emp_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY", connection))
+                using (var command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@search", "%" + search + "%");
+                    //command.Parameters.AddWithValue("@category", category.ToLower());
                     command.Parameters.AddWithValue("@offset", offset);
                     command.Parameters.AddWithValue("@limit", limit);
                     using (var reader = await command.ExecuteReaderAsync())
@@ -352,6 +357,7 @@ namespace KVHAI.Repository
             return employees;
         }
 
+
         public async Task<int> CountEmployeeData()
         {
             int result = 0;
@@ -359,6 +365,24 @@ namespace KVHAI.Repository
             {
                 using (var command = new SqlCommand($"SELECT COUNT(*) FROM employee_tb", connection))
                 {
+                    result = (int)command.ExecuteScalar();
+
+                    return result;
+                }
+            }
+        }
+
+        //WITH CONDITION
+        public async Task<int> CountEmployeeData(string category, string search = "")
+        {
+            int result = 0;
+            string query = $"SELECT Count(*) FROM employee_tb WHERE {category} LIKE @search";
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@search", "%" + search + "%");
+
                     result = (int)command.ExecuteScalar();
 
                     return result;

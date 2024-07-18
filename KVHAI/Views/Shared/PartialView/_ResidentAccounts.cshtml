@@ -20,15 +20,24 @@
 
 
 
-<div class="container-fluid d-flex justify-content-end">
-    <nav class="navbar bg-body-tertiary">
-        <div class="container-fluid">
-            <input class="form-control me-2 w-100" type="search" placeholder="Search" aria-label="Search">
+<div class="container-fluid d-flex justify-content-end mb-3">
+    <div class="search-wrapper">
+        <div class="left">
+            <span><i class="fa-solid fa-magnifying-glass ms-2 me-2"></i></span>
+            <input type="search" id="emp-search" placeholder="Search...">
         </div>
-    </nav>
+        <div class="vertical-divider"></div>
+        <div class="right">
+            <select class="justselect" id="category">
+                <option selected value="lname">Surname</option>
+                <option value="email">Email</option>
+                <option value="role">Role</option>
+            </select>
+        </div>
+    </div>
 </div>
 <div class="table-responsive">
-    <table class="table table-hover">
+    <table class="table">
         <thead>
             <tr>
                 <th scope="col">#</th>
@@ -83,15 +92,14 @@
 
                     index++;
                 }
-                <tr>
-                    <td colspan="8">
-                        <div class="container d-flex align-content-center border border-danger">
-                            @Model.ResidentPagination.Pagenation
-                        </div>
-                    </td>
-                </tr>
             }
-
+            <tr>
+                <td colspan="8">
+                    <div class="container d-flex align-self-center">
+                        @Model.ResidentPagination.Pagenation
+                    </div>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
