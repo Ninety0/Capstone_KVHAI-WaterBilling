@@ -21,6 +21,12 @@
                 pattern: "kvhai/staff/admin/accounts",
                 defaults: new { controller = "AdminAccount", action = "Index" }
             );
+
+            endpoint.MapControllerRoute(
+                name: "AdminStreets",
+                pattern: "kvhai/staff/admin/streets",
+                defaults: new { controller = "Street", action = "Index" }
+            );
         }
     }
 }

@@ -12,11 +12,13 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<DBConnect>();
 builder.Services.AddSingleton<Hashing>();
 builder.Services.AddTransient<InputSanitize>();
+builder.Services.AddTransient(typeof(Pagination<>));
 
 // Register EmployeeRepository as a scoped service
 builder.Services.AddScoped<EmployeeRepository>();
 builder.Services.AddScoped<ResidentRepository>();
 builder.Services.AddScoped<ImageUploadRepository>();
+builder.Services.AddScoped<StreetRepository>();
 
 var app = builder.Build();
 

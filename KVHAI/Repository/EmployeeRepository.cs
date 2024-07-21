@@ -9,17 +9,19 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         private readonly Hashing _hash;
+        private readonly InputSanitize _sanitize;
 
-        public EmployeeRepository(DBConnect dbConnect, Hashing hash)
+        public EmployeeRepository(DBConnect dbConnect, Hashing hash, InputSanitize sanitize)
         {
             _dbConnect = dbConnect;
             _hash = hash;
+            _sanitize = sanitize;
         }
 
         //CREATE
         public async Task<int> CreateEmployee(Employee employee)
         {
-            var pass = _hash.HashPassword(employee.Password);
+            var pass = _hash.HashPassword(await _sanitize.HTMLSanitizerAsync(employee.Password));
             var dt = GetTimeDate();
             try
             {
@@ -27,14 +29,14 @@ namespace KVHAI.Repository
                 {
                     using (var command = new SqlCommand("INSERT INTO employee_tb (lname, fname, mname, phone, email, username, password, role, created_at) VALUES(@lname, @fname, @mname, @phone, @email, @user, @pass, @role, @create)", connection))
                     {
-                        command.Parameters.AddWithValue("@lname", employee.Lname);
-                        command.Parameters.AddWithValue("@fname", employee.Fname);
-                        command.Parameters.AddWithValue("@mname", employee.Mname);
-                        command.Parameters.AddWithValue("@phone", employee.Phone);
-                        command.Parameters.AddWithValue("@email", employee.Email);
-                        command.Parameters.AddWithValue("@user", employee.Username);
+                        command.Parameters.AddWithValue("@lname", await _sanitize.HTMLSanitizerAsync(employee.Lname));
+                        command.Parameters.AddWithValue("@fname", await _sanitize.HTMLSanitizerAsync(employee.Fname));
+                        command.Parameters.AddWithValue("@mname", await _sanitize.HTMLSanitizerAsync(employee.Mname));
+                        command.Parameters.AddWithValue("@phone", await _sanitize.HTMLSanitizerAsync(employee.Phone));
+                        command.Parameters.AddWithValue("@email", await _sanitize.HTMLSanitizerAsync(employee.Email));
+                        command.Parameters.AddWithValue("@user", await _sanitize.HTMLSanitizerAsync(employee.Username));
                         command.Parameters.AddWithValue("@pass", pass);
-                        command.Parameters.AddWithValue("@role", employee.Role);
+                        command.Parameters.AddWithValue("@role", await _sanitize.HTMLSanitizerAsync(employee.Role));
                         command.Parameters.AddWithValue("@create", dt);
 
                         await command.ExecuteNonQueryAsync();
@@ -88,7 +90,7 @@ namespace KVHAI.Repository
         //UPDATE
         public async Task<int> UpdateEmployee(Employee employee)
         {
-            var hasValue = !string.IsNullOrEmpty(employee.Password);
+            var hasValue = !string.IsNullOrEmpty(await _sanitize.HTMLSanitizerAsync(employee.Password));
 
             var query = new StringBuilder("UPDATE employee_tb SET ");
             query.Append("lname = @lname, ");
@@ -111,21 +113,21 @@ namespace KVHAI.Repository
                 {
                     using (var command = new SqlCommand(query.ToString(), connection))
                     {
-                        command.Parameters.AddWithValue("@id", employee.Emp_ID);
-                        command.Parameters.AddWithValue("@lname", employee.Lname);
-                        command.Parameters.AddWithValue("@fname", employee.Fname);
-                        command.Parameters.AddWithValue("@mname", employee.Mname);
-                        command.Parameters.AddWithValue("@phone", employee.Phone);
-                        command.Parameters.AddWithValue("@email", employee.Email);
-                        command.Parameters.AddWithValue("@user", employee.Username);
+                        command.Parameters.AddWithValue("@id", await _sanitize.HTMLSanitizerAsync(employee.Emp_ID));
+                        command.Parameters.AddWithValue("@lname", await _sanitize.HTMLSanitizerAsync(employee.Lname));
+                        command.Parameters.AddWithValue("@fname", await _sanitize.HTMLSanitizerAsync(employee.Fname));
+                        command.Parameters.AddWithValue("@mname", await _sanitize.HTMLSanitizerAsync(employee.Mname));
+                        command.Parameters.AddWithValue("@phone", await _sanitize.HTMLSanitizerAsync(employee.Phone));
+                        command.Parameters.AddWithValue("@email", await _sanitize.HTMLSanitizerAsync(employee.Email));
+                        command.Parameters.AddWithValue("@user", await _sanitize.HTMLSanitizerAsync(employee.Username));
 
                         if (hasValue)
                         {
-                            var hashPass = _hash.HashPassword(employee.Password);
+                            var hashPass = _hash.HashPassword(await _sanitize.HTMLSanitizerAsync(employee.Password));
                             command.Parameters.AddWithValue("@pass", hashPass);
                         }
 
-                        command.Parameters.AddWithValue("@role", employee.Role);
+                        command.Parameters.AddWithValue("@role", await _sanitize.HTMLSanitizerAsync(employee.Role));
 
                         int result = await command.ExecuteNonQueryAsync();
                         return result;

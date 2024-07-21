@@ -9,6 +9,7 @@
   <ItemGroup>
     <Content Remove="wwwroot\js\employeeSignup.js" />
     <Content Remove="wwwroot\js\residentSignup.js" />
+    <Content Remove="wwwroot\js\streetCRUD.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +31,7 @@
 
   <ItemGroup>
     <None Include="wwwroot\js\employeeSignup.js" />
+    <None Include="wwwroot\js\streetCRUD.js" />
     <None Include="wwwroot\js\residentSignup.js" />
     <None Include="wwwroot\lib\evo-calendar\js\evo-calendar.js" />
     <None Include="wwwroot\lib\evo-calendar\js\evo-calendar.min.js" />

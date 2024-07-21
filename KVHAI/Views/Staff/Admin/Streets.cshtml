@@ -1,0 +1,140 @@
+﻿@{
+    ViewBag.Title = "Streets";
+}
+
+@section head{
+    <link href="/lib/just-select/justselect.css" rel="stylesheet" />
+    <link href="/css/custom-search.css" rel="stylesheet" />
+}
+
+@section scripts{
+    <script src="~/js/streetCRUD.js"> </script>
+}
+
+<!--MODAL-->
+<div class="modal fade" id="modal-street" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Streets</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-street" autocomplete="off" class="needs-validation m-0" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="container tab" id="information">
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check mb-3">
+                                    <label for="St_Name" class="form-label fw-bold fs-6">Street Name</label>
+                                    <input type="text" maxlength="50" class="form-control" id="St_Name" name="Street_Name" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer p-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="btn-streets">Register</button>
+                    <button type="submit" class="btn btn-primary d-none" id="btn-update">Update</button>
+
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<!--EMD MODAL-->
+
+<div class="content-container p-4">
+    <div class="container border">
+        <div class="row d-flex align-items-center">
+            <div class="col">
+                <div class="search-wrapper">
+                    <div class="left">
+                        <span><i class="fa-solid fa-magnifying-glass ms-2 me-2"></i></span>
+                        <input type="search" class="search-input" id="st-search" placeholder="Search...">
+                    </div>
+                    <div class="vertical-divider"></div>
+                    <div class="right">
+                        <select class="justselect" id="category">
+                            <option selected value="lname">Streets</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col d-flex mt-3 justify-content-sm-start mt-sm-0 justify-content-md-end">
+                <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#modal-street" style="background-color: #030712; color:white;">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="fw-bold ms-2" style="font-size:1rem;">New Street</span>
+                </button>
+            </div>
+
+        </div>
+
+
+        <div class="table-responsive mt-4">
+            <table class="table" id="tableData">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Street Name</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    @{
+
+                        if (Model.NumberOfData < 1)
+                        {
+                            <tr>
+                                <td class="text-center text-uppercase p-5" colspan="8"><strong>No Data Found!</strong></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            int indexx = Model.Index + 1;
+
+                            foreach (var item in Model.ModelList)
+                            {
+                                <tr>
+                                    <th scope="row" class="p-3">@indexx</th>
+                                    <td class="w-75 p-3">@item.Street_Name</td>
+                                    <td class="p-3">
+                                        <div class="d-flex justify-content-end">
+                                            <button class="btn btn-success btn-sm edit-btn" data-id="@item.Street_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                                <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm ms-2 delete-btn" data-id="@item.Street_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                indexx++;
+                            }
+                        }
+
+
+                    }
+                    <tr>
+                        <td colspan="8">
+                            <div class="container mt-3">
+                                @Model.Pagenation
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

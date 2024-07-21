@@ -54,7 +54,7 @@
                 <span id="header" class="">KVHAI</span>
             </div>
             <div class="container-fluid mt-5 d-flex flex-column p-0">
-                @RenderSection("sidebar", required:false)
+                @RenderSection("sidebar", required: false)
             </div>
         </div>
 
@@ -115,7 +115,7 @@
                         </button>
                         <div class="collapse navbar-collapse mt-5" id="navbarNav">
                             <div class="d-flex flex-column">
-                                @RenderSection("mobilenav",required:false)
+                                @RenderSection("mobilenav", required: false)
                             </div>
                         </div>
                     </div>
@@ -131,22 +131,24 @@
     </div>
 
 
-    
+
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/just-select/justselect.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggleBtn = document.querySelector('#toggle-menu');
-        const topNavbar = document.querySelector('#top-navbar');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.querySelector('#toggle-menu');
+            const topNavbar = document.querySelector('#top-navbar');
 
-        if (toggleBtn && topNavbar) {
-            toggleBtn.addEventListener('click', function () {
-                topNavbar.classList.toggle('show');
-            });
-        }
-    });
-</script>
+            if (toggleBtn && topNavbar) {
+                toggleBtn.addEventListener('click', function () {
+                    topNavbar.classList.toggle('show');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
