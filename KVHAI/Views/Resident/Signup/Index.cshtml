@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
 }
-
+@model List<Streets>;
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -10,10 +10,18 @@
     <title>Signup</title>
 
     <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-icon.css">
     <link href="~/css/toastr.min.css" rel="stylesheet" />
     <link href="~/css/header-font.css" rel="stylesheet" />
     <link href="/css/residentSignup.css" rel="stylesheet" />
+    <link href="/lib/editable-select/jquery-editable-select.css" rel="stylesheet" />
+    <style>
+        .invalid-length {
+            display:none;
+            width: 100%;
+            margin-top: .25rem;
+            color: #dc3545;
+        }
+    </style>
 </head>
 <body>
 
@@ -21,6 +29,7 @@
         <div class="container d-flex p-2 mb-3">
             <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:80px;height:80px;">
             <span class="d-flex align-items-center" id="header">KVHAI</span>
+            <button id="test-btn">Test</button>
         </div>
 
         <div class="container main-form">
@@ -90,7 +99,7 @@
                                 <div class="col-md-4">
                                     <div class="form-check mb-3">
                                         <label for="Block" class="form-label fw-bold fs-6">Block</label>
-                                        <input type="number" min="1" class="form-control" id="Block" name="Block" required>
+                                        <input type="text" min="1" class="form-control" id="Block" name="Block" required>
                                         <div class="invalid-feedback">
                                             Required.
                                         </div>
@@ -99,7 +108,7 @@
                                 <div class="col-md-4">
                                     <div class="form-check mb-3">
                                         <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
-                                        <input type="number" min="1" class="form-control" id="Lot" name="Lot" required>
+                                        <input type="text" min="1" class="form-control" id="Lot" name="Lot" required>
                                         <div class="invalid-feedback">
                                             Required.
                                         </div>
@@ -108,11 +117,14 @@
                                 <div class="col-md-4">
                                     <div class="form-check mb-3">
                                         <label for="fname" class="form-label fw-bold fs-6">Street</label>
-                                        <select class="form-select" aria-label="Default select example" required>
-                                            <option value="" disabled selected hidden>Select Street</option>
-                                            <option value="1">One</option>
-                                            <option value="2">Two</option>
-                                            <option value="3">Three</option>
+                                        
+                                        <select id="select-street" class="form-select" aria-label="Default select example" required>
+                                            @{
+                                                foreach (var item in Model)
+                                                {
+                                                    <option value="@item.Street_ID">@item.Street_Name</option>
+                                                }
+                                            }
                                         </select>
                                         <div class="invalid-feedback">
                                             Required.
@@ -205,16 +217,21 @@
                                 <div class="col-md-4">
                                     <div class="form-check mb-3">
                                         <label for="Password" class="form-label fw-bold fs-6">Password</label>
-                                        <input type="password" maxlength="50" class="form-control" id="Password" name="Password" required>
-                                        <div class="invalid-feedback">
-                                            Required.
+                                        <input type="password" maxlength="50" class="form-control" id="Password" name="Password" minlength="8" required>
+                                        <div class="pass-validation">
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
+                                            <div class="invalid-length">
+                                                Password must be atleast 8 characters long.
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class=" mb-3">
                                         <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
-                                        <input type="password" maxlength="50" class="form-control" id="cpass" required>
+                                        <input type="password" maxlength="50" class="form-control" id="cpass" minlength="8" required>
                                         <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
                                     </div>
                                     
@@ -259,6 +276,10 @@
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
     <script src="~/js/toastr.min.js"></script>
     <script src="~/js/residentSignup.js"></script>
+    <script src="~/lib/editable-select/jquery-editable-select.js"></script>
+    <script>
+        $('#select-street').editableSelect();
+    </script>
 
 </body>
 </html>

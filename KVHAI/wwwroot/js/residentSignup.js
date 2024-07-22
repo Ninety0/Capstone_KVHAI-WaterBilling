@@ -11,20 +11,40 @@
     var maxTab = 2;
     var minTab = 0;
 
+    
+
     // Initialize
     updateTabDisplay();
 
     // Event listeners
+    $('#Password').on('change', function () {
+        var str = $('#Password').val();
+        if (str.length < 8) {
+            this.classList.add('is-invalid');
+            $('.invalid-length').css('display', 'block');
+            $('.pass-validation').find('.invalid-feedback').addClass('d-none');//css('display', 'none');
+
+        }
+        else {
+            this.classList.remove('is-invalid');
+            $('.invalid-length').css('display', 'none');
+
+        }
+    });
+
     $('#cpass').on('change', ConfirmPassword);
     $('#btn-register').click(handleRegistration);
     $('#next-btn').click(IncrementTab);
     $('#prev-btn').click(DecrementTab);
+    $('#test-btn').click(checkInputLength);
 
     function IncrementTab() {
         if (currentTab < maxTab && validateCurrentTab()) {
             currentTab++;
             updateTabDisplay();
         }
+
+        InputKeyPress();
         updateButtonVisibility();
     }
 
@@ -51,6 +71,70 @@
 
     function updateActiveClass() {
         $('.make-circle').removeClass('active').eq(currentTab).addClass('active');
+    }
+
+    function checkInputLength() {
+        
+        const form = $('.tab').eq(currentTab);
+        const inputs = form.find('input');
+        let isValid = true;
+
+        inputs.each(function () {
+            if (this.id==='Password') {
+                var str = $('#Password').val();
+                if (str.length <8) {
+                    toastr.error("Password atleast 8 characters")
+                    this.classList.add('is-invalid');
+                }
+                else {
+                    this.classList.remove('is-invalid');
+                    $('.invalid-length').addClass('d-none');
+                }
+            }
+        });
+    }
+
+    //METHOD TO ENSURE NUMBER ONLY
+    function InputKeyPress() {
+        if (currentTab === 1) {
+            const form = $('.tab').eq(currentTab);
+            const inputs = form.find('input');
+
+            inputs.each(function () {
+                if (this.id === 'Phone') {
+                    $('#Phone').on('keypress', function (e) {
+
+                        var key = e.keyCode || e.which;
+
+                        if (key < 48 || key > 57) {
+                            e.preventDefault();
+                        }
+                    })
+                }
+                else if (this.id === 'Block') {
+                    $('#Block').on('keypress', function (e) {
+
+                        var key = e.keyCode || e.which;
+
+                        if (key < 48 || key > 57) {
+                            e.preventDefault();
+                        }
+                    })
+                }
+                else if (this.id === 'Lot') {
+                    $('#Lot').on('keypress', function (e) {
+
+                        var key = e.keyCode || e.which;
+
+                        if (key < 48 || key > 57) {
+                            e.preventDefault();
+                        }
+                    })
+                }
+            });
+
+            
+        }
     }
 
     function validateCurrentTab() {
@@ -119,7 +203,9 @@
 
         var formData = new FormData($('#myForm')[0]);
         var fileInput = document.getElementById('Image');
+        var _st = $('#select-street').val();
         formData.append('file', fileInput.files[0]);
+        formData.append('street', _st);
 
         $.ajax({
             type: 'POST',

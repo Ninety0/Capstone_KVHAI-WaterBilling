@@ -11,13 +11,17 @@ namespace KVHAI.Repository
         private readonly Hashing _hash;
         private readonly InputSanitize _sanitize;
         private readonly ImageUploadRepository _uploadRepository;
+        private readonly StreetRepository _streetRepository;
+        private readonly AddressRepository _addressRepository;
 
-        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize, ImageUploadRepository uploadRepository)
+        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize, ImageUploadRepository uploadRepository, StreetRepository streetRepository, AddressRepository addressRepository)
         {
             _dbConnect = dbconn;
             _hash = hash;
             _sanitize = sanitize;
             _uploadRepository = uploadRepository;
+            _streetRepository = streetRepository;
+            _addressRepository = addressRepository;
         }
 
         public async Task<List<Resident>> GetAllResidentAsync()
@@ -258,7 +262,7 @@ namespace KVHAI.Repository
         }
 
 
-        public async Task<int> CreateResidentandUploadImage(Resident formData, IFormFile file, string webRootPath)
+        public async Task<int> CreateResidentandUploadImage(Resident formData, IFormFile file, string webRootPath, string street)
         {
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
@@ -271,9 +275,25 @@ namespace KVHAI.Repository
                         {
                             int imageResult = await _uploadRepository.ImageUpload(file, webRootPath, residentID, transaction, connection);
 
+                            int streetResult = await _streetRepository.GetStreetID(street);
+
                             if (imageResult == 0)
                             {
                                 throw new Exception("Image upload failed");
+                            }
+
+                            if (streetResult != 0)
+                            {
+                                int addressResult = await _addressRepository.CreateAddress(residentID, streetResult);
+
+                                if (addressResult == 0)
+                                {
+                                    return 0;
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception("Error Fetching the Street ID");
                             }
                         }
                         else

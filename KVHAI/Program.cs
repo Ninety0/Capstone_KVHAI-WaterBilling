@@ -19,6 +19,7 @@ builder.Services.AddScoped<EmployeeRepository>();
 builder.Services.AddScoped<ResidentRepository>();
 builder.Services.AddScoped<ImageUploadRepository>();
 builder.Services.AddScoped<StreetRepository>();
+builder.Services.AddScoped<AddressRepository>();
 
 var app = builder.Build();
 
