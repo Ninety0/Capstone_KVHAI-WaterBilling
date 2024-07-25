@@ -55,23 +55,23 @@ namespace KVHAI.CustomClass
 
         public HtmlString pageClass(int page_set)
         {
-            string onclickValue = "";
+            string paginationdata = "";
 
             string str1 = "<nav aria-label=\"Page navigation example\">";
             str1 += "<ul class=\"pagination\">";
-            str1 += "<li class=\"page-item\"><a class=\"page-link " + (PrevPageSequence < 0 ? "disabled" : "") + "\" onclick=\"" + this.ScriptName + "(" + PrevPageSequence.ToString() + ")\">Previous</a></li>";
+            str1 += "<li class=\"page-item\"><a class=\"page-link " + (PrevPageSequence < 0 ? "disabled " : " ") + " " + ScriptName + " \" data-" + ScriptName + "=\" " + PrevPageSequence.ToString() + "\">Previous</a></li>";
 
             //for anchor tag
             for (int page = PageStart, j = Offset; page <= PageEnd; page++, j++)
             {
                 int pageNumber = page + 1;
-
-                onclickValue = this.ScriptName + "(" + page.ToString() + ")";
-                str1 += "<li class=\"page-item\"><a class=\"page-link " + (page == page_set ? "active" : "") + "  \" onclick=\"" + onclickValue + "\">" + page + "</a></li>";
+                //onclick=\"" + onclickValue + "\"
+                paginationdata = page.ToString();
+                str1 += "<li class=\"page-item\"><a class=\"page-link " + (page == page_set ? "active" : "") + " " + ScriptName + " \" data-" + ScriptName + "=\" " + paginationdata + " \">" + page + "</a></li>";
 
 
             }
-            str1 += "<li class=\"page-item\"><a class=\"page-link " + (PageEnd >= (int)MaxPage ? "disabled" : "") + "\" onclick=\"" + this.ScriptName + "(" + NextPageSequence.ToString() + ")\">Next</a></li>";
+            str1 += "<li class=\"page-item\"><a class=\"page-link " + (PageEnd >= (int)MaxPage ? "disabled" : "") + " " + ScriptName + " \"  data-" + ScriptName + "=\" " + NextPageSequence.ToString() + "\">Next</a></li>";
             str1 += "</ul></nav>";
 
             return new HtmlString(str1);

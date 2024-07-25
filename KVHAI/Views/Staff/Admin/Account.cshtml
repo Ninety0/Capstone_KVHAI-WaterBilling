@@ -48,161 +48,29 @@
             height: 400px;
             width: 100%;
         }
+
+        /*RESIDENT ACCOUNT CSS*/
+
+        #toggleSwitch {
+            width: 60px;
+            height: 25px;
+        }
+        #lblSwitch {
+            padding: 5px;
+            color: white;
+            background-color: #ef4444;
+            border-radius: 6px;
+        }
     </style>
 }
 
 @section scripts{
     <script src="~/js/employeeSignup.js"></script>
-    <script>
-        $(document).ready(function () {
-
-            function hidePreloader() {
-                const loader = $('#loader');
-                setTimeout(function () {
-                    $('#loader').addClass('d-none');
-                }, 2000);
-
-            }
-            function showPreloader() {
-                const loader = $('#loader');
-                loader.removeClass('d-none');
-                setTimeout(function () {
-                    $('#loader').addClass('d-none');
-                }, 2000);
-            }
-
-            /*   NAVBAR    */
-            $('section').hide(); // Hide all sections initially
-
-
-            $('#staff').show(); // Show the default section (Staff)
-
-
-            $('.link-header').click(function (e) { // Handle click events on header links
-                e.preventDefault();
-
-
-                $('.link-header').removeClass('active');// Remove 'active' class from all links
-
-
-                $(this).addClass('active');// Add 'active' class to clicked link
-
-
-                var targetSection = $(this).attr('href');// Get the target section from the href attribute
-
-                console.log(targetSection)
-
-                $('section').hide(); // Hide all sections
-
-
-                $(targetSection).show(); // Show the target section
-                /* END  NAVBAR    */
-
-
-                /*IMAGE GET METHOD*/
-                $('.load-image').on('click', function () {
-                    var residentId = $(this).siblings('#res_id').val();
-
-                    if (residentId) { // Check if residentId has a value
-                        $('#staticBackdrop').data('resident-id', residentId); // Store the residentId in a data attribute of the modal
-
-                        // Show preloader before triggering the modal to open
-                        // Trigger the modal to open
-                        $('#staticBackdrop').modal(showPreloader(),'show');
-                    } else {
-                        alert('No resident ID found.');
-                    }
-                });
-                /*END IMAGE METHOD*/
-
-                // Add this new event listener
-                $('#staticBackdrop').on('shown.bs.modal', function (e) { // changed to 'shown.bs.modal'
-                    var modal = $(this);
-                    var residentId = modal.data('resident-id');
-
-                    if (residentId) {
-                        $.ajax({
-                            type: 'GET',
-                            url: '@Url.Action("GetImageBase64", "AdminAccount")',
-                            data: { id: residentId },
-                            success: function(result) {
-                                if (result.success) {
-                                    $('#modalImage').attr('src', 'data:image/jpeg;base64,' + result.imageBase64);
-                                    $('#modalImage').show();
-                                } else {
-                                    alert('Failed to load image.');
-                                }
-                                //hidePreloader(); // Hide preloader after the image is successfully loaded
-                            },
-                            error: function() {
-                                alert('An error occurred while loading the image.');
-                                hidePreloader(); // Hide preloader if there's an error
-                            }
-                        });
-                    } else {
-                        hidePreloader(); // Hide preloader if there's no residentId
-                        alert('No resident ID available.');
-                    }
-                });
-
-                // Hide preloader when the modal is hidden
-                $('#staticBackdrop').on('hidden.bs.modal', function () {
-                    // Reset modal content when it's closed
-                    $('#modalImage').attr('src', '').hide();
-                    $('#imagePreloader').show();
-                });
-            });
-        });
-
-
-    </script>
+    <script src="~/js/staffAccount.js"></script> <!--FOR STAFF or EMPLOYEE-->
+    <script src="~/js/residentAccount.js"></script> <!--PARTIAL VIEW RESIDENT-->
 
 
     <!-- PAGINATION -->
-    <script>
-        $(document).on('change', '#emp-search', function () {
-            pagination_action();
-        })
-
-        function pagination_action(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
-            var _search = $('#emp-search').val();
-            var _category = $('#category').val();
-            //var date = $('#selectedDateRange').val();
-            //var start_date = moment(date.substring(0, 10));
-            //var end_date = moment(date.substring(13, 23));
-
-            var array = {
-                search: _search,
-                category: _category.toLowerCase(),
-                page_index: i
-                //DateStart: start_date.format('YYYY-MM-DD'),
-                //DateEnd: end_date.format('YYYY-MM-DD')
-            };
-
-            //console.log(start_date.format('YYYY-MM-DD'));
-            //console.log(end_date.format('YYYY-MM-DD'))
-            //console.log(array);
-
-            $.ajax({
-                url: window.location.origin + '/adminaccount/myPagination',
-                type: "POST",
-                data: array,
-                success: function (response) {
-                    var result = $(response).find("#tableData").html();
-                    console.log(result);
-                    $('#tableData').html(result)
-                },
-                error: function (xhr, status, error_m) {
-                    alert(status);
-                }
-            });
-        }
-        //Force to trigger page_load -> ginagamit ko tong codes na ito pag ayaw gumana ng page_load
-        //document.addEventListener('DOMContentLoaded', function () {
-        //    pagination_action();
-        //}, false);
-
-    </script>
 }
 
 <div class="d-none border" id="loader">
@@ -247,8 +115,7 @@
                             <div class="vertical-divider"></div>
                             <div class="right">
                                 <select class="justselect" id="category">
-                                    <option selected value="lname">Surname</option>
-                                    <option value="email">Email</option>
+                                    <option selected value="name">Name</option>
                                     <option value="role">Role</option>
                                 </select>
                             </div>

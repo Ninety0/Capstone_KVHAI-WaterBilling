@@ -284,11 +284,11 @@ namespace KVHAI.Repository
 
                             if (streetResult != 0)
                             {
-                                int addressResult = await _addressRepository.CreateAddress(residentID, streetResult);
+                                int addressResult = await _addressRepository.CreateAddress(residentID, streetResult, transaction, connection);
 
                                 if (addressResult == 0)
                                 {
-                                    return 0;
+                                    throw new Exception("Error Saving Address");
                                 }
                             }
                             else
@@ -317,14 +317,15 @@ namespace KVHAI.Repository
 
 
         //WITH SEARCH
-        public async Task<List<Resident>> GetAllResidentAsync(int offset, int limit)
+        public async Task<List<Resident>> GetAllResidentAsync(int offset, int limit, string active)
         {
             var residents = new List<Resident>();
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand($"SELECT * FROM resident_tb ORDER BY res_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
+                using (var command = new SqlCommand($"SELECT * FROM resident_tb WHERE activated = @active ORDER BY res_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
                 {
+                    command.Parameters.AddWithValue("@active", active);
                     using (var reader = await command.ExecuteReaderAsync())
                     {
 
@@ -355,52 +356,127 @@ namespace KVHAI.Repository
             return residents;
         }
 
-        //WITHOUT SEARCH
-        //public async Task<List<Resident>> GetAllResidentAsync(int offset, int limit)
-        //{
-        //    var residents = new List<Resident>();
+        //WITH SEARCH
+        public async Task<List<Resident>> GetAllResidentAsync(string search, string category, int offset, int limit, string active)
+        {
+            var residents = new List<Resident>();
+            string query = "";
 
-        //    using (var connection = await _dbConnect.GetOpenConnectionAsync())
-        //    {
-        //        using (var command = new SqlCommand($"SELECT * FROM resident_tb ORDER BY res_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
-        //        {
-        //            using (var reader = await command.ExecuteReaderAsync())
-        //            {
+            if (category == "name")
+            {
+                query = $@"
+                    SELECT * FROM resident_tb 
+                    WHERE(lname like @lname OR fname like @fname OR mname like @mname) AND activated = @active
+                    ORDER BY res_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
+            }
+            else
+            {
+                query = $@"
+                    SELECT * FROM resident_tb 
+                    WHERE concat(block,' ',lot) like @address AND activated = @active
+                    ORDER BY res_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
+            }
 
-        //                while (await reader.ReadAsync())
-        //                {
-        //                    var _resident = new Resident();
-        //                    _resident.Res_ID = reader[0]?.ToString() ?? string.Empty;
-        //                    _resident.Lname = reader[1]?.ToString() ?? string.Empty;
-        //                    _resident.Fname = reader[2]?.ToString() ?? string.Empty;
-        //                    _resident.Mname = reader[3]?.ToString() ?? string.Empty;
-        //                    _resident.Phone = reader[4]?.ToString() ?? string.Empty;
-        //                    _resident.Email = reader[5]?.ToString() ?? string.Empty;
-        //                    _resident.Block = reader[6]?.ToString() ?? string.Empty;
-        //                    _resident.Lot = reader[7]?.ToString() ?? string.Empty;
-        //                    _resident.Username = reader[8]?.ToString() ?? string.Empty;
-        //                    _resident.Password = reader[9]?.ToString() ?? string.Empty;
-        //                    _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
-        //                    _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
-        //                    _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
-        //                    _resident.Activated = (reader[13].ToString() == "false") ? "pending" : "activated";
-        //                    residents.Add(_resident);
 
-        //                }
-        //            }
-        //        }
-        //    }
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(query, connection))
+                {
+                    if (category == "name")
+                    {
+                        command.Parameters.AddWithValue("@lname", '%' + search + '%');
+                        command.Parameters.AddWithValue("@mname", '%' + search + '%');
+                        command.Parameters.AddWithValue("@mname", '%' + search + '%');
 
-        //    return residents;
-        //}
+                    }
+                    else
+                    {
+                        command.Parameters.AddWithValue("@address", search);
+                    }
 
-        public async Task<int> CountResidentData()
+                    command.Parameters.AddWithValue("@active", active);
+                    command.Parameters.AddWithValue("@offset", offset);
+                    command.Parameters.AddWithValue("@limit", limit);
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        while (await reader.ReadAsync())
+                        {
+                            var _resident = new Resident();
+                            _resident.Res_ID = reader[0]?.ToString() ?? string.Empty;
+                            _resident.Lname = reader[1]?.ToString() ?? string.Empty;
+                            _resident.Fname = reader[2]?.ToString() ?? string.Empty;
+                            _resident.Mname = reader[3]?.ToString() ?? string.Empty;
+                            _resident.Phone = reader[4]?.ToString() ?? string.Empty;
+                            _resident.Email = reader[5]?.ToString() ?? string.Empty;
+                            _resident.Block = reader[6]?.ToString() ?? string.Empty;
+                            _resident.Lot = reader[7]?.ToString() ?? string.Empty;
+                            _resident.Username = reader[8]?.ToString() ?? string.Empty;
+                            _resident.Password = reader[9]?.ToString() ?? string.Empty;
+                            _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
+                            _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
+                            _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
+                            _resident.Activated = (reader[13].ToString() == "false") ? "pending" : "activated";
+                            residents.Add(_resident);
+
+                        }
+                    }
+                }
+            }
+
+            return residents;
+        }
+
+
+        public async Task<int> CountResidentData(string active)
         {
             int result = 0;
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand($"SELECT COUNT(*) FROM resident_tb", connection))
+                using (var command = new SqlCommand($"SELECT COUNT(*) FROM resident_tb WHERE activated = @active", connection))
                 {
+                    command.Parameters.AddWithValue("@active", active);
+                    result = (int)command.ExecuteScalar();
+
+                    return result;
+                }
+            }
+        }
+
+        public async Task<int> CountResidentData(string active, string category, string search = "")
+        {
+            int result = 0;
+
+            string query = "";
+            if (category == "name")
+            {
+                query = $@"
+                    SELECT COUNT(*) FROM resident_tb 
+                    WHERE(lname like @lname OR fname like @fname OR mname like @mname) AND activated = @active";
+            }
+            else
+            {
+                query = $@"
+                    SELECT COUNT(*) FROM resident_tb 
+                    WHERE concat(block,' ',lot) like @address AND activated = @active";
+            }
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(query, connection))
+                {
+                    if (category == "name")
+                    {
+                        command.Parameters.AddWithValue("@lname", '%' + search + '%');
+                        command.Parameters.AddWithValue("@mname", '%' + search + '%');
+                        command.Parameters.AddWithValue("@mname", '%' + search + '%');
+
+                    }
+                    else
+                    {
+                        command.Parameters.AddWithValue("@address", search);
+                    }
+                    command.Parameters.AddWithValue("@active", active);
                     result = (int)command.ExecuteScalar();
 
                     return result;

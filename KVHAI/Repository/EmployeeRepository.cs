@@ -320,10 +320,15 @@ namespace KVHAI.Repository
         public async Task<List<Employee>> GetAllEmployeesAsync(string search, string category, int offset, int limit)//string category, 
         {
             var employees = new List<Employee>();
-
-            string query = $"SELECT * FROM employee_tb WHERE {category} LIKE @search ORDER BY emp_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
-
-
+            string query = "";
+            if (category == "name")
+            {
+                query = "SELECT * FROM employee_tb WHERE concat(fname,' ',mname,' ',lname) LIKE @search ORDER BY emp_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
+            }
+            else
+            {
+                query = "SELECT * FROM employee_tb WHERE role LIKE @search ORDER BY emp_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
+            }
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
@@ -375,10 +380,21 @@ namespace KVHAI.Repository
         }
 
         //WITH CONDITION
-        public async Task<int> CountEmployeeData(string category, string search = "")
+        public async Task<int> CountEmployeeData(string category, string? search = "")
         {
             int result = 0;
-            string query = $"SELECT Count(*) FROM employee_tb WHERE {category} LIKE @search";
+
+            string query = "";
+
+            if (category == "name")
+            {
+                query = "SELECT COUNT(*) FROM employee_tb WHERE concat(fname,' ',mname,' ',lname) LIKE @search";
+            }
+            else
+            {
+                query = "SELECT COUNT(*) FROM employee_tb WHERE role LIKE @search";
+            }
+
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
                 using (var command = new SqlCommand(query, connection))

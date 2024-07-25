@@ -38,6 +38,7 @@
     $('#prev-btn').click(DecrementTab);
     $('#test-btn').click(checkInputLength);
 
+    //METHOD INCREMENT TAB
     function IncrementTab() {
         if (currentTab < maxTab && validateCurrentTab()) {
             currentTab++;
@@ -48,6 +49,7 @@
         updateButtonVisibility();
     }
 
+    //METHOD DECREMENT TAB
     function DecrementTab() {
         if (currentTab > minTab) {
             currentTab--;
@@ -57,6 +59,7 @@
         updateButtonVisibility();
     }
 
+    //METHOD TO CHANGE THE BUTTON DISPLAY
     function updateButtonVisibility() {
         $('.btn-prev').toggle(currentTab > minTab);
         $('.btn-next').toggle(currentTab < maxTab);
@@ -64,15 +67,18 @@
 
     }
 
+    //METHOD TO CHANGE THE CURRENT TAB DISPLAY
     function updateTabDisplay() {
         $('.tab').hide().eq(currentTab).show();
         updateActiveClass();
     }
 
+    //METHOD TO CHANGE THE ACTIVE Of CIRCLE
     function updateActiveClass() {
         $('.make-circle').removeClass('active').eq(currentTab).addClass('active');
     }
 
+    //METHOD TO CHECK INPUT LENgTH
     function checkInputLength() {
         
         const form = $('.tab').eq(currentTab);
@@ -137,6 +143,7 @@
         }
     }
 
+    //METHOD TO ENSURE ALL FIELDS ARE VALID
     function validateCurrentTab() {
         const currentTabElement = document.querySelectorAll('.tab')[currentTab];
         const inputs = currentTabElement.querySelectorAll('input, select');
@@ -169,7 +176,7 @@
     }
     
 
-
+    //METHOD CONFIRM PASOWRD
     function ConfirmPassword() {
         //console.log("jQuery version:", $.fn.jquery);
         //console.log("Password element:", $('#Password').length);
@@ -193,6 +200,7 @@
         return isValid;
     }
 
+    //METHOD INSERT
     function handleRegistration(e) {
         e.preventDefault();
 
@@ -226,6 +234,7 @@
                 }
                 else {
                     toastr.success(successMessage);
+                    location.reload();
                 }
             },
             error: function (xhr, status, error) {

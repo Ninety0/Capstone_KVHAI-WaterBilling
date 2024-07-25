@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\js\employeeSignup.js" />
+    <Content Remove="wwwroot\js\residentAccount.js" />
     <Content Remove="wwwroot\js\residentSignup.js" />
+    <Content Remove="wwwroot\js\staffAccount.js" />
     <Content Remove="wwwroot\js\streetCRUD.js" />
   </ItemGroup>
 
@@ -30,7 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\js\staffAccount.js" />
     <None Include="wwwroot\js\employeeSignup.js" />
+    <None Include="wwwroot\js\residentAccount.js" />
     <None Include="wwwroot\js\streetCRUD.js" />
     <None Include="wwwroot\js\residentSignup.js" />
     <None Include="wwwroot\lib\evo-calendar\js\evo-calendar.js" />

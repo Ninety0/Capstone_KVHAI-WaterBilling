@@ -23,7 +23,7 @@ namespace KVHAI.Controllers.Homeowner
             _environment = environment;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View("~/Views/Resident/RLogin/Index.cshtml");
         }

@@ -25,16 +25,16 @@ namespace KVHAI.Controllers.Staff.Admin
             {
                 ModelList = await _employeeRepository.GetAllEmployeesAsync(0, 10),
                 NumberOfData = await _employeeRepository.CountEmployeeData(),
-                ScriptName = "pagination_action"
+                ScriptName = "emppagination"
             };
             pagination1.set(pagination1.ModelList.Count, 5, 1);
 
             //RESIDENT
             var pagination2 = new Pagination<Resident>
             {
-                ModelList = await _residentRepository.GetAllResidentAsync(0, 10),
-                NumberOfData = await _residentRepository.CountResidentData(),
-                ScriptName = "pagination_action1"
+                ModelList = await _residentRepository.GetAllResidentAsync(0, 10, "false"),
+                NumberOfData = await _residentRepository.CountResidentData("false"),
+                ScriptName = "respagination"
             };
             pagination2.set(10, 5, 1);
 
@@ -48,35 +48,90 @@ namespace KVHAI.Controllers.Staff.Admin
         }
 
         [HttpPost]
-        public async Task<IActionResult> myPagination(string search, string category, int page_index)
+        public async Task<IActionResult> EmployeePagination(string search, string category, int page_index)
         {
-            var empSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
-            //EMPLOYEE
-            var pagination1 = new Pagination<Employee>
+            try
             {
-                NumberOfData = await _employeeRepository.CountEmployeeData(category, search),
-                ScriptName = "pagination_action"
-            };
-            pagination1.set(10, 5, page_index);
-            pagination1.ModelList = await _employeeRepository.GetAllEmployeesAsync(empSearch, category, pagination1.Offset, 10);
+                var empSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
+                //EMPLOYEE
+                var pagination1 = new Pagination<Employee>
+                {
+                    NumberOfData = await _employeeRepository.CountEmployeeData(category, search),
+                    ScriptName = "emppagination"
+                };
+                pagination1.set(10, 5, page_index);
+                pagination1.ModelList = await _employeeRepository.GetAllEmployeesAsync(empSearch, category, pagination1.Offset, 10);
 
-            //RESIDENT
-            var pagination2 = new Pagination<Resident>
+                //RESIDENT
+                var pagination2 = new Pagination<Resident>
+                {
+                    ModelList = await _residentRepository.GetAllResidentAsync(0, 10, "false"),
+                    NumberOfData = await _residentRepository.CountResidentData("false"),
+                    ScriptName = "respagination"
+                };
+                pagination2.set(10, 5, 1);
+
+                var viewmodel = new ModelBinding
+                {
+                    EmployeePagination = pagination1,
+                    ResidentPagination = pagination2
+                };
+
+
+                return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
+            }
+            catch (Exception ex)
             {
-                NumberOfData = await _residentRepository.CountResidentData(),
-                ScriptName = "pagination_action1"
-            };
-            pagination2.set(10, 5, 1);
-            pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10);
+                return BadRequest(ex.Message);
+            }
+        }
 
-            var viewmodel = new ModelBinding
+        [HttpPost]
+        public async Task<IActionResult> ResidentPagination(string search, string category, string active, int page_index)
+        {
+            try
             {
-                EmployeePagination = pagination1,
-                ResidentPagination = pagination2
-            };
+                var empSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
+                //EMPLOYEE
+                var pagination1 = new Pagination<Employee>
+                {
+                    NumberOfData = await _employeeRepository.CountEmployeeData(category, search),
+                    ScriptName = "emppagination"
+                };
+                pagination1.set(10, 5, page_index);
+                pagination1.ModelList = await _employeeRepository.GetAllEmployeesAsync(empSearch, category, pagination1.Offset, 10);
+
+                //RESIDENT
+                var pagination2 = new Pagination<Resident>
+                {
+                    ModelList = await _residentRepository.GetAllResidentAsync(0, 10, "false"),
+                    NumberOfData = await _residentRepository.CountResidentData("false"),
+                    ScriptName = "respagination"
+                };
+                pagination2.set(10, 5, 1);
+
+                //RESIDENT
+                //var pagination2 = new Pagination<Resident>
+                //{
+                //    NumberOfData = await _residentRepository.CountResidentData(active, category, search),
+                //    ScriptName = "respagination"
+                //};
+                //pagination2.set(10, 5, page_index);
+                //pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10, active);
+
+                var viewmodel = new ModelBinding
+                {
+                    EmployeePagination = pagination1,
+                    ResidentPagination = pagination2
+                };
 
 
-            return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
+                return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
 
