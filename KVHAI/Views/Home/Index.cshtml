@@ -47,78 +47,6 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
-<div class="container border border-danger">
-    <div class="table-responsive">
-        <table class="table table-hover" id="tableData">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Full Name</th>
-                    <th scope="col">Phone</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Username</th>
-                    <th scope="col">Role</th>
-                    <th scope="col">Created</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody class="table-group-divider">
-                @{
-                    if (Model.ModelList1 != null)
-                    {
-                        int indexx = Model.Index + 1;
-                        foreach (var item in Model.ModelList1)
-                        {
-                            <tr>
-                                <th scope="row">@indexx</th>
-                                <td>@string.Join(", ", item.Lname, item.Fname, item.Mname)</td>
-                                <td>@item.Phone</td>
-                                <td>@item.Email</td>
-                                <td>@item.Username</td>
-                                <td>@item.Role</td>
-                                <td>@item.Created_At</td>
-                                <td>
-                                    <div class="d-flex ">
-                                        <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
-                                            <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
-                                            <i class="fa-regular fa-pen-to-square"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm ms-2 delete-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
-                                            <i class="fa-solid fa-trash-can"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            indexx++;
-                        }
-                    }
-                    else
-                    {
-                        <p>NO RECORDS</p>
-                    }
-                    <tr>
-                        <td colspan="12">
-                            <div class="container border border-danger">
-                                <div class="row">
-                                    <div class="col">
-                                        <span class="lead">Number of Data: @Model.NumberOfData</span>
-                                    </div>
-                                    <div class="col">
-                                        @Model.Pagenation
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-
-                }
-
-            </tbody>
-        </table>
-        
-    </div>
-</div>
 @section sidebar{
     <button class="btn-navs active">TEST</button>
 }
@@ -141,3 +69,18 @@
     <button class="btn-navs ">TEST2</button>
     <button class="btn-navs ">TEST3</button>
 } 
+
+<div class="container">
+    <p class="h3">EMPLOYEE</p>
+    <nav class="nav flex-column">
+        <a class="nav-link" aria-current="page" href="/kvhai/staff/login">Staff Log</a>
+        <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/dashboard">Admin Dashboard.cshtml</a>
+        <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/accounts">Admin Account.cshtml</a>
+        <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/streets">Admin Streets.cshtml</a>
+    </nav>
+    <p class="h3 mt-5">RESIDENT</p>
+    <nav class="nav flex-column">
+        <a class="nav-link " aria-current="page" href="/kvhai/resident/login">Resident Log</a>
+        <a class="nav-link " aria-current="page" href="/kvhai/resident/signup">Resident Signup</a>
+    </nav>
+</div>

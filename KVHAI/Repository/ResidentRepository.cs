@@ -179,18 +179,18 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task UpdateStatus(Resident resident)
+        public async Task<int> UpdateStatus(int res_id, string status)
         {
             try
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("UPDATE resident_tb set activated =@activate WHERE res_id = @id", connection))
+                    using (var command = new SqlCommand("UPDATE resident_tb set activated =@status WHERE res_id = @id", connection))
                     {
-                        command.Parameters.AddWithValue("@id", resident.Res_ID);
-                        command.Parameters.AddWithValue("@user", resident.Activated);
+                        command.Parameters.AddWithValue("@id", res_id);
+                        command.Parameters.AddWithValue("@status", status);
 
-                        await command.ExecuteNonQueryAsync();
+                        return await command.ExecuteNonQueryAsync();
                     }
                 }
             }
@@ -316,7 +316,7 @@ namespace KVHAI.Repository
         }
 
 
-        //WITH SEARCH
+        //WITHOUT SEARCH
         public async Task<List<Resident>> GetAllResidentAsync(int offset, int limit, string active)
         {
             var residents = new List<Resident>();
@@ -357,7 +357,7 @@ namespace KVHAI.Repository
         }
 
         //WITH SEARCH
-        public async Task<List<Resident>> GetAllResidentAsync(string search, string category, int offset, int limit, string active)
+        public async Task<List<Resident>> GetAllResidentAsync(int offset, int limit, string active, string category, string? search)
         {
             var residents = new List<Resident>();
             string query = "";
@@ -366,14 +366,14 @@ namespace KVHAI.Repository
             {
                 query = $@"
                     SELECT * FROM resident_tb 
-                    WHERE(lname like @lname OR fname like @fname OR mname like @mname) AND activated = @active
+                    WHERE(lname like @search OR fname like @search OR mname like @search) AND activated = @active
                     ORDER BY res_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
             }
             else
             {
                 query = $@"
                     SELECT * FROM resident_tb 
-                    WHERE concat(block,' ',lot) like @address AND activated = @active
+                    WHERE concat(block,' ',lot) like @search AND activated = @active
                     ORDER BY res_id OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
             }
 
@@ -382,18 +382,8 @@ namespace KVHAI.Repository
             {
                 using (var command = new SqlCommand(query, connection))
                 {
-                    if (category == "name")
-                    {
-                        command.Parameters.AddWithValue("@lname", '%' + search + '%');
-                        command.Parameters.AddWithValue("@mname", '%' + search + '%');
-                        command.Parameters.AddWithValue("@mname", '%' + search + '%');
 
-                    }
-                    else
-                    {
-                        command.Parameters.AddWithValue("@address", search);
-                    }
-
+                    command.Parameters.AddWithValue("@search", "%" + search + "%");
                     command.Parameters.AddWithValue("@active", active);
                     command.Parameters.AddWithValue("@offset", offset);
                     command.Parameters.AddWithValue("@limit", limit);
@@ -452,30 +442,21 @@ namespace KVHAI.Repository
             {
                 query = $@"
                     SELECT COUNT(*) FROM resident_tb 
-                    WHERE(lname like @lname OR fname like @fname OR mname like @mname) AND activated = @active";
+                    WHERE(lname like @search OR fname like @search OR mname like @search) AND activated = @active";
             }
             else
             {
                 query = $@"
                     SELECT COUNT(*) FROM resident_tb 
-                    WHERE concat(block,' ',lot) like @address AND activated = @active";
+                    WHERE concat(block,' ',lot) like @search AND activated = @active";
             }
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
                 using (var command = new SqlCommand(query, connection))
                 {
-                    if (category == "name")
-                    {
-                        command.Parameters.AddWithValue("@lname", '%' + search + '%');
-                        command.Parameters.AddWithValue("@mname", '%' + search + '%');
-                        command.Parameters.AddWithValue("@mname", '%' + search + '%');
 
-                    }
-                    else
-                    {
-                        command.Parameters.AddWithValue("@address", search);
-                    }
+                    command.Parameters.AddWithValue("@search", "%" + search + "%");
                     command.Parameters.AddWithValue("@active", active);
                     result = (int)command.ExecuteScalar();
 

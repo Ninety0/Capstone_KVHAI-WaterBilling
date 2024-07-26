@@ -4,6 +4,7 @@
     $(document).on('change', '#toggleSwitch', function () {
         var toggle = $('#toggleSwitch').prop('checked');
         var lblSwitch = $('#lblSwitch');
+
         if (toggle) {
             lblSwitch.html('<b>ACTIVE</b>');
             lblSwitch.css('background-color', '#22c55e');
@@ -12,7 +13,65 @@
             lblSwitch.html('<b>PENDING</b>');
             lblSwitch.css('background-color', '#ef4444');
         }
+
+        respagination();
     });
+
+    $(document).on('click', '.btn-res-edit', function () {
+        var res_ID = $(this).data('id');
+        var _status = "true";
+        var _data = { res_id: res_ID, status:_status };
+        if (res_ID) {
+            $.ajax({
+                type: 'POST',
+                url: '/adminaccount/UpdateStatus',
+                data: _data,
+                success: function (response) {
+                    toastr.success("Resident status was updated");
+                    var result = $(response).find('#res-tableData').html();
+                    $('#res-tableData').html(result);
+                },
+                error: function (xhr, status, err_m) {
+                    toastr.error(xhr.responseText);
+                    if (xhr.status === 404) {
+                        toastr.error("Resource not found");
+                    } else if (xhr.status === 500) {
+                        toastr.error("Server error. Please try again later.");
+                    } else {
+                        toastr.error(xhr.responseText || "An unknown error occurred");
+                    }
+                }
+            });
+        }
+    })
+
+    $(document).on('click', '.btn-res-delete', function () {
+        var res_ID = $(this).data('id');
+        var _status = "null";
+        var _data = { res_id: res_ID, status: _status };
+        if (res_ID) {
+            $.ajax({
+                type: 'POST',
+                url: '/adminaccount/UpdateStatus',
+                data: _data,
+                success: function (response) {
+                    toastr.success("Resident status was updated");
+                    var result = $(response).find('#res-tableData').html();
+                    $('#res-tableData').html(result);
+                },
+                error: function (xhr, status, err_m) {
+                    toastr.error(xhr.responseText);
+                    if (xhr.status === 404) {
+                        toastr.error("Resource not found");
+                    } else if (xhr.status === 500) {
+                        toastr.error("Server error. Please try again later.");
+                    } else {
+                        toastr.error(xhr.responseText || "An unknown error occurred");
+                    }
+                }
+            });
+        }
+    })
 
     //event listener
     $(document).on('change', '#res-search', function () {
@@ -72,7 +131,6 @@
         /*IMAGE GET METHOD*/
         $('.load-image').on('click', function () {
             var residentId = $(this).siblings('#res_id').val();
-
             if (residentId) { // Check if residentId has a value
                 $('#staticBackdrop').data('resident-id', residentId); // Store the residentId in a data attribute of the modal
 
@@ -93,7 +151,8 @@
             if (residentId) {
                 $.ajax({
                     type: 'GET',
-                    url: '@Url.Action("GetImageBase64", "AdminAccount")',
+                    url: '/adminaccount/GetImageBase64',
+                    //url: '@Url.Action("GetImageBase64", "AdminAccount")',
                     data: { id: residentId },
                     success: function (result) {
                         if (result.success) {
@@ -128,6 +187,7 @@
         var _category = $('#res-category').val();
         var _isActive = $('#toggleSwitch').prop('checked');
 
+
         var array = {
             search: _search,
             category: _category.toLowerCase(),
@@ -145,6 +205,19 @@
                 var result = $(response).find("#res-tableData").html();
                 console.log(result);
                 $('#res-tableData').html(result)
+
+                var btnEdit = $('.btn-res-edit');
+                var btnDelete = $('.btn-res-delete');
+
+                if (_isActive) {
+                    $('.btn-res-edit').addClass('disabled');
+                    $('.btn-res-delete').addClass('disabled');
+
+                }
+                else {
+                    $('.btn-res-edit').removeClass('disabled');
+                    $('.btn-res-delete').removeClass('disabled');
+                }
             },
             error: function (xhr, status, error_m) {
                 toastr.error(xhr.responseText);
