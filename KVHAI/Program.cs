@@ -20,6 +20,7 @@ builder.Services.AddScoped<ResidentRepository>();
 builder.Services.AddScoped<ImageUploadRepository>();
 builder.Services.AddScoped<StreetRepository>();
 builder.Services.AddScoped<AddressRepository>();
+builder.Services.AddScoped<WaterReadingRepository>();
 
 var app = builder.Build();
 

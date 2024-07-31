@@ -12,6 +12,7 @@
     <Content Remove="wwwroot\js\residentSignup.js" />
     <Content Remove="wwwroot\js\staffAccount.js" />
     <Content Remove="wwwroot\js\streetCRUD.js" />
+    <Content Remove="wwwroot\js\water-reading.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,8 +24,6 @@
     <Folder Include="Controllers\Staff\Cashier2\" />
     <Folder Include="Controllers\Staff\Cashier1\" />
     <Folder Include="Controllers\Staff\Clerk\" />
-    <Folder Include="Controllers\Staff\Waterworks\" />
-    <Folder Include="Views\Staff\Waterworks\" />
     <Folder Include="Views\Staff\Cashier2\" />
     <Folder Include="Views\Staff\Cashier1\" />
     <Folder Include="Views\Staff\Clerk\" />
@@ -32,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\js\water-reading.js" />
     <None Include="wwwroot\js\staffAccount.js" />
     <None Include="wwwroot\js\employeeSignup.js" />
     <None Include="wwwroot\js\residentAccount.js" />
@@ -47,6 +47,7 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
     <PackageReference Include="HtmlSanitizer" Version="8.0.865" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />

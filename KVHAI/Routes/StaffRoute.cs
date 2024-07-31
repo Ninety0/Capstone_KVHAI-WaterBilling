@@ -27,6 +27,12 @@
                 pattern: "kvhai/staff/admin/streets",
                 defaults: new { controller = "Street", action = "Index" }
             );
+
+            endpoint.MapControllerRoute(
+                name: "WaterWorks",
+                pattern: "kvhai/staff/waterwork/",
+                defaults: new { controller = "WaterWorks", action = "Index" }
+            );
         }
     }
 }

@@ -152,7 +152,6 @@ namespace KVHAI.Controllers.Staff.Admin
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateEmployee(Employee formData)
         {
             try

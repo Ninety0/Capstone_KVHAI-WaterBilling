@@ -1,0 +1,127 @@
+﻿@{
+    ViewBag.Title = "Waterworks";
+}
+
+@section head{
+
+}
+@section scripts{
+    <script src="~/js/water-reading.js" defer></script>
+    <script>
+        //$('#select-block').editableSelect();
+        //$('#select-lot').editableSelect();
+        $('#select-street').editableSelect();
+    </script>
+
+}
+
+@section mobilenav{
+    <div>Dashboard</div>
+    <div class="active">Water Reading</div>
+}
+
+@{
+    if (Model.Count < 1)
+    {
+        <p>No Data Found!</p>
+    }
+}
+
+<form id="form-reading" autocomplete="off" class="needs-validation" novalidate>
+
+    @Html.AntiForgeryToken()
+
+    <div class="content-container water-reading p-3">
+        <div class="container border">
+        </div>
+        <!--INFORMATION SECTION-->
+        <section class="information-section">
+            <p class="h3 fw-bold mb-3">Information</p>
+            <!--ROW 1-->
+            <div class="row d-flex justify-content-center">
+                <div class="col-12 col-sm-6">
+                    <div class="form-check mb-3 ps-0">
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon1">Block</span>
+                            <input type="text" class="form-control" name="Block" id="input-block"  required>
+                        </div>
+                        <div class="invalid-feedback">
+                            Required.
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <div class="form-check mb-3 ps-0">
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon1">Lot</span>
+                            <input type="text" class="form-control" name="Lot" id="input-lot" required>
+                        </div>
+                        <div class="invalid-feedback">
+                            Required.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!--ROW 2-->
+            <div class="row d-flex justify-content-center">
+                <div class="col-12 col-sm-6">
+                    <div class="form-check mb-3 ps-0">
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon1">Streets</span>
+                            <select id="select-street" class="form-select" name="Street" aria-label="Default select example" required>
+                                @{
+                                    foreach (var item in Model)
+                                    {
+                                        <option value="@item.Street">@item.Street</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="invalid-feedback">
+                            Required.
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <div class="form-check mb-3 ps-0">
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon1">Name</span>
+                            <input type="text" class="form-control" id="input-name" required disabled>
+                        </div>
+                        <div class="invalid-feedback">
+                            Required.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr />
+
+        <!--READING SECTION-->
+        <section class="reading-section">
+            <p class="h3 fw-bold mb-3">Water Reading</p>
+
+            <div class="row d-flex justify-content-center">
+                <div class="col-12">
+                    <div class="form-check mb-3 ps-0">
+                        <div class="input-group ">
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Reading</span>
+                            <input type="text" id="input-reading" class="form-control" required>
+                        </div>
+                        <div class="invalid-feedback">
+                            Required.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3 mb-3">
+            <a href="#" id="btn-read" class="btn btn-primary p-2">SUBMIT</a>
+        </div>
+    </div>
+
+</form>

@@ -1,0 +1,15 @@
+[
+  {
+    "outputFileName": "wwwroot/css/main-site.min.css",
+    "inputFiles": [
+      "wwwroot/css/header-font.css",
+      "wwwroot/css/dashboardLayout.css",
+      "wwwroot/css/toastr.min.css",
+      "wwwroot/lib/editable-select/jquery-editable-select.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "commentMode": "none"
+    }
+  }
+]
