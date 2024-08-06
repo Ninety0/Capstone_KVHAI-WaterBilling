@@ -23,10 +23,8 @@
   <ItemGroup>
     <Folder Include="Controllers\Staff\Cashier2\" />
     <Folder Include="Controllers\Staff\Cashier1\" />
-    <Folder Include="Controllers\Staff\Clerk\" />
     <Folder Include="Views\Staff\Cashier2\" />
     <Folder Include="Views\Staff\Cashier1\" />
-    <Folder Include="Views\Staff\Clerk\" />
     <Folder Include="wwwroot\proof_img\" />
   </ItemGroup>
 

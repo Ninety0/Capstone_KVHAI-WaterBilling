@@ -8,19 +8,21 @@ namespace KVHAI.Controllers.Staff.Waterworks
     {
         private readonly AddressRepository _addressRepository;
         private readonly WaterReadingRepository _waterReadingRepository;
+        private readonly StreetRepository _streetRepository;
 
-        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository)
+        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository, StreetRepository streetRepository)
         {
             _addressRepository = addressRepository;
             _waterReadingRepository = waterReadingRepository;
+            _streetRepository = streetRepository;
         }
         public async Task<IActionResult> Index()
         {
             try
             {
-                var _residentAddress = await _addressRepository.GetResidentAddressList();
+                var streets = await _streetRepository.GetAllStreets();
 
-                return View("~/Views/Staff/Waterworks/Index.cshtml", _residentAddress);
+                return View("~/Views/Staff/Waterworks/Index.cshtml", streets);
             }
             catch (Exception ex)
             {

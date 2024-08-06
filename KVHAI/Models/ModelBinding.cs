@@ -9,5 +9,9 @@ namespace KVHAI.Models
 
         public Pagination<Employee>? EmployeePagination { get; set; }
         public Pagination<Resident>? ResidentPagination { get; set; }
+
+        public List<WaterReading>? PreviousReading { get; set; }
+        public List<WaterReading>? CurrentReading { get; set; }
+        public List<ResidentAddress>? ResidentAddress { get; set; }
     }
 }

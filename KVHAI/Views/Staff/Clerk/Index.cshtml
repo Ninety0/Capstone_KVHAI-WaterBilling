@@ -1,0 +1,78 @@
+﻿@{
+    ViewBag.Title = "Water Bill";
+}
+
+<div class="content-container p-3">
+    <div class="d-flex flex-column align-items-start">
+        <span class="title">KVHAI WATERWORKS </span>
+        <span class="title">Water Bill No. ??</span>
+        <span class="title">PERIOD COVER DATE</span>
+    </div>
+    <div class="container border">
+        <select class="form-select w-25 mt-3 mb-3" aria-label="Default select example">
+            <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+            <option value="2">Phase 1 (Blk 41 to  48)</option>
+            <option value="3">Blk 24 to 40</option>
+            <option value="4">Blk 7 to 23</option>
+        </select>
+        <div class="table-responsive mt-4">
+            <table class="table" id="tableData">
+                <thead>
+                    <tr>
+                        <th scope="col">Reference No.</th>
+                        <th scope="col">Blk</th>
+                        <th scope="col">Lot</th>
+                        <th scope="col">Name</th>
+                        <th scope="col" class="">
+                            <div class="">@Model.PrevFirstDate-@Model.PrevMonth-@Model.PrevLastDate</div>
+                            <div>Previous Reading</div>
+                        </th>
+                        <th scope="col">
+                            <div class="">@Model.CurrentFirstDate-@Model.CurrentMonth-@Model.CurrentLastDate</div>
+                            <div class="">Current Reading</div>
+                        </th>
+                        <th scope="col">
+                            <div>Cubic Meter</div>
+                            <div>M3</div>
+                        </th>
+                        <th scope="col">
+                            <div>@Model.PrevMonth-@Model.PrevLastDate</div>
+                            <div>Amount</div>
+                        </th>
+                        <th scope="col">Arrears</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    @{
+                        try
+                        {
+                            for (int i = 0; i < Model.PreviousReading.Count; i++)
+                            {
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@Model.ResidentAddress[i].Name</td>
+                                    <td>@Model.ResidentAddress[i].Block</td>
+                                    <td>@Model.ResidentAddress[i].Lot</td>
+                                    <td>@Model.PreviousReading[i].Consumption</td>
+                                    <td>@Model.CurrentReading[i].Consumption</td>
+                                    <td>@Model.CubicMeter[i]</td>
+                                    <td>@Model.BillAmount[i]</td>
+                                    <td> Calculation Here</td>
+                                </tr>
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            <tr>
+                                <td>@ex.Message</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <div>
+                <Button>Generate Bill</Button>
+            </div>
+        </div>
+    </div>
+</div>

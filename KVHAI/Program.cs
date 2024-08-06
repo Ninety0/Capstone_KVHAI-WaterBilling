@@ -12,6 +12,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<DBConnect>();
 builder.Services.AddSingleton<Hashing>();
 builder.Services.AddTransient<InputSanitize>();
+builder.Services.AddTransient<WaterBilling>();
 builder.Services.AddTransient(typeof(Pagination<>));
 
 // Register EmployeeRepository as a scoped service

@@ -29,6 +29,12 @@
             );
 
             endpoint.MapControllerRoute(
+                name: "BillingClerk",
+                pattern: "kvhai/staff/water-billing/",
+                defaults: new { controller = "Clerk", action = "Index" }
+            );
+
+            endpoint.MapControllerRoute(
                 name: "WaterWorks",
                 pattern: "kvhai/staff/waterwork/",
                 defaults: new { controller = "WaterWorks", action = "Index" }
