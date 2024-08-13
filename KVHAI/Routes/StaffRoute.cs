@@ -1,4 +1,6 @@
-﻿namespace KVHAI.Routes
+﻿using KVHAI.Hubs;
+
+namespace KVHAI.Routes
 {
     public class StaffRoute
     {
@@ -28,11 +30,16 @@
                 defaults: new { controller = "Street", action = "Index" }
             );
 
+            endpoint.MapHub<StreetHub>("/kvhai/staff/admin/streethub");
+
             endpoint.MapControllerRoute(
                 name: "BillingClerk",
                 pattern: "kvhai/staff/water-billing/",
                 defaults: new { controller = "Clerk", action = "Index" }
             );
+
+            endpoint.MapHub<WaterReadingHub>("/kvhai/staff/readinghub");
+
 
             endpoint.MapControllerRoute(
                 name: "WaterWorks",

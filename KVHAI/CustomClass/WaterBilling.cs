@@ -6,14 +6,18 @@ namespace KVHAI.CustomClass
     public class WaterBilling
     {
         private readonly WaterReadingRepository _waterReadingRepository;
+        private readonly AddressRepository _addressRepository;
 
         private const double WaterRate = 18.0;
 
         public List<WaterReading>? PreviousReading { get; set; }
         public List<WaterReading>? CurrentReading { get; set; }
         public List<ResidentAddress>? ResidentAddress { get; set; }
+
         public List<Double> CubicMeter { get; set; }
         public List<Double> BillAmount { get; set; }
+
+        public int CountData { get; set; }
 
         public string CurrentFirstDate = string.Empty;
         public string CurrentMonth = string.Empty;
@@ -26,17 +30,18 @@ namespace KVHAI.CustomClass
         public string ErrorMessage = string.Empty;
 
         int index = 1;
-        public WaterBilling(WaterReadingRepository waterReadingRepository)
+        public WaterBilling(WaterReadingRepository waterReadingRepository, AddressRepository addressRepository)
         {
             _waterReadingRepository = waterReadingRepository;
+            _addressRepository = addressRepository;
             CubicMeter = new List<double>();
             BillAmount = new List<Double>();
         }
 
-        public async Task UseWaterBilling()
+        public async Task UseWaterBilling(string location = "")
         {
-            var prevReading = await _waterReadingRepository.GetPreviousReading();
-            var currentReading = await _waterReadingRepository.GetCurrentReading();
+            var prevReading = await _waterReadingRepository.GetPreviousReading(location);
+            var currentReading = await _waterReadingRepository.GetCurrentReading(location);
 
             var model = new ModelBinding
             {
@@ -51,44 +56,45 @@ namespace KVHAI.CustomClass
             this.ResidentAddress = model.ResidentAddress;
 
             // PARSING DATES
-            this.CurrentFirstDate = ParseStartDate(CurrentReading?[0].Date);
-            this.CurrentLastDate = ParseLastDate(CurrentReading?[GetLastIndex(CurrentReading)].Date);
-            this.CurrentMonth = ParseMonth(CurrentReading?[0].Date);
+            this.CurrentFirstDate = CurrentReading?.Count < 1 ? string.Empty : ParseStartDate(CurrentReading?[0].Date);
+            this.CurrentLastDate = CurrentReading?.Count < 1 ? string.Empty : ParseLastDate(CurrentReading?[GetLastIndex(CurrentReading)].Date);
+            this.CurrentMonth = CurrentReading?.Count < 1 ? string.Empty : ParseMonth(CurrentReading?[0].Date);
 
 
-            this.PrevFirstDate = ParseStartDate(PreviousReading?[0].Date);
-            this.PrevLastDate = ParseLastDate(PreviousReading?[GetLastIndex(PreviousReading)].Date);
-            this.PrevMonth = ParseMonth(PreviousReading?[0].Date);
+            this.PrevFirstDate = PreviousReading?.Count < 1 ? string.Empty : ParseStartDate(PreviousReading?[0].Date);//PreviousReading?[0].Date.ToString() ?? string.Empty;
+            this.PrevLastDate = PreviousReading?.Count < 1 ? string.Empty : ParseLastDate(PreviousReading?[GetLastIndex(PreviousReading)].Date);
+            this.PrevMonth = PreviousReading?.Count < 1 ? string.Empty : ParseMonth(PreviousReading?[0].Date);
 
-
+            this.CountData = await _addressRepository.GetCountByLocation(location);
 
             try
             {
-                for (int i = 0; i < PreviousReading?.Count; i++)
+                for (int i = 0; i < ResidentAddress.Count; i++)
                 {
                     var cubic = 0.0;
                     var amount = 0.0;
                     double previousConsumption = 0;
                     double currentConsumption = 0;
 
-                    // Attempt to parse previous consumption
-                    if (!double.TryParse(PreviousReading[i].Consumption, out previousConsumption))
+                    // Check if the index is within range for PreviousReading
+                    if (i < PreviousReading.Count && !double.TryParse(PreviousReading[i].Consumption, out previousConsumption))
                     {
                         previousConsumption = 0; // Default value if parsing fails
                     }
 
-                    // Attempt to parse current consumption
-                    if (!double.TryParse(CurrentReading?[i].Consumption, out currentConsumption))
+                    // Check if the index is within range for CurrentReading
+                    if (i < CurrentReading.Count && !double.TryParse(CurrentReading[i].Consumption, out currentConsumption))
                     {
                         currentConsumption = 0; // Default value if parsing fails
                     }
 
                     // Calculate cubic difference
-                    cubic = currentConsumption - previousConsumption;
+                    cubic = (currentConsumption - previousConsumption) < 1 ? 0 : currentConsumption - previousConsumption;
 
-                    //Calculate bill amount
+                    // Calculate bill amount
                     amount = cubic * WaterRate;
 
+                    // Add the computed values to the lists
                     this.CubicMeter.Add(cubic);
                     this.BillAmount.Add(amount);
                 }
@@ -98,10 +104,16 @@ namespace KVHAI.CustomClass
                 ErrorMessage = ex.Message;
                 throw;
             }
+
+
         }
 
         private string ParseStartDate(string? _startDate)
         {
+            if (_startDate == null)
+            {
+
+            }
             string? _outStartDate = "";
 
             if (DateTime.TryParse(_startDate, out DateTime startDate))
@@ -152,3 +164,43 @@ namespace KVHAI.CustomClass
         }
     }
 }
+
+/*
+ 
+ try
+            {
+                for (int i = 0; i < PreviousReading?.Count; i++)
+                {
+                    var cubic = 0.0;
+                    var amount = 0.0;
+                    double previousConsumption = 0;
+                    double currentConsumption = 0;
+
+                    // Attempt to parse previous consumption
+                    if (!double.TryParse(PreviousReading[i].Consumption, out previousConsumption))
+                    {
+                        previousConsumption = 0; // Default value if parsing fails
+                    }
+
+                    // Attempt to parse current consumption
+                    //if (!double.TryParse(CurrentReading?[i].Consumption, out currentConsumption))
+                    //{
+                    //    currentConsumption = 0; // Default value if parsing fails
+                    //}
+
+                    // Calculate cubic difference
+                    //cubic = currentConsumption - previousConsumption;
+
+                    ////Calculate bill amount
+                    //amount = cubic * WaterRate;
+
+                    //this.CubicMeter.Add(cubic);
+                    //this.BillAmount.Add(amount);
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+                throw;
+            }
+ */

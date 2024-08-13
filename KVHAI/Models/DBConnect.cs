@@ -1,5 +1,4 @@
-﻿using KVHAI.CustomClass;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
 
 namespace KVHAI.Models
 {
@@ -11,8 +10,9 @@ namespace KVHAI.Models
         {
             var baseConnectionString = configuration.GetConnectionString("DefaultConnection");
             var initialCatalog = "kvha1";
-            var userId = "kvhai";
-            var password = "katarunganvillage1";
+            //var userId = "kvhai";
+            var userId = "kvhai_admin";
+            var password = "katarunganvillage";
 
             connectionString = $"{baseConnectionString};Initial Catalog={initialCatalog};Persist Security Info=True;User ID={userId};Password={password};";
 

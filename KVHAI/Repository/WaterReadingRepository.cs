@@ -77,7 +77,7 @@ namespace KVHAI.Repository
             return reading;
         }
 
-        public async Task<ModelBinding> GetPreviousReading()
+        public async Task<ModelBinding> GetPreviousReading(string location = "")
         {
             var prevDate = DateTime.Now.AddMonths(-1).ToString("yyyy-MM");
             var waterReading = new List<WaterReading>();
@@ -94,11 +94,12 @@ namespace KVHAI.Repository
 		                        wr.reading_id, wr.emp_id, wr.addr_id,ad.res_id,consumption, date_reading,location
                             FROM water_reading_tb wr 
                             JOIN address_tb ad ON wr.addr_id = ad.addr_id
-	                        WHERE wr.date_reading LIKE @date
+	                        WHERE wr.date_reading LIKE @date AND ad.location LIKE @location
                         ) AS nested_readings
-                        RIGHT JOIN resident_tb res ON nested_readings.res_id = res.res_id", connection))
+                        JOIN resident_tb res ON nested_readings.res_id = res.res_id", connection))
                 {
                     command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
+                    command.Parameters.AddWithValue("@location", "%" + location + "%");
                     using (var reader = await command.ExecuteReaderAsync())
                     {
 
@@ -139,7 +140,7 @@ namespace KVHAI.Repository
             return models;
         }
 
-        public async Task<ModelBinding> GetCurrentReading()
+        public async Task<ModelBinding> GetCurrentReading(string location = "")
         {
             var prevDate = DateTime.Now.ToString("yyyy-MM");
             var waterReading = new List<WaterReading>();
@@ -155,11 +156,12 @@ namespace KVHAI.Repository
 		                        wr.reading_id, wr.emp_id, wr.addr_id,ad.res_id,consumption, date_reading,location
                             FROM water_reading_tb wr 
                             JOIN address_tb ad ON wr.addr_id = ad.addr_id
-	                        WHERE wr.date_reading LIKE @date
+	                        WHERE wr.date_reading LIKE @date AND ad.location LIKE @location
                         ) AS nested_readings
-                        RIGHT JOIN resident_tb res ON nested_readings.res_id = res.res_id", connection))
+                        JOIN resident_tb res ON nested_readings.res_id = res.res_id", connection))
                 {
                     command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
+                    command.Parameters.AddWithValue("@location", "%" + location + "%");
                     using (var reader = await command.ExecuteReaderAsync())
                     {
 
@@ -198,5 +200,35 @@ namespace KVHAI.Repository
         ////////////
         // DELETE //
         ////////////
+
+        //////////////
+        // VALIDATE //
+        /////////////
+        public async Task<bool> CheckExistReading(string id)
+        {
+            try
+            {
+                var month = DateTime.Now.ToString("yyyy-MM");
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                    Select COUNT(*) from water_reading_tb wr 
+                    JOIN address_tb ad ON wr.addr_id = ad.addr_id
+                    WHERE date_reading like @month AND ad.addr_id = @id", connection))
+                    {
+                        command.Parameters.AddWithValue("@month", "%" + month + "%");
+                        command.Parameters.AddWithValue("@id", id);
+
+                        int result = Convert.ToInt32(await command.ExecuteScalarAsync());
+                        return result > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return true;
+            }
+        }
     }
 }

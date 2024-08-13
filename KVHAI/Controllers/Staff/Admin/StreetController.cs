@@ -1,7 +1,9 @@
 ﻿using KVHAI.CustomClass;
+using KVHAI.Hubs;
 using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
@@ -9,11 +11,13 @@ namespace KVHAI.Controllers.Staff.Admin
     {
         private readonly StreetRepository _streetRepository;
         private readonly Pagination<Streets> _pagination;
+        private readonly IHubContext<StreetHub> _hubContext;
 
-        public StreetController(StreetRepository streetRepository, Pagination<Streets> pagination)
+        public StreetController(StreetRepository streetRepository, Pagination<Streets> pagination, IHubContext<StreetHub> hubContext)
         {
             _streetRepository = streetRepository;
             _pagination = pagination;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index()
@@ -24,7 +28,7 @@ namespace KVHAI.Controllers.Staff.Admin
                 {
                     ModelList = await _streetRepository.GetAllStreets(offset: 0, limit: 10),
                     NumberOfData = await _streetRepository.CountStreetsData(),
-                    ScriptName = "pagination"
+                    ScriptName = "stpagination"
                 };
                 pagination.set(10, 5, 1);
 
@@ -47,7 +51,7 @@ namespace KVHAI.Controllers.Staff.Admin
                 {
                     NumberOfData = await _streetRepository.CountStreetsData(_search),
                     ModelList = await _streetRepository.GetAllStreets(offset: 0, limit: 10),
-                    ScriptName = "pagination"
+                    ScriptName = "stpagination"
                 };
                 pagination.set(10, 5, page_index);
                 pagination.ModelList = await _streetRepository.GetAllStreets(_search, pagination.Offset, 10);
@@ -70,13 +74,14 @@ namespace KVHAI.Controllers.Staff.Admin
                 {
                     return Ok(new { message = "exist" });
                 }
-
                 int result = await _streetRepository.CreateStreets(formData);
+
 
                 if (result == 0)
                     return BadRequest(new { message = "There was an error saving the street." });
 
-                //return Ok(new { message = "Registration Successful." });
+                await _hubContext.Clients.All.SendAsync("ReceiveStreetAdded", formData.Street_Name);
+
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception)
@@ -98,6 +103,9 @@ namespace KVHAI.Controllers.Staff.Admin
                     return BadRequest(new { message = "There was an error updating the street" });
 
                 //return Ok(new { message = "Registration Successful." });
+                // Notify clients about the updated street
+                await _hubContext.Clients.All.SendAsync("ReceiveStreetUpdated", formData.Street_Name);
+
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception)
@@ -125,6 +133,10 @@ namespace KVHAI.Controllers.Staff.Admin
             {
                 return BadRequest(new { message = "error" });
             }
+
+            // Notify clients about the deleted street
+            await _hubContext.Clients.All.SendAsync("ReceiveStreetDeleted", id);
+
             return RedirectToAction(nameof(Index));
         }
 

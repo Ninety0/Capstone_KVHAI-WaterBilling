@@ -157,5 +157,23 @@ namespace KVHAI.Repository
                 throw;
             }
         }
+
+        public async Task<int> GetCountByLocation(string location = "")
+        {
+            int count = 0;
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(@"
+                    SELECT Count(*) FROM resident_tb r
+                    JOIN address_tb a ON r.res_id = a.res_id
+                    WHERE location LIKE @location;", connection))
+                {
+                    command.Parameters.AddWithValue("@location", "%" + location + "%");
+
+                    count = Convert.ToInt32(await command.ExecuteScalarAsync());
+                }
+            }
+            return count;
+        }
     }
 }

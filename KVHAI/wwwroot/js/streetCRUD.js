@@ -1,4 +1,82 @@
 ﻿$(document).ready(function () {
+
+
+    //CODE FOR SIGNALR
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/kvhai/staff/admin/streethub")
+        .build();
+
+    function InvokeProducts() {
+        connection.invoke("GetStreets").catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+
+    connection.on("ReceiveStreetAdded", function (streetName) {
+        //toastr.success(`Street ${streetName} has been added.`);
+        updateStreetTable(); // Custom function to refresh the table
+    });
+
+    connection.on("ReceiveStreetUpdated", function (streetName) {
+        //toastr.info(`Street ${streetName} has been updated.`);
+        updateStreetTable();
+    });
+
+    connection.on("ReceiveStreetDeleted", function (streetId) {
+        //toastr.warning(`Street with ID ${streetId} has been deleted.`);
+        updateStreetTable();
+    });
+
+    connection.on("GetAllStreets", function (streets) {
+        console.log("Na Receive Ko: " + streets);
+        BindStreetToTable(streets);
+    });
+
+    connection.start().then(function () {
+        alert('Connected to dashboardHub');
+        InvokeProducts();
+
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    function updateStreetTable() {
+        var array = {
+            page_index: 1
+        };
+        $.ajax({
+            url: "/Street/Pagination", // Your endpoint to fetch the updated list
+            type: "POST",
+            data: array,
+            success: function (response) {
+                var result = $(response).find("#tableData").html();
+                $('#tableData').html(result);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching updated data:", error);
+            }
+        });
+    }
+
+    function BindStreetToTable(street) {
+        console.log(street);
+        updateStreetTable();
+
+        //$('#tblCustomer tbody').empty();
+
+        //var tr;
+        //$.each(customers, function (index, customer) {
+        //    tr = $('<tr/>');
+        //    tr.append(`<td>${(index + 1)}</td>`);
+        //    tr.append(`<td>${customer.name}</td>`);
+        //    tr.append(`<td>${customer.gender}</td>`);
+        //    tr.append(`<td>${customer.mobile}</td>`);
+        //    $('#tblCustomer').append(tr);
+        //});
+    }
+     //END CODE FOR SIGNALR
+
+
     let st_id = 0;
 
     $('#btn-streets').click(handleRegistration);
@@ -200,32 +278,38 @@
 
     });
 
+    $(document).on('click', '.stpagination', function (event) {
+        event.preventDefault();
+        var page = parseInt($(this).data('stpagination'), 10);
+        stpagination(page);
+    });
+
+    //    < !--PAGINATION -->
+    $(document).on('change', '#st-search', function () {
+        stpagination();
+    })
+
+    function stpagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
+        var _search = $('#st-search').val();
+
+        var array = {
+            search: _search,
+            page_index: i
+        };
+
+        $.ajax({
+            url: window.location.origin + '/street/Pagination',
+            type: "POST",
+            data: array,
+            success: function (response) {
+                var result = $(response).find("#tableData").html();
+                $('#tableData').html(result)
+            },
+            error: function (xhr, status, error_m) {
+                alert(status);
+            }
+        });
+    }
 
 });
-//    < !--PAGINATION -->
-$(document).on('change', '#st-search', function () {
-    pagination();
-})
 
-function pagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
-    var _search = $('#st-search').val();
-
-    var array = {
-        search: _search,
-        page_index: i
-    };
-
-    $.ajax({
-        url: window.location.origin + '/street/Pagination',
-        type: "POST",
-        data: array,
-        success: function (response) {
-            var result = $(response).find("#tableData").html();
-            console.log(result);
-            $('#tableData').html(result)
-        },
-        error: function (xhr, status, error_m) {
-            alert(status);
-        }
-    });
-}

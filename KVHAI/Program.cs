@@ -1,16 +1,24 @@
 using KVHAI.CustomClass;
+using KVHAI.Hubs;
+using KVHAI.MiddleWareExtension;
 using KVHAI.Models;
 using KVHAI.Repository;
 using KVHAI.Routes;
+using KVHAI.SubscribeSqlDependency;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 // Register DBConnect as a singleton or scoped service
+
 builder.Services.AddSingleton<DBConnect>();
 builder.Services.AddSingleton<Hashing>();
+builder.Services.AddScoped<SubscribeStreetTableDependency>();
+builder.Services.AddScoped<StreetHub>();
+
 builder.Services.AddTransient<InputSanitize>();
 builder.Services.AddTransient<WaterBilling>();
 builder.Services.AddTransient(typeof(Pagination<>));
@@ -49,4 +57,5 @@ app.MapControllerRoute(
 ResidentRoute.RegisterRoute(app);
 StaffRoute.RegisterRoutes(app);
 
+app.UseStreetTableDependency<SubscribeStreetTableDependency>();
 app.Run();

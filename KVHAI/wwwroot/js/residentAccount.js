@@ -82,6 +82,7 @@
         event.preventDefault();
         //const page = parseInt($(this).text(), 10);
         var respage = parseInt($(this).data('respagination'), 10);
+        console.log(respage);
         respagination(respage);
     });
 

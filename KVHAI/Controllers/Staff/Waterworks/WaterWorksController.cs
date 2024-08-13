@@ -1,6 +1,8 @@
-﻿using KVHAI.Models;
+﻿using KVHAI.Hubs;
+using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace KVHAI.Controllers.Staff.Waterworks
 {
@@ -9,12 +11,14 @@ namespace KVHAI.Controllers.Staff.Waterworks
         private readonly AddressRepository _addressRepository;
         private readonly WaterReadingRepository _waterReadingRepository;
         private readonly StreetRepository _streetRepository;
+        private readonly IHubContext<WaterReadingHub> _hubContext;
 
-        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository, StreetRepository streetRepository)
+        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository, StreetRepository streetRepository, IHubContext<WaterReadingHub> hubContext)
         {
             _addressRepository = addressRepository;
             _waterReadingRepository = waterReadingRepository;
             _streetRepository = streetRepository;
+            _hubContext = hubContext;
         }
         public async Task<IActionResult> Index()
         {
@@ -35,11 +39,19 @@ namespace KVHAI.Controllers.Staff.Waterworks
         {
             try
             {
+                if (await _waterReadingRepository.CheckExistReading(waterReading.Address_ID))
+                {
+                    return BadRequest("There is already existing reading for the address specified.");
+                }
+
                 int result = await _waterReadingRepository.CreateWaterReading(waterReading);
                 if (result < 1)
                 {
                     return BadRequest("There was an error processing the reading consumption");
                 }
+
+                await _hubContext.Clients.All.SendAsync("ReceiveReading");
+
                 return Ok("Submit successfully");
             }
             catch (Exception ex)

@@ -8,17 +8,20 @@
 
     //EVENT LISTENERS
     $('input, select').on('input change', handleInputChange);
+    $(document).on('click', '#btn-cancel', CancelSubmit);
 
     $('#select-street').on('blur', function () {
         $(this).removeClass('is-invalid');
         $(this).closest('.form-check').find('.invalid-feedback').css('display', 'none');
+
+        $('#input-name').val('');
 
         GetName();
     });
 
     $('#btn-read').click(submitReading);
 
-        
+
     function GetName() {
         var blk = $('#input-block').val();
         var lot = $('#input-lot').val();
@@ -33,20 +36,21 @@
                 success: function (response) {
                     var result = response[0];
                     address_id = result.id;
+                    alert(address_id);
                     $('#input-name').val(result.name);
                 },
                 error: function (xhr, status, err_m) {
                     toastr.error(xhr.responseText);
                 }
-            });  
+            });
         }
         //else {
         //    toastr.error("Please fill out all required fields correctly");
         //}
 
-        
+
     }
-    
+
     function validateTab() {
         var inputElements = $('.water-reading').find('input, select');
         var isValid = true;
@@ -54,7 +58,7 @@
         inputElements.each(function () {
             console.log(this.id);
             const input = $(this);
-            
+
             var feedback = input.closest('.form-check').find('.invalid-feedback');
             if (!this.checkValidity()) {
                 input.addClass('is-invalid');
@@ -83,7 +87,7 @@
                 return;
             }
             var formData = {
-                Address_ID : address_id,
+                Address_ID: address_id,
                 Consumption: $('#input-reading').val()
             };
 
@@ -93,11 +97,13 @@
                 data: formData,
                 success: function (response) {
                     toastr.success(response);
+                    $('#form-reading')[0].reset();
+                    $('#input-name').val('');
                 },
                 error: function (xhr, status, err_m) {
                     toastr.error(xhr.responseText);
                 }
-            }); 
+            });
             // You can add the form submission logic here, e.g., AJAX call or form.submit()
         }
     }
@@ -123,41 +129,14 @@
             }
         });
     }
-    //function InputKeyPress() {
-    //        const inputs = $(document).find('#form-reading');
 
-    //        inputs.each(function () {
-    //            if (this.id === 'input-block') {
-    //                $('#input-block').on('keypress', function (e) {
-
-    //                    var key = e.keyCode || e.which;
-
-    //                    if (key < 48 || key > 57) {
-    //                        e.preventDefault();
-    //                    }
-    //                })
-    //            }
-    //            else if (this.id === 'input-lot') {
-    //                $('#input-lot').on('keypress', function (e) {
-
-    //                    var key = e.keyCode || e.which;
-
-    //                    if (key < 48 || key > 57) {
-    //                        e.preventDefault();
-    //                    }
-    //                })
-    //            }
-    //            else if (this.id === 'input-reading') {
-    //                $('#input-reading').on('keypress', function (e) {
-
-    //                    var key = e.keyCode || e.which;
-
-    //                    if (key < 48 || key > 57) {
-    //                        e.preventDefault();
-    //                    }
-    //                })
-    //            }
-    //        });
-    //}
+    function CancelSubmit()
+    {
+        $('#form-reading')[0].reset();
+        $('#input-name').val('');
+        address_id = 0;
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').css('display', 'none');
+    }
 
 });

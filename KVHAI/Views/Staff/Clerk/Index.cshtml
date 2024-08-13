@@ -2,6 +2,106 @@
     ViewBag.Title = "Water Bill";
 }
 
+@section scripts{
+    <script src="~/js/signalr.min.js"></script>
+    <script defer>
+        $(document).ready(function () {
+
+            //CODE FOR SIGNALR
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/kvhai/staff/readinghub")
+                .build();
+
+            connection.on("ReceiveReading", function () {
+                //toastr.success(`Street ${streetName} has been added.`);
+                updateReadingTable(); // Custom function to refresh the table
+            });
+
+
+            connection.start().then(function () {
+                alert('Connected to waterreadinghub');
+
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            function updateReadingTable() {
+                var array = {
+                    location: ""
+                };
+                $.ajax({
+                    url: "/Clerk/WaterReadLocation", // Your endpoint to fetch the updated list
+                    type: "GET",
+                    data: array,
+                    success: function (response) {
+                        var result = $(response).find("#tableData").html();
+                        $('#tableData').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching updated data:", error);
+                    }
+                });
+            }
+
+            var reading = @Html.Raw(Json.Serialize(Model.PreviousReading.Count));
+            populatePrevReadings(reading);
+            //populateCurrentReadings();
+
+            $('#location').change(GetWaterReadingByLocation);
+
+            function GetWaterReadingByLocation() {
+                var _location = $('#location').val();
+
+                var formData = {
+                    location:_location
+                };
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/Clerk/WaterReadLocation',
+                    data: formData,
+                    success: function (response) {
+                        var result = $(response).find('#tableData').html();
+                        $('#tableData').html(result);
+                        reading = @Html.Raw(Json.Serialize(Model.PreviousReading.Count));
+                        populatePrevReadings(reading);
+                        //populateCurrentReadings();
+                    },
+                    error: function (xhr, status, err_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            //function GetClass() {
+            //    $('.prev-reading').each(function (index) {
+            //        console.log(index);
+            //    });
+            //}
+            function populatePrevReadings(model) {
+                reading = model;//Html.Raw(Json.Serialize(Model.PreviousReading.Count));
+                console.log(reading);
+                //$('.prev-reading').each(function (index) {
+                //    if (readings[index]) {
+                //        $(this).text(readings[index].consumption);
+                //    }
+                //});
+            }
+
+            function populateCurrentReadings() {
+                var readings = @Html.Raw(Json.Serialize(Model.CurrentReading));
+                console.log(readings);
+                $('.current-reading').each(function (index) {
+                    if (readings[index]) {
+                        $(this).text(readings[index].consumption);
+                    }
+                });
+            }
+
+        });
+    </script>
+}
+
 <div class="content-container p-3">
     <div class="d-flex flex-column align-items-start">
         <span class="title">KVHAI WATERWORKS </span>
@@ -9,11 +109,12 @@
         <span class="title">PERIOD COVER DATE</span>
     </div>
     <div class="container border">
-        <select class="form-select w-25 mt-3 mb-3" aria-label="Default select example">
+        <select id="location" class="form-select w-25 mt-3 mb-3" aria-label="Default select example">
             <option selected value="1">Phase 2 (Blk 51 to  143)</option>
             <option value="2">Phase 1 (Blk 41 to  48)</option>
             <option value="3">Blk 24 to 40</option>
             <option value="4">Blk 7 to 23</option>
+            <option value="">All</option>
         </select>
         <div class="table-responsive mt-4">
             <table class="table" id="tableData">
@@ -23,13 +124,13 @@
                         <th scope="col">Blk</th>
                         <th scope="col">Lot</th>
                         <th scope="col">Name</th>
-                        <th scope="col" class="">
-                            <div class="">@Model.PrevFirstDate-@Model.PrevMonth-@Model.PrevLastDate</div>
+                        <th scope="col">
+                            <div>@Model.PrevFirstDate-@Model.PrevMonth-@Model.PrevLastDate</div>
                             <div>Previous Reading</div>
                         </th>
                         <th scope="col">
-                            <div class="">@Model.CurrentFirstDate-@Model.CurrentMonth-@Model.CurrentLastDate</div>
-                            <div class="">Current Reading</div>
+                            <div>@Model.CurrentFirstDate-@Model.CurrentMonth-@Model.CurrentLastDate</div>
+                            <div>Current Reading</div>
                         </th>
                         <th scope="col">
                             <div>Cubic Meter</div>
@@ -46,32 +147,72 @@
                     @{
                         try
                         {
-                            for (int i = 0; i < Model.PreviousReading.Count; i++)
+                            for (int i = 0; i < Model.ResidentAddress.Count; i++)
                             {
+                                // Define default values for cases where data might be missing
+                                string previousReading = "N/A";
+                                string currentReading = "N/A";
+                                string cubicMeter = "N/A";
+                                string billAmount = "N/A";
+                                string arrears = "N/A";
+
+                                // Fetch the previous reading if available
+                                if (i < Model.PreviousReading.Count)
+                                {
+                                    previousReading = Model.PreviousReading[i]?.Consumption ?? "N/A";
+                                }
+
+                                // Fetch the current reading if available
+                                if (i < Model.CurrentReading.Count)
+                                {
+                                    currentReading = Model.CurrentReading[i]?.Consumption ?? "N/A";
+                                }
+
+                                // Fetch the calculated cubic meter if available
+                                if (i < Model.CubicMeter.Count)
+                                {
+                                    cubicMeter = Model.CubicMeter[i].ToString();
+                                }
+
+                                // Fetch the calculated bill amount if available
+                                if (i < Model.BillAmount.Count)
+                                {
+                                    billAmount = Model.BillAmount[i].ToString("F2");
+                                }
+
+                                // Fetch the arrears if available
+                                //if (i < Model.Arrears.Count)
+                                //{
+                                //    arrears = Model.Arrears[i].ToString("F2");
+                                //}
+
                                 <tr>
                                     <td>@(i + 1)</td>
-                                    <td>@Model.ResidentAddress[i].Name</td>
                                     <td>@Model.ResidentAddress[i].Block</td>
                                     <td>@Model.ResidentAddress[i].Lot</td>
-                                    <td>@Model.PreviousReading[i].Consumption</td>
-                                    <td>@Model.CurrentReading[i].Consumption</td>
-                                    <td>@Model.CubicMeter[i]</td>
-                                    <td>@Model.BillAmount[i]</td>
-                                    <td> Calculation Here</td>
+                                    <td>@Model.ResidentAddress[i].Name</td>
+                                    <td class="previous-reading">@previousReading</td>
+                                    <td class="current-reading">@currentReading</td>
+                                    <td>@cubicMeter</td>
+                                    <td>@billAmount</td>
+                                    @*<td>@arrears</td>*@
                                 </tr>
                             }
                         }
                         catch (Exception ex)
                         {
                             <tr>
-                                <td>@ex.Message</td>
+                                <td colspan="9">@ex.Message</td>
                             </tr>
                         }
                     }
                 </tbody>
             </table>
+
+
             <div>
-                <Button>Generate Bill</Button>
+                @*<button class="btn btn-primary @(Model.PreviousReading.Count == Model.CountData ? "active" : "disabled")">Generate Bill</button>*@
+
             </div>
         </div>
     </div>

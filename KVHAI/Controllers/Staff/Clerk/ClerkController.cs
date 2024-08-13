@@ -26,9 +26,24 @@ namespace KVHAI.Controllers.Staff.Clerk
 
             //};
 
-            await _waterBilling.UseWaterBilling();
+            await _waterBilling.UseWaterBilling("1");
 
             return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> WaterReadLocation(string location = "")
+        {
+            try
+            {
+                await _waterBilling.UseWaterBilling(location);
+
+                return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
