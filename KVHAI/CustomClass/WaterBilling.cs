@@ -1,5 +1,6 @@
 ﻿using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Html;
 
 namespace KVHAI.CustomClass
 {
@@ -18,6 +19,7 @@ namespace KVHAI.CustomClass
         public List<Double> BillAmount { get; set; }
 
         public int CountData { get; set; }
+        public string ClassActive { get; set; }
 
         public string CurrentFirstDate = string.Empty;
         public string CurrentMonth = string.Empty;
@@ -27,7 +29,13 @@ namespace KVHAI.CustomClass
         public string PrevMonth = string.Empty;
         public string PrevLastDate = string.Empty;
 
+        public string MonthlyBillString = string.Empty;
+
         public string ErrorMessage = string.Empty;
+
+        public string Location { get; set; } = string.Empty;
+
+        public HtmlString GenerateButton = new HtmlString("");
 
         int index = 1;
         public WaterBilling(WaterReadingRepository waterReadingRepository, AddressRepository addressRepository)
@@ -58,14 +66,21 @@ namespace KVHAI.CustomClass
             // PARSING DATES
             this.CurrentFirstDate = CurrentReading?.Count < 1 ? string.Empty : ParseStartDate(CurrentReading?[0].Date);
             this.CurrentLastDate = CurrentReading?.Count < 1 ? string.Empty : ParseLastDate(CurrentReading?[GetLastIndex(CurrentReading)].Date);
-            this.CurrentMonth = CurrentReading?.Count < 1 ? string.Empty : ParseMonth(CurrentReading?[0].Date);
+            this.CurrentMonth = CurrentReading?.Count < 1 ? string.Empty : "-" + ParseMonth(CurrentReading?[0].Date) + "-";
 
 
             this.PrevFirstDate = PreviousReading?.Count < 1 ? string.Empty : ParseStartDate(PreviousReading?[0].Date);//PreviousReading?[0].Date.ToString() ?? string.Empty;
             this.PrevLastDate = PreviousReading?.Count < 1 ? string.Empty : ParseLastDate(PreviousReading?[GetLastIndex(PreviousReading)].Date);
-            this.PrevMonth = PreviousReading?.Count < 1 ? string.Empty : ParseMonth(PreviousReading?[0].Date);
+            this.PrevMonth = PreviousReading?.Count < 1 ? string.Empty : "-" + ParseMonth(PreviousReading?[0].Date) + "-";
+
+            this.MonthlyBillString = DateTime.Now.AddMonths(-1).ToString("MMM");
 
             this.CountData = await _addressRepository.GetCountByLocation(location);
+
+            this.ClassActive = CurrentReading?.Count == CountData ? "active" : "disabled";
+
+            this.GenerateButton = await Button(location);
+            this.Location = location;
 
             try
             {
@@ -106,6 +121,18 @@ namespace KVHAI.CustomClass
             }
 
 
+        }
+
+        private async Task<HtmlString> Button(string location)
+        {
+            if (string.IsNullOrEmpty(location))
+            {
+                return new HtmlString("");
+            }
+
+            string button = "<button class=\"mt-3 mb-3 p-2 btn btn-primary " + ClassActive + " \"> Bat ayaw </button>";
+
+            return new HtmlString(button);
         }
 
         private string ParseStartDate(string? _startDate)

@@ -109,13 +109,23 @@
         <span class="title">PERIOD COVER DATE</span>
     </div>
     <div class="container border">
-        <select id="location" class="form-select w-25 mt-3 mb-3" aria-label="Default select example">
-            <option selected value="1">Phase 2 (Blk 51 to  143)</option>
-            <option value="2">Phase 1 (Blk 41 to  48)</option>
-            <option value="3">Blk 24 to 40</option>
-            <option value="4">Blk 7 to 23</option>
-            <option value="">All</option>
-        </select>
+        <div class="row">
+            <div class="col">
+                <select id="location" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
+                    <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                    <option value="2">Phase 1 (Blk 41 to  48)</option>
+                    <option value="3">Blk 24 to 40</option>
+                    <option value="4">Blk 7 to 23</option>
+                    <option value="">All</option>
+                </select>
+            </div>
+            <div class="col d-flex justify-content-end">
+                <p>@Model.Location</p>
+                @Model.GenerateButton
+                
+            </div>
+        </div>
+
         <div class="table-responsive mt-4">
             <table class="table" id="tableData">
                 <thead>
@@ -125,22 +135,21 @@
                         <th scope="col">Lot</th>
                         <th scope="col">Name</th>
                         <th scope="col">
-                            <div>@Model.PrevFirstDate-@Model.PrevMonth-@Model.PrevLastDate</div>
+                            <div class="text-center">@Model.PrevFirstDate @Model.PrevMonth @Model.PrevLastDate</div>
                             <div>Previous Reading</div>
                         </th>
                         <th scope="col">
-                            <div>@Model.CurrentFirstDate-@Model.CurrentMonth-@Model.CurrentLastDate</div>
+                            <div class="text-center">@Model.CurrentFirstDate @Model.CurrentMonth @Model.CurrentLastDate</div>
                             <div>Current Reading</div>
                         </th>
                         <th scope="col">
                             <div>Cubic Meter</div>
-                            <div>M3</div>
+                            <div class="text-center">M3</div>
                         </th>
                         <th scope="col">
-                            <div>@Model.PrevMonth-@Model.PrevLastDate</div>
+                            <div class="text-center">@Model.MonthlyBillString-@Model.PrevLastDate</div>
                             <div>Amount</div>
                         </th>
-                        <th scope="col">Arrears</th>
                     </tr>
                 </thead>
                 <tbody class="table-group-divider">
@@ -187,14 +196,14 @@
                                 //}
 
                                 <tr>
-                                    <td>@(i + 1)</td>
-                                    <td>@Model.ResidentAddress[i].Block</td>
-                                    <td>@Model.ResidentAddress[i].Lot</td>
-                                    <td>@Model.ResidentAddress[i].Name</td>
-                                    <td class="previous-reading">@previousReading</td>
-                                    <td class="current-reading">@currentReading</td>
-                                    <td>@cubicMeter</td>
-                                    <td>@billAmount</td>
+                                    <td class="border border-secondary-subtle">@(i + 1)</td>
+                                    <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
+                                    <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
+                                    <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
+                                    <td class="previous-reading text-center border border-secondary-subtle">@previousReading</td>
+                                    <td class="current-reading text-center border border-secondary-subtle">@currentReading</td>
+                                    <td class="text-center border border-secondary-subtle">@cubicMeter</td>
+                                    <td class="border border-secondary-subtle">@billAmount</td>
                                     @*<td>@arrears</td>*@
                                 </tr>
                             }
@@ -208,12 +217,6 @@
                     }
                 </tbody>
             </table>
-
-
-            <div>
-                @*<button class="btn btn-primary @(Model.PreviousReading.Count == Model.CountData ? "active" : "disabled")">Generate Bill</button>*@
-
-            </div>
         </div>
     </div>
 </div>

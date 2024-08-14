@@ -77,26 +77,19 @@ namespace KVHAI.Repository
             return reading;
         }
 
-        public async Task<ModelBinding> GetPreviousReading(string location = "")
+        public async Task<ModelBinding> GetPreviousReading(string location)
         {
             var prevDate = DateTime.Now.AddMonths(-1).ToString("yyyy-MM");
             var waterReading = new List<WaterReading>();
             var residentAddress = new List<ResidentAddress>();
             var models = new ModelBinding();
 
+            var query = await GetSqlQuery(location);
+
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand(@"
-                      SELECT *
-                        FROM (
-                            SELECT 
-		                        wr.reading_id, wr.emp_id, wr.addr_id,ad.res_id,consumption, date_reading,location
-                            FROM water_reading_tb wr 
-                            JOIN address_tb ad ON wr.addr_id = ad.addr_id
-	                        WHERE wr.date_reading LIKE @date AND ad.location LIKE @location
-                        ) AS nested_readings
-                        JOIN resident_tb res ON nested_readings.res_id = res.res_id", connection))
+                using (var command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
                     command.Parameters.AddWithValue("@location", "%" + location + "%");
@@ -140,25 +133,17 @@ namespace KVHAI.Repository
             return models;
         }
 
-        public async Task<ModelBinding> GetCurrentReading(string location = "")
+        public async Task<ModelBinding> GetCurrentReading(string location)
         {
             var prevDate = DateTime.Now.ToString("yyyy-MM");
             var waterReading = new List<WaterReading>();
             var models = new ModelBinding();
+            var query = await GetSqlQuery(location);
 
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand(@"
-                      SELECT *
-                        FROM (
-                            SELECT 
-		                        wr.reading_id, wr.emp_id, wr.addr_id,ad.res_id,consumption, date_reading,location
-                            FROM water_reading_tb wr 
-                            JOIN address_tb ad ON wr.addr_id = ad.addr_id
-	                        WHERE wr.date_reading LIKE @date AND ad.location LIKE @location
-                        ) AS nested_readings
-                        JOIN resident_tb res ON nested_readings.res_id = res.res_id", connection))
+                using (var command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
                     command.Parameters.AddWithValue("@location", "%" + location + "%");
@@ -188,8 +173,8 @@ namespace KVHAI.Repository
 
         public async Task GetReadingConsumption()
         {
-            await GetPreviousReading();
-            await GetCurrentReading();
+            //await GetPreviousReading();
+            //await GetCurrentReading();
         }
 
 
@@ -201,9 +186,9 @@ namespace KVHAI.Repository
         // DELETE //
         ////////////
 
-        //////////////
-        // VALIDATE //
-        /////////////
+        ///////////////////////
+        // CUSTOM FUNCTIONS //
+        /////////////////////
         public async Task<bool> CheckExistReading(string id)
         {
             try
@@ -229,6 +214,44 @@ namespace KVHAI.Repository
                 Console.WriteLine(ex.Message);
                 return true;
             }
+        }
+
+        private async Task<string> GetSqlQuery(string parameter)
+        {
+            string query = "";
+
+            if (string.IsNullOrEmpty(parameter))
+            {
+                //QUERY TO GET ALL
+                query = @"
+                        SELECT *
+                        FROM (
+                            SELECT 
+		                        wr.reading_id, wr.emp_id, wr.addr_id,ad.res_id,consumption, date_reading,location
+                            FROM water_reading_tb wr 
+                            JOIN address_tb ad ON wr.addr_id = ad.addr_id
+	                        WHERE wr.date_reading LIKE @date AND ad.location LIKE @location
+                        ) AS nested_readings
+                        RIGHT JOIN resident_tb res ON nested_readings.res_id = res.res_id
+                        ORDER BY CAST(block AS INT)";
+            }
+            else
+            {
+                //QUERY TO GET BASED ON LOCATION
+                query = @"
+                        SELECT *
+                        FROM (
+                            SELECT 
+		                        wr.reading_id, wr.emp_id, wr.addr_id,ad.res_id,consumption, date_reading,location
+                            FROM water_reading_tb wr 
+                            JOIN address_tb ad ON wr.addr_id = ad.addr_id
+	                        WHERE wr.date_reading LIKE @date AND ad.location LIKE @location
+                        ) AS nested_readings
+                        JOIN resident_tb res ON nested_readings.res_id = res.res_id
+                        ORDER BY CAST(block AS INT)";
+            }
+
+            return query;
         }
     }
 }
