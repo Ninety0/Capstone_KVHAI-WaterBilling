@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Html;
 
 namespace KVHAI.CustomClass
 {
-    public class WaterBilling
+    public class WaterBillingFunction
     {
         private readonly WaterReadingRepository _waterReadingRepository;
         private readonly AddressRepository _addressRepository;
@@ -38,7 +38,7 @@ namespace KVHAI.CustomClass
         public HtmlString GenerateButton = new HtmlString("");
 
         int index = 1;
-        public WaterBilling(WaterReadingRepository waterReadingRepository, AddressRepository addressRepository)
+        public WaterBillingFunction(WaterReadingRepository waterReadingRepository, AddressRepository addressRepository)
         {
             _waterReadingRepository = waterReadingRepository;
             _addressRepository = addressRepository;
@@ -130,7 +130,7 @@ namespace KVHAI.CustomClass
                 return new HtmlString("");
             }
 
-            string button = "<button class=\"mt-3 mb-3 p-2 btn btn-primary " + ClassActive + " \"> Bat ayaw </button>";
+            string button = "<button id=\"btn-Generate \" class=\"mt-3 mb-3 p-2 btn btn-primary " + ClassActive + " \"> Generate Bill </button>";
 
             return new HtmlString(button);
         }

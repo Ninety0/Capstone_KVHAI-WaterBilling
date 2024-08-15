@@ -20,7 +20,7 @@ builder.Services.AddScoped<SubscribeStreetTableDependency>();
 builder.Services.AddScoped<StreetHub>();
 
 builder.Services.AddTransient<InputSanitize>();
-builder.Services.AddTransient<WaterBilling>();
+builder.Services.AddTransient<WaterBillingFunction>();
 builder.Services.AddTransient(typeof(Pagination<>));
 
 // Register EmployeeRepository as a scoped service

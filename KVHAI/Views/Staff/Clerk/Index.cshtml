@@ -25,6 +25,10 @@
                 return console.error(err.toString());
             });
 
+            //END SIGNAL R
+
+            $('#location').change(GetWaterReadingByLocation);
+
             function updateReadingTable() {
                 var array = {
                     location: ""
@@ -43,11 +47,9 @@
                 });
             }
 
-            var reading = @Html.Raw(Json.Serialize(Model.PreviousReading.Count));
-            populatePrevReadings(reading);
+            //var reading = Html.Raw(Json.Serialize(Model.PreviousReading.Count));
+            //populatePrevReadings(reading);
             //populateCurrentReadings();
-
-            $('#location').change(GetWaterReadingByLocation);
 
             function GetWaterReadingByLocation() {
                 var _location = $('#location').val();
@@ -63,8 +65,11 @@
                     success: function (response) {
                         var result = $(response).find('#tableData').html();
                         $('#tableData').html(result);
-                        reading = @Html.Raw(Json.Serialize(Model.PreviousReading.Count));
-                        populatePrevReadings(reading);
+
+                        var btnContent = $(response).find('#btnGenerate').html();
+                        $('#btnGenerate').html(btnContent);
+                        //reading = Html.Raw(Json.Serialize(Model.PreviousReading.Count));
+                        //populatePrevReadings(reading);
                         //populateCurrentReadings();
                     },
                     error: function (xhr, status, err_m) {
@@ -73,29 +78,8 @@
                 });
             }
 
-            //function GetClass() {
-            //    $('.prev-reading').each(function (index) {
-            //        console.log(index);
-            //    });
-            //}
-            function populatePrevReadings(model) {
-                reading = model;//Html.Raw(Json.Serialize(Model.PreviousReading.Count));
-                console.log(reading);
-                //$('.prev-reading').each(function (index) {
-                //    if (readings[index]) {
-                //        $(this).text(readings[index].consumption);
-                //    }
-                //});
-            }
+            function InsertWaterBill() {
 
-            function populateCurrentReadings() {
-                var readings = @Html.Raw(Json.Serialize(Model.CurrentReading));
-                console.log(readings);
-                $('.current-reading').each(function (index) {
-                    if (readings[index]) {
-                        $(this).text(readings[index].consumption);
-                    }
-                });
             }
 
         });
@@ -120,9 +104,15 @@
                 </select>
             </div>
             <div class="col d-flex justify-content-end">
-                <p>@Model.Location</p>
-                @Model.GenerateButton
-                
+                <div id="btnGenerate">
+                    @{
+                        if (Model.GenerateButton != null)
+                        {
+                            @Model.GenerateButton
+                        }
+                    }
+                </div>
+
             </div>
         </div>
 
@@ -196,7 +186,7 @@
                                 //}
 
                                 <tr>
-                                    <td class="border border-secondary-subtle">@(i + 1)</td>
+                                    <td class="border border-secondary-subtle">@(i + 1) @Model.PreviousReading[i].Reading_ID</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>

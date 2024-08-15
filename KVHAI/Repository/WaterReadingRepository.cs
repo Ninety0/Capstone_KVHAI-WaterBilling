@@ -24,7 +24,7 @@ namespace KVHAI.Repository
                 waterReading.Date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO water_reading_tb (emp_id,addr_id,consumption,date_reading) VALUES(@emp_id, @addr_id, @consumption, @date)", connection))
+                    using (var command = new SqlCommand("INSERT INTO water_reading_tb (emp_id,addr_id,consumption,date_reading) VALUES(@emp_id, @addr_id, @cons2umption, @date)", connection))
                     {
                         command.Parameters.AddWithValue("@emp_id", 1);
                         command.Parameters.AddWithValue("@addr_id", waterReading.Address_ID);
@@ -100,6 +100,7 @@ namespace KVHAI.Repository
                         {
                             var wr = new WaterReading
                             {
+                                Reading_ID = reader["reading_id"].ToString() ?? string.Empty,
                                 Consumption = reader["consumption"].ToString() ?? string.Empty,
 
                                 Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd") : string.Empty

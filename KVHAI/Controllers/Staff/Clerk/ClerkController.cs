@@ -6,9 +6,9 @@ namespace KVHAI.Controllers.Staff.Clerk
     public class ClerkController : Controller
     {
         //private readonly WaterReadingRepository _waterReadingRepository;
-        private readonly WaterBilling _waterBilling;
+        private readonly WaterBillingFunction _waterBilling;
 
-        public ClerkController(WaterBilling waterBilling)//WaterReadingRepository waterReadingRepository
+        public ClerkController(WaterBillingFunction waterBilling)//WaterReadingRepository waterReadingRepository
         {
             _waterBilling = waterBilling;
         }
