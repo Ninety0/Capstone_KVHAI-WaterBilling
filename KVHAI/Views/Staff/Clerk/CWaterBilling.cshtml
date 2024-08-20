@@ -1,0 +1,112 @@
+﻿@{
+    ViewBag.Title = "Water Billing";
+}
+@section head{ 
+    <style>
+        .tableRow {
+            border: 1px solid red;
+        }
+        .tableData{
+            font-size: 1rem;
+        }
+    </style>
+}
+
+<div class="content-container p-3" id="waterReadingView">
+    <div class="row">
+        <div class="col">
+            <div class="d-flex flex-column align-items-start">
+                <span class="title">KVHAI WATERWORKS </span>
+                <span class="title">Water Bill No. ??</span>
+                <span class="title">PERIOD COVER DATE</span>
+            </div>
+        </div>
+        <div class="col d-flex justify-content-end ">
+            <select id="location" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
+                <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                <option value="2">Phase 1 (Blk 41 to  48)</option>
+                <option value="3">Blk 24 to 40</option>
+                <option value="4">Blk 7 to 23</option>
+                <option value="">All</option>
+            </select>
+        </div>
+    </div>
+    <div class="container border" id="tableView">
+        <div class="row">
+            <div class="col">
+                <select id="location" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
+                    <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                    <option value="2">Phase 1 (Blk 41 to  48)</option>
+                    <option value="3">Blk 24 to 40</option>
+                    <option value="4">Blk 7 to 23</option>
+                    <option value="">All</option>
+                </select>
+            </div>
+            <div class="col d-flex justify-content-end">
+                <button class="btn-secondary me-2">PRINT</button>
+                <button class="btn-secondary">EXPORT</button>
+            </div>
+        </div>
+        <div class="container-fluid tableData ">
+            <div class="bg-secondary w-100">
+                <span class="">Water Bills</span>
+            </div>
+            <div class="tableRow">
+                <div class="row d-flex ">
+                    <div class="col">WB No.</div>
+                    <div class="col">Name</div>
+                    <div class="col">Block</div>
+                    <div class="col">Lot</div>
+                    <div class="col">Date</div>
+                    <div class="col-1">
+                        <i class="fa-solid fa-caret-up"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="">
+                        <span class="fw-bold">Arrears:</span>
+                        <div class="row border shadow-sm ms-2 me-2">
+                            <div class="col">WB No??</div>
+                            <div class="col">Consumption</div>
+                            <div class="col">Amount</div>
+                        </div>
+                    </div>
+                    <span class="fw-bold">Meter Reading:</span>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Previous </th>
+                                <th scope="col">Current </th>
+                                <th scope="col">Consumption</th>
+                                <th scope="col">Date Issued</th>
+                                <th scope="col">Due Date</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Arrears</th>
+                                <th scope="col">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2</th>
+                                <td>Jacob</td>
+                                <td>Thornton</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3</th>
+                                <td colspan="2">Larry the Bird</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>

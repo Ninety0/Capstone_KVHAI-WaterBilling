@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Water Bill";
+    ViewBag.Title = "Water Reading";
 }
 
 @section scripts{
@@ -30,9 +30,9 @@
             });
 
             //END SIGNAL R
-            $('#location').change(GetWaterReadingByLocation);
-            $('#btnGenerate').click(InsertWaterBill);
-            $('#waterReadingSelect').change(GetWaterReadingByDateRange);
+            $(document).on('change','#location',GetWaterReadingByLocation);
+            $(document).on('click', '#btnGenerate',InsertWaterBill);
+            $(document).on('change','#waterReadingSelect',GetWaterReadingByDateRange);
 
             function updateReadingTable() {
                 var array = {
@@ -59,8 +59,16 @@
             function GetWaterReadingByLocation() {
                 var _location = $('#location').val();
 
+                var select = $('#waterReadingSelect').find('option:selected');
+                var dateFrom = select.data('datefrom').trim();
+                var dateTo = select.data('dateto').trim();
+
+                //alert(dateFrom+" To "+dateTo);
+
                 var formData = {
-                    location:_location
+                    location: _location,
+                    fromDate: dateFrom,
+                    toDate: dateTo
                 };
 
                 $.ajax({
@@ -121,8 +129,8 @@
 
             function GetWaterReadingByDateRange() {
                 var select = $('#waterReadingSelect').find('option:selected');
-                var dateFrom = select.data('datefrom');
-                var dateTo = select.data('dateto');
+                var dateFrom = select.data('datefrom').trim();
+                var dateTo = select.data('dateto').trim();
 
                 var data = {
                     fromDate : dateFrom,
@@ -140,6 +148,8 @@
                         //var btnContent = $(response).find('#btnGenerate').html();
                         //$('#btnGenerate').html(btnContent);
                         console.log(response);
+                        var res = $(response).find('#tableView').html();
+                        $('#tableView').html(res);
                     },
                     error: function (xhr, status, err_m) {
                         toastr.error(xhr.responseText);
@@ -151,7 +161,7 @@
     </script>
 }
 
-<div class="content-container p-3">
+<div class="content-container p-3" id="waterReadingView">
     <div class="row">
         <div class="col">
             <div class="d-flex flex-column align-items-start">
@@ -182,7 +192,7 @@
             }
         </div>
     </div>
-    <div class="container border">
+    <div class="container border" id="tableView">
         <div class="row">
             <div class="col">
                 <select id="location" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">

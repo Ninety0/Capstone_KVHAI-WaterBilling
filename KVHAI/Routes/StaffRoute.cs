@@ -33,9 +33,15 @@ namespace KVHAI.Routes
             endpoint.MapHub<StreetHub>("/kvhai/staff/admin/streethub");
 
             endpoint.MapControllerRoute(
+                name: "ReadingClerk",
+                pattern: "kvhai/staff/water-reading/",
+                defaults: new { controller = "Clerk", action = "Index" }
+            );
+
+            endpoint.MapControllerRoute(
                 name: "BillingClerk",
                 pattern: "kvhai/staff/water-billing/",
-                defaults: new { controller = "Clerk", action = "Index" }
+                defaults: new { controller = "ClerkWaterBilling", action = "Index" }
             );
 
             endpoint.MapHub<WaterReadingHub>("/kvhai/staff/readinghub");

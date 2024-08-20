@@ -24,6 +24,7 @@
   <ItemGroup>
     <Folder Include="Controllers\Staff\Cashier2\" />
     <Folder Include="Controllers\Staff\Cashier1\" />
+    <Folder Include="Views\ClerkWaterBilling\" />
     <Folder Include="Views\Staff\Cashier2\" />
     <Folder Include="Views\Staff\Cashier1\" />
     <Folder Include="wwwroot\proof_img\" />

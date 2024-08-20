@@ -36,11 +36,19 @@ namespace KVHAI.Controllers.Staff.Clerk
         }
 
         [HttpGet]
-        public async Task<IActionResult> WaterReadLocation(string location = "")
+        public async Task<IActionResult> WaterReadLocation(string location = "", string fromDate = "", string toDate = "")
         {
             try
             {
-                await _waterBilling.UseWaterBilling(location);
+                if (DateTime.TryParse(fromDate, out DateTime _from))
+                {
+                    fromDate = _from.ToString("yyyy-MM");
+                }
+                if (DateTime.TryParse(toDate, out DateTime _to))
+                {
+                    toDate = _to.ToString("yyyy-MM");
+                }
+                await _waterBilling.UseWaterBilling(location, fromDate, toDate);
 
                 return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
             }
@@ -55,6 +63,14 @@ namespace KVHAI.Controllers.Staff.Clerk
         {
             try
             {
+                if (DateTime.TryParse(fromDate, out DateTime _from))
+                {
+                    fromDate = _from.ToString("yyyy-MM");
+                }
+                if (DateTime.TryParse(toDate, out DateTime _to))
+                {
+                    toDate = _to.ToString("yyyy-MM");
+                }
                 await _waterBilling.UseWaterBilling("1", fromDate, toDate);
 
                 return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
@@ -105,7 +121,7 @@ namespace KVHAI.Controllers.Staff.Clerk
 
                 if (await _waterBillRepository.CheckExistingWaterBilling(ListBilling))
                 {
-                    return BadRequest("There was an error processing the data.");
+                    return BadRequest("The reading in current location is already done.");
                 }
 
                 int result = await _waterBillRepository.CreateWaterBill(ListBilling);
