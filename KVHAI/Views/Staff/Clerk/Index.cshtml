@@ -17,6 +17,10 @@
                 updateReadingTable(); // Custom function to refresh the table
             });
 
+            connection.on("ReceiveWaterBillNo", function () {
+                toastr.success("Receive na");
+            })
+
 
             connection.start().then(function () {
                 alert('Connected to waterreadinghub');
@@ -26,8 +30,9 @@
             });
 
             //END SIGNAL R
-
             $('#location').change(GetWaterReadingByLocation);
+            $('#btnGenerate').click(InsertWaterBill);
+            $('#waterReadingSelect').change(GetWaterReadingByDateRange);
 
             function updateReadingTable() {
                 var array = {
@@ -79,7 +84,67 @@
             }
 
             function InsertWaterBill() {
+                var _date = $('#lblDate').data('date')
+                var rowData = $('.rowData')
+                var billingData = [];
 
+                rowData.each(function () {
+                    var readingID= parseInt($(this).find('[data-reading]').data("reading"),10);
+                    var _amount = $(this).find('[data-bill]').data("bill");
+
+                    billingData.push({
+                        Reading_ID: readingID,
+                        Amount: _amount,
+                        date: _date
+                    });
+                });
+
+                var formData = {
+                    Bill: billingData,
+                    Date : _date
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Clerk/CreateBilling',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (result) {
+                        console.log(result);
+                        toastr.success(result);
+                    },
+                    error: function (xhr, status, err_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function GetWaterReadingByDateRange() {
+                var select = $('#waterReadingSelect').find('option:selected');
+                var dateFrom = select.data('datefrom');
+                var dateTo = select.data('dateto');
+
+                var data = {
+                    fromDate : dateFrom,
+                    toDate : dateTo
+                };
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/Clerk/WaterReadingByMonth',
+                    data: data,
+                    success: function (response) {
+                        //var result = $(response).find('#tableData').html();
+                        //$('#tableData').html(result);
+
+                        //var btnContent = $(response).find('#btnGenerate').html();
+                        //$('#btnGenerate').html(btnContent);
+                        console.log(response);
+                    },
+                    error: function (xhr, status, err_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
             }
 
         });
@@ -87,10 +152,35 @@
 }
 
 <div class="content-container p-3">
-    <div class="d-flex flex-column align-items-start">
-        <span class="title">KVHAI WATERWORKS </span>
-        <span class="title">Water Bill No. ??</span>
-        <span class="title">PERIOD COVER DATE</span>
+    <div class="row">
+        <div class="col">
+            <div class="d-flex flex-column align-items-start">
+                <span class="title">KVHAI WATERWORKS </span>
+                <span class="title">Water Bill No. ??</span>
+                <span class="title">PERIOD COVER DATE @Model.CoverageDateFrom - @Model.CoverageDateTo</span>
+            </div>
+        </div>
+        <div class="col d-flex justify-content-end ">
+            @*<select class="form-select w-75" aria-label="Water Billing Number">
+
+                @{
+                    if (Model.WaterBillNumbers != null && Model.WaterBillNumbers.Count > 0)
+                    {
+                        foreach (var item in Model.WaterBillNumbers)
+                        {
+                            <option value="@item">WaterBill No. @item</option>
+                        }
+                    }
+
+                }
+            </select>*@
+            @{
+                if (Model.WaterReadingNumbers != null)
+                {
+                    @Model.GenerateSelect
+                }
+            }
+        </div>
     </div>
     <div class="container border">
         <div class="row">
@@ -125,7 +215,7 @@
                         <th scope="col">Lot</th>
                         <th scope="col">Name</th>
                         <th scope="col">
-                            <div class="text-center">@Model.PrevFirstDate @Model.PrevMonth @Model.PrevLastDate</div>
+                            <div id="lblDate" class="text-center" data-date="@Model.MonthlyBillString-@Model.PrevFirstDate">@Model.PrevFirstDate @Model.PrevMonth @Model.PrevLastDate</div>
                             <div>Previous Reading</div>
                         </th>
                         <th scope="col">
@@ -185,15 +275,15 @@
                                 //    arrears = Model.Arrears[i].ToString("F2");
                                 //}
 
-                                <tr>
-                                    <td class="border border-secondary-subtle">@(i + 1) @Model.PreviousReading[i].Reading_ID</td>
+                                <tr class="rowData">
+                                    <td class="border border-secondary-subtle readingID" data-reading="@Model.PreviousReading[i].Reading_ID">@(i + 1) </td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
                                     <td class="previous-reading text-center border border-secondary-subtle">@previousReading</td>
                                     <td class="current-reading text-center border border-secondary-subtle">@currentReading</td>
                                     <td class="text-center border border-secondary-subtle">@cubicMeter</td>
-                                    <td class="border border-secondary-subtle">@billAmount</td>
+                                    <td class="border border-secondary-subtle" data-bill="@billAmount">@billAmount</td>
                                     @*<td>@arrears</td>*@
                                 </tr>
                             }

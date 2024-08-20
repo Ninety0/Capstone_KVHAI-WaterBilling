@@ -77,9 +77,9 @@ namespace KVHAI.Repository
             return reading;
         }
 
-        public async Task<ModelBinding> GetPreviousReading(string location)
+        public async Task<ModelBinding> GetPreviousReading(string location, string date = "")
         {
-            var prevDate = DateTime.Now.AddMonths(-1).ToString("yyyy-MM");
+            var prevDate = string.IsNullOrEmpty(date) ? DateTime.Now.AddMonths(-1).ToString("yyyy-MM") : date;
             var waterReading = new List<WaterReading>();
             var residentAddress = new List<ResidentAddress>();
             var models = new ModelBinding();
@@ -134,9 +134,9 @@ namespace KVHAI.Repository
             return models;
         }
 
-        public async Task<ModelBinding> GetCurrentReading(string location)
+        public async Task<ModelBinding> GetCurrentReading(string location, string date = "")
         {
-            var prevDate = DateTime.Now.ToString("yyyy-MM");
+            var prevDate = string.IsNullOrEmpty(date) ? DateTime.Now.ToString("yyyy-MM") : date;
             var waterReading = new List<WaterReading>();
             var models = new ModelBinding();
             var query = await GetSqlQuery(location);
@@ -253,6 +253,118 @@ namespace KVHAI.Repository
             }
 
             return query;
+        }
+
+        public async Task<List<string>> GetWaterBillNo()
+        {
+            List<string> bill_no = new List<string>();
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT * FROM waterbill_cycle_tb", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                bill_no.Add(reader["bill_no"].ToString() ?? string.Empty);
+                            }
+                        }
+                    }
+                }
+                return bill_no;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+        public async Task<(List<string> StartDate, List<string> EndDate)> WaterReadingList()
+        {
+            try
+            {
+                var DateRange = new List<string>();
+                var dateList = new List<int>();
+                var dateFrom = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month);
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                    SELECT DISTINCT CAST(date_reading AS DATE) AS reading_date
+                    FROM water_reading_tb
+                    ORDER BY reading_date;
+                    ", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var date = "";
+
+                                if (DateTime.TryParse(reader["reading_date"].ToString() ?? string.Empty, out DateTime result))
+                                {
+                                    date = result.ToString("MM");
+                                }
+                                dateList.Add(Convert.ToInt32(date));
+
+                            }
+                        }
+                    }
+                }
+
+                var monthStart = dateList.FirstOrDefault();
+                var monthEnd = dateList.LastOrDefault();
+                var startListDate = new List<string>();
+                var endListDate = new List<string>();
+
+                for (int i = monthStart; i <= monthEnd; i++)
+                {
+                    string start = DateTime.Now.ToString("yyyy-") + i.ToString() + "-1";
+
+                    string end = DateTime.Now.Year.ToString() + "-" + (i + 1).ToString() + "-" + DateTime.DaysInMonth(DateTime.Now.Year, i + 1).ToString();
+
+                    //string end = DateTime.Now.Year.ToString() + "-" + CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i + 1).ToString() + "-" + DateTime.DaysInMonth(DateTime.Now.Year, i + 1).ToString();
+
+                    startListDate.Add(start);
+                    endListDate.Add(end);
+
+                    DateRange.Add("Water Reading" + start + " To " + end);
+                }
+
+                return (startListDate, endListDate);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return (null, null);
+            }
+
+        }
+
+        public async Task DateRange()
+        {
+            var dateStart = "";
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand("SELECT top 1 FROM water_reading_tb", connection))
+                {
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            if (DateTime.TryParse(reader["date_reading"].ToString() ?? string.Empty, out DateTime result))
+                            {
+                                dateStart = result.ToString("yyyy-MM");
+                            }
+
+                        }
+                    }
+                }
+            }
+            //var dateFrom =
+
         }
     }
 }

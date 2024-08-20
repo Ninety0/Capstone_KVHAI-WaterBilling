@@ -8,5 +8,10 @@ namespace KVHAI.Hubs
         {
             await Clients.All.SendAsync("ReceiveReading");
         }
+
+        public async Task UpdateWaterBillNo()
+        {
+            await Clients.All.SendAsync("ReceiveWaterBillNo");
+        }
     }
 }

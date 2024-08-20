@@ -13,5 +13,8 @@ namespace KVHAI.Models
         public List<WaterReading>? PreviousReading { get; set; }
         public List<WaterReading>? CurrentReading { get; set; }
         public List<ResidentAddress>? ResidentAddress { get; set; }
+
+        public List<WaterBilling> Bill { get; set; }
+        public string Date { get; set; } = string.Empty;
     }
 }
