@@ -28,7 +28,7 @@ namespace KVHAI.Repository
                 {
                     using (var command = new SqlCommand("INSERT INTO water_billing_tb (reading_id, amount, date_issue_from, date_issue_to,due_date_from,due_date_to,status) VALUES(@read, @amount, @bill, @due,@status)", connection))
                     {
-                        command.Parameters.AddWithValue("@read", waterBilling.Reading_ID);
+                        command.Parameters.AddWithValue("@read", waterBilling.Address_ID);
                         command.Parameters.AddWithValue("@amount", waterBilling.Amount);
                         command.Parameters.AddWithValue("@bill", dateBilling);
                         command.Parameters.AddWithValue("@due", dueDate);
@@ -85,9 +85,9 @@ namespace KVHAI.Repository
 
                             foreach (var item in waterBilling)
                             {
-                                using (var command = new SqlCommand("INSERT INTO water_billing_tb (reading_id, amount, date_issue_from, date_issue_to,due_date_from,due_date_to,status,waterbill_no) VALUES(@read, @amount,@issueFrom,@issueTo,@dueFrom,@dueTo,@status,@bill)", connection, transaction))
+                                using (var command = new SqlCommand("INSERT INTO water_billing_tb (addr_id, amount, date_issue_from, date_issue_to,due_date_from,due_date_to,status,waterbill_no) VALUES(@addr, @amount,@issueFrom,@issueTo,@dueFrom,@dueTo,@status,@bill)", connection, transaction))
                                 {
-                                    command.Parameters.AddWithValue("@read", item.Reading_ID);
+                                    command.Parameters.AddWithValue("@addr", item.Address_ID);
                                     command.Parameters.AddWithValue("@amount", item.Amount);
                                     command.Parameters.AddWithValue("@issueFrom", item.Date_Issue_From);
                                     command.Parameters.AddWithValue("@issueTo", item.Date_Issue_To);
@@ -174,9 +174,9 @@ namespace KVHAI.Repository
                     foreach (var item in waterBilling)
                     {
                         using (var command = new SqlCommand(@"SELECT COUNT(*) FROM water_billing_tb 
-                        WHERE reading_id = @read AND amount = @amount AND date_issue_from = @issueFrom AND date_issue_to = @issueTo AND due_date_from = @dueFrom AND due_date_to = @dueTo AND status= @status", connection))
+                        WHERE addr_id = @addr AND amount = @amount AND date_issue_from = @issueFrom AND date_issue_to = @issueTo AND due_date_from = @dueFrom AND due_date_to = @dueTo AND status= @status", connection))
                         {
-                            command.Parameters.AddWithValue("@read", item.Reading_ID);
+                            command.Parameters.AddWithValue("@addr", item.Address_ID);
                             command.Parameters.AddWithValue("@amount", item.Amount);
                             command.Parameters.AddWithValue("@issueFrom", item.Date_Issue_From);
                             command.Parameters.AddWithValue("@issueTo", item.Date_Issue_To);

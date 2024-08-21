@@ -101,6 +101,7 @@ namespace KVHAI.Repository
                             var wr = new WaterReading
                             {
                                 Reading_ID = reader["reading_id"].ToString() ?? string.Empty,
+                                Address_ID = reader["addr_id"].ToString() ?? string.Empty,
                                 Consumption = reader["consumption"].ToString() ?? string.Empty,
 
                                 Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd") : string.Empty

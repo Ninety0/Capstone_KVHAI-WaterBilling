@@ -97,11 +97,11 @@
                 var billingData = [];
 
                 rowData.each(function () {
-                    var readingID= parseInt($(this).find('[data-reading]').data("reading"),10);
+                    var addressID= parseInt($(this).find('[data-reading]').data("reading"),10);
                     var _amount = $(this).find('[data-bill]').data("bill");
 
                     billingData.push({
-                        Reading_ID: readingID,
+                        Address_ID: addressID,
                         Amount: _amount,
                         date: _date
                     });
@@ -286,7 +286,7 @@
                                 //}
 
                                 <tr class="rowData">
-                                    <td class="border border-secondary-subtle readingID" data-reading="@Model.PreviousReading[i].Reading_ID">@(i + 1) </td>
+                                                        <td class="border border-secondary-subtle readingID" data-reading="@Model.PreviousReading[i].Address_ID">@(i + 1) @Model.PreviousReading[i].Address_ID</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>

@@ -101,7 +101,7 @@ namespace KVHAI.Controllers.Staff.Clerk
 
                     var wb = new WaterBilling()
                     {
-                        Reading_ID = item.Reading_ID,
+                        Address_ID = item.Address_ID,
                         Amount = item.Amount,
                         Date_Issue_From = billing.Date_Issue_From,
                         Date_Issue_To = billing.Date_Issue_To,
