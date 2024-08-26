@@ -30,10 +30,14 @@
             });
 
             //END SIGNAL R
+
+            //EVENT LISTENERS
             $(document).on('change','#location',GetWaterReadingByLocation);
             $(document).on('click', '#btnGenerate',InsertWaterBill);
-            $(document).on('change','#waterReadingSelect',GetWaterReadingByDateRange);
+            $(document).on('change', '#waterReadingSelect', GetWaterReadingByDateRange);
+            $('#dateCoverage').text("PERIOD COVER DATE " +$('#waterReadingSelect').val());
 
+            //FUNCTIONS
             function updateReadingTable() {
                 var array = {
                     location: ""
@@ -150,6 +154,8 @@
                         console.log(response);
                         var res = $(response).find('#tableView').html();
                         $('#tableView').html(res);
+
+                        $('#dateCoverage').text("PERIOD COVER DATE " + $('#waterReadingSelect').val());
                     },
                     error: function (xhr, status, err_m) {
                         toastr.error(xhr.responseText);
@@ -166,24 +172,10 @@
         <div class="col">
             <div class="d-flex flex-column align-items-start">
                 <span class="title">KVHAI WATERWORKS </span>
-                <span class="title">Water Bill No. ??</span>
-                <span class="title">PERIOD COVER DATE @Model.CoverageDateFrom - @Model.CoverageDateTo</span>
+                <span class="title" id="dateCoverage">PERIOD COVER DATE </span>
             </div>
         </div>
         <div class="col d-flex justify-content-end ">
-            @*<select class="form-select w-75" aria-label="Water Billing Number">
-
-                @{
-                    if (Model.WaterBillNumbers != null && Model.WaterBillNumbers.Count > 0)
-                    {
-                        foreach (var item in Model.WaterBillNumbers)
-                        {
-                            <option value="@item">WaterBill No. @item</option>
-                        }
-                    }
-
-                }
-            </select>*@
             @{
                 if (Model.WaterReadingNumbers != null)
                 {

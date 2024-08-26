@@ -7,6 +7,7 @@ namespace KVHAI.CustomClass
     public class WaterBillingFunction
     {
         private readonly WaterReadingRepository _waterReadingRepository;
+        private readonly WaterBillRepository _waterBillRepository;
         private readonly AddressRepository _addressRepository;
 
         private const double WaterRate = 18.0;
@@ -19,6 +20,13 @@ namespace KVHAI.CustomClass
         public List<WaterReading>? PreviousReading { get; set; }
         public List<WaterReading>? CurrentReading { get; set; }
         public List<ResidentAddress>? ResidentAddress { get; set; }
+        public List<WaterBilling>? WaterBill { get; set; }
+
+        public List<string>? DateUssuedFrom { get; set; }
+        public List<string>? DateUssuedTo { get; set; }
+        public List<string>? DueDateFrom { get; set; }
+        public List<string>? DueDateTo { get; set; }
+        public List<string>? WaterBillNumberList { get; set; }
 
         public List<string>? WaterBillNumbers { get; set; }
         public List<string>? WaterReadingNumbers { get; set; } = new List<string>();
@@ -49,9 +57,10 @@ namespace KVHAI.CustomClass
         public HtmlString GenerateSelect = new HtmlString("");
 
         int index = 1;
-        public WaterBillingFunction(WaterReadingRepository waterReadingRepository, AddressRepository addressRepository)
+        public WaterBillingFunction(WaterReadingRepository waterReadingRepository, WaterBillRepository waterBillRepository, AddressRepository addressRepository)
         {
             _waterReadingRepository = waterReadingRepository;
+            _waterBillRepository = waterBillRepository;
             _addressRepository = addressRepository;
             CubicMeter = new List<double>();
             BillAmount = new List<Double>();
@@ -63,26 +72,29 @@ namespace KVHAI.CustomClass
         //    var currentReading = await _waterReadingRepository.GetCurrentReading(location);
         //}
 
-        public async Task UseWaterBilling(string location = "", string dateFrom = "", string dateTo = "")
+        public async Task UseWaterBilling(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
         {
-            var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
-            var currentReading = await _waterReadingRepository.GetCurrentReading(location, dateTo);
+            //var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
+            //var currentReading = await _waterReadingRepository.GetCurrentReading(location, dateTo);
+            var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
+            var currentReading = await _waterBillRepository.GetCurrentReading(location, dateTo, wbnumber);
 
             this.WaterBillNumbers = await _waterReadingRepository.GetWaterBillNo();
             (this.ReadingStartDateRange, this.ReadingEndDateRange) = await _waterReadingRepository.WaterReadingList();
-
+            this.WaterBillNumberList = await _waterBillRepository.WaterBillNumberList();
 
             var model = new ModelBinding
             {
                 PreviousReading = prevReading.PreviousReading,
                 CurrentReading = currentReading.CurrentReading,
-                ResidentAddress = prevReading.ResidentAddress
-
+                ResidentAddress = prevReading.ResidentAddress,
+                WBilling = currentReading.WBilling
             };
 
             this.PreviousReading = model.PreviousReading;
             this.CurrentReading = model.CurrentReading;
             this.ResidentAddress = model.ResidentAddress;
+            this.WaterBill = model.WBilling;
 
             // PARSING DATES
             this.CurrentFirstDate = CurrentReading?.Count < 1 ? string.Empty : ParseStartDate(CurrentReading?[0].Date);
@@ -179,13 +191,14 @@ namespace KVHAI.CustomClass
                 }
 
                 var text = $"Water Reading {_outStartDate} To {_outEndDate}";
+                this.CoverageDateFrom = _outStartDate;
+                this.CoverageDateTo = _outEndDate;
+
                 var selected = i == 0 ? "selected" : "";
-                select += $"<option data-dateFrom=\" {ReadingStartDateRange[i]} \" data-dateTo=\" {ReadingEndDateRange[i]} \" value=\"{i}\" {selected}>{text}</option>";
+                select += $"<option data-dateFrom=\" {ReadingStartDateRange[i]} \" data-dateTo=\" {ReadingEndDateRange[i]} \" value=\"{_outStartDate}-{_outEndDate}\" {selected}>{text}</option>";
             }
             select += "</select>";
 
-            CoverageDateFrom = _outStartDate;
-            CoverageDateTo = _outEndDate;
 
             return new HtmlString(select);
         }

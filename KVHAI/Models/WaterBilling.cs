@@ -10,5 +10,8 @@
         public string Due_Date_From { get; set; } = string.Empty;
         public string Due_Date_To { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string WaterBill_No { get; set; } = string.Empty;
+
+
     }
 }
