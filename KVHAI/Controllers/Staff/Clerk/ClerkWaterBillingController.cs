@@ -1,4 +1,5 @@
-﻿using KVHAI.CustomClass;
+﻿using AspNetCore.Reporting;
+using KVHAI.CustomClass;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -7,10 +8,13 @@ namespace KVHAI.Controllers.Staff.Clerk
     public class ClerkWaterBillingController : Controller
     {
         private readonly WaterBillingFunction _waterBilling;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ClerkWaterBillingController(WaterBillingFunction waterBillingFunction)
+        public ClerkWaterBillingController(WaterBillingFunction waterBillingFunction, IWebHostEnvironment webHostEnvironment)
         {
             _waterBilling = waterBillingFunction;
+            _webHostEnvironment = webHostEnvironment;
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         }
 
         public async Task<IActionResult> Index()
@@ -20,6 +24,21 @@ namespace KVHAI.Controllers.Staff.Clerk
 
             return View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling);
             //return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
+        }
+
+        public async Task<IActionResult> Print()
+        {
+            string mimetype = "";
+            int extension = 1;
+            var path = $"{this._webHostEnvironment.WebRootPath}\\ReportViewer\\rptWaterBill.rdlc";
+
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            parameters.Add("wb", "Water Billing");
+            LocalReport localReport = new LocalReport(path);
+
+            var result = localReport.Execute(RenderType.Pdf, extension, parameters, mimetype);
+
+            return File(result.MainStream, "application/pdf");
         }
 
         [HttpGet]

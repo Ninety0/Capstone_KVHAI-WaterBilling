@@ -8,6 +8,10 @@ using KVHAI.SubscribeSqlDependency;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Set content root  and web root
+builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
+builder.WebHost.UseWebRoot("wwwroot");
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();

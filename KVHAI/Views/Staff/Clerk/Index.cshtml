@@ -177,10 +177,7 @@
         </div>
         <div class="col d-flex justify-content-end ">
             @{
-                if (Model.WaterReadingNumbers != null)
-                {
-                    @Model.GenerateSelect
-                }
+                @Model.GenerateSelect
             }
         </div>
     </div>
@@ -217,11 +214,11 @@
                         <th scope="col">Lot</th>
                         <th scope="col">Name</th>
                         <th scope="col">
-                            <div id="lblDate" class="text-center" data-date="@Model.MonthlyBillString-@Model.PrevFirstDate">@Model.PrevFirstDate @Model.PrevMonth @Model.PrevLastDate</div>
+                            <div id="lblDate" class="text-center" data-date="@Model.MonthlyBillText-@Model.WRPrevFirstDate">@Model.WRPrevFirstDate @Model.WRPrevMonth @Model.WRPrevLastDate</div>
                             <div>Previous Reading</div>
                         </th>
                         <th scope="col">
-                            <div class="text-center">@Model.CurrentFirstDate @Model.CurrentMonth @Model.CurrentLastDate</div>
+                            <div class="text-center">@Model.WRCurrentFirstDate @Model.WRCurrentMonth @Model.WRCurrentLastDate</div>
                             <div>Current Reading</div>
                         </th>
                         <th scope="col">
@@ -229,7 +226,7 @@
                             <div class="text-center">M3</div>
                         </th>
                         <th scope="col">
-                            <div class="text-center">@Model.MonthlyBillString-@Model.PrevLastDate</div>
+                            <div class="text-center">@Model.MonthlyBillText-@Model.WRPrevLastDate</div>
                             <div>Amount</div>
                         </th>
                     </tr>

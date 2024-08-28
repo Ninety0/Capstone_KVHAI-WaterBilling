@@ -223,6 +223,123 @@ namespace KVHAI.Repository
 
                             var wb = new WaterBilling
                             {
+                                WaterBill_ID = reader["waterbill_id"].ToString() ?? string.Empty,
+                                Date_Issue_From = reader["date_issue_from"].ToString() ?? string.Empty,
+                                Date_Issue_To = reader["date_issue_to"].ToString() ?? string.Empty,
+                                Due_Date_From = reader["due_date_from"].ToString() ?? string.Empty,
+                                Due_Date_To = reader["due_date_to"].ToString() ?? string.Empty,
+                                WaterBill_No = reader["waterbill_no"].ToString() ?? string.Empty
+
+                            };
+
+                            waterReading.Add(wr);
+                            waterBilling.Add(wb);
+
+                        }
+                    }
+                }
+            }
+            models.CurrentReading = waterReading;
+            models.WBilling = waterBilling;
+
+            return models;
+        }
+
+        ////////////////////////
+        // FUNCTIONS OVERLOAD //
+        ///////////////////////
+        public async Task<ModelBinding> GetPreviousReadingReport(string wbId = "", string wbNum = "")
+        {
+            var prevDate = DateTime.Now.AddMonths(-1).ToString("yyyy-MM");
+            var waterReading = new List<WaterReading>();
+            var residentAddress = new List<ResidentAddress>();
+            var models = new ModelBinding();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(@"
+                select * from resident_tb r 
+                JOIN address_tb a ON r.res_id = a.res_id
+                JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
+                JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
+                WHERE wr.date_reading LIKE @date AND waterbill_id = @id AND wb.waterbill_no = @num
+                ORDER BY CAST(waterbill_id as INT)
+                ", connection))
+                {
+                    command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
+                    command.Parameters.AddWithValue("@id", wbId);
+                    command.Parameters.AddWithValue("@num", wbNum);
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        while (await reader.ReadAsync())
+                        {
+                            var wr = new WaterReading
+                            {
+                                Reading_ID = reader["reading_id"].ToString() ?? string.Empty,
+                                Address_ID = reader["addr_id"].ToString() ?? string.Empty,
+                                Consumption = reader["consumption"].ToString() ?? string.Empty,
+
+                                Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd") : string.Empty
+                            };
+
+                            var address = new ResidentAddress
+                            {
+                                Name = string.Concat(reader["lname"].ToString(), ", ", reader["fname"].ToString()) ?? string.Empty,
+                                Block = reader["block"].ToString() ?? string.Empty,
+                                Lot = reader["lot"].ToString() ?? string.Empty,
+                            };
+
+                            waterReading.Add(wr);
+                            residentAddress.Add(address);
+
+                        }
+                    }
+                }
+            }
+            models.PreviousReading = waterReading;
+            models.ResidentAddress = residentAddress;
+
+            return models;
+        }
+
+        public async Task<ModelBinding> GetCurrentReadingReport(string wbId = "", string wbNum = "")
+        {
+            var prevDate = DateTime.Now.ToString("yyyy-MM");
+            var waterReading = new List<WaterReading>();
+            var waterBilling = new List<WaterBilling>();
+            var models = new ModelBinding();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(@"
+                    select * from resident_tb r 
+                JOIN address_tb a ON r.res_id = a.res_id
+                JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
+                JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
+                WHERE wr.date_reading LIKE @date AND waterbill_id = @id AND wb.waterbill_no = @num
+                ORDER BY CAST(waterbill_id as INT);
+                ", connection))
+                {
+                    command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
+                    command.Parameters.AddWithValue("@id", wbId);
+                    command.Parameters.AddWithValue("@num", wbNum);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+
+                        while (await reader.ReadAsync())
+                        {
+                            var wr = new WaterReading
+                            {
+                                Consumption = reader["consumption"].ToString() ?? string.Empty,
+
+                                Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd") : string.Empty
+                            };
+
+                            var wb = new WaterBilling
+                            {
+                                WaterBill_ID = reader[""].ToString() ?? string.Empty,
                                 Date_Issue_From = reader["date_issue_from"].ToString() ?? string.Empty,
                                 Date_Issue_To = reader["date_issue_to"].ToString() ?? string.Empty,
                                 Due_Date_From = reader["due_date_from"].ToString() ?? string.Empty,
@@ -247,6 +364,85 @@ namespace KVHAI.Repository
         ///////////////////////
         // CUSTOM FUNCTIONS //
         /////////////////////
+
+        public async Task<List<WaterBilling>> GetUnpaidWaterBill(List<WaterReading> waterReading)
+        {
+            try
+            {
+                var wbList = new List<WaterBilling>();
+                var ids = "";
+                var dateFrom = "";
+                var dateTo = "";
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    if (waterReading.Count > 0)
+                    {
+                        foreach (var item in waterReading)
+                        {
+                            var id = item.Address_ID;
+                            if (DateTime.TryParse(item.Date, out DateTime output))
+                            {
+                                var lastDate = DateTime.DaysInMonth(DateTime.Now.Year, Convert.ToInt32(output.ToString("MM"))).ToString();
+                                dateFrom = output.AddMonths(-2).ToString("yyyy-MM-01");
+                                dateTo = output.AddMonths(-1).ToString($"yyyy-MM-{lastDate}");
+                            }
+
+                            using (var command = new SqlCommand(@"
+                                SELECT * 
+                                FROM water_billing_tb w
+                                JOIN address_tb a ON w.addr_id = a.addr_id
+                                JOIN water_reading_tb r ON a.addr_id = r.addr_id
+                                WHERE a.addr_id = @id 
+                                    AND status = 'unpaid' 
+                                    AND date_reading BETWEEN @from AND @to
+                            ", connection))
+                            {
+                                command.Parameters.AddWithValue("@id", id);
+                                command.Parameters.AddWithValue("@from", id);
+                                command.Parameters.AddWithValue("@to", id);
+
+                                using (var reader = await command.ExecuteReaderAsync())
+                                {
+                                    var waterBillIds = new List<string>();
+                                    var totalAmount = 0.0;
+
+                                    while (await reader.ReadAsync())
+                                    {
+                                        var waterBillId = "WB" + reader["waterbill_id"].ToString();
+                                        var amount = Convert.ToDouble(reader["amount"]);
+
+                                        // Add the waterbill_id to the list
+                                        waterBillIds.Add(waterBillId);
+
+                                        // Sum the amount
+                                        totalAmount += amount;
+                                    }
+
+                                    if (waterBillIds.Count > 0)
+                                    {
+                                        var wb = new WaterBilling()
+                                        {
+                                            PreviousWaterBill = string.Join("-", waterBillIds),  // Concatenate IDs with "-"
+                                            PreviousWaterBillAmount = totalAmount.ToString("F2") // Format total amount as a string with 2 decimal places
+                                        };
+
+                                        wbList.Add(wb);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+                return wbList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
         public async Task<WaterBilling> GetDueDate()
         {
             string dueDateFrom = DateTime.Now.AddMonths(1).ToString("yyyy-MM-");
