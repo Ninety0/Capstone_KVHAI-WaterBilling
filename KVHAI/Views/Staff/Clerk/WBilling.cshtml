@@ -83,7 +83,6 @@
 
             $(document).on('change', '#location', GetWaterBillByLocation);
             $(document).on('click', '#selectAll', SelectAllChkBox);
-            $(document).on('click', '#btnExport', GetValueChkBox);
 
 
             $(document).on('click', '.contentView', function () {
@@ -122,36 +121,114 @@
 
             }
 
-            function GetValueChkBox() {
+            $(document).on('click', '#btnPrint', function () {
+                //var newTab = window.open('', '_blank');
+                var checkedItems = [];
                 $('.chkItem:checked').each(function () {
                     // This will loop through each .chkItem that is checked
-                    var ids = $(this).closest('.tables').find('#itemID');
-                    var dates = $(ids).closest('.tables').find('#itemDate');
-                    var idText = ids.text();
+                    var ids = $(this).closest('.tables').find('#itemID').data("id");
+                    var dates = $(this).closest('.tables').find('#itemDate');
                     var dateText = dates.text();
-                    console.log(idText);
+
+                    console.log(ids);
                     console.log(dateText);
+
+                    if (ids && dateText) {
+                        checkedItems.push({
+                            WaterBill_ID: ids,
+                            DateBillMonth: dateText,
+                            WaterBill_Number: $('#wbNumber').val()
+                        });
+                    }
+
                 });
-            }
 
-            //$(document).on('click', '.chkItem', function () {
-            //    if (!isCheck) {
-            //        var ids = $(this).closest('.tables').find('#itemID');
-            //        var dates = $(ids).closest('.tables').find('#itemDate');
-            //        var idText = ids.text();
-            //        var dateText = dates.text();
-            //        console.log(idText);
-            //        console.log(dateText);
-                    
-            //        isCheck = true;
-            //    }
-            //    else {
-            //        isCheck = false;
+                if (checkedItems.length > 0) {
+                    $.ajax({
+                        url: '/ClerkWaterBilling/Print',
+                        type: 'POST',
+                        data: JSON.stringify(checkedItems),
+                        contentType: 'application/json; charset=utf-8',
+                        xhrFields: {
+                            responseType: 'blob' // Set the response type to 'blob'
+                        },
+                        success: function (data) {
+                            var blob = new Blob([data], { type: 'application/pdf' });
+                            var link = document.createElement('a');
+                            window.open(window.URL.createObjectURL(blob), '_blank');
 
-            //    }
-                
-                
-            //});
+                        },
+                        error: function (xhr, status, err_m) {
+                            if (xhr.responseText != null || xhr.responseText != "") {
+                                alert(xhr.responseText);
+                            } else {
+
+                            }
+                            alert("An error occurred while processing your request.");
+                        }/*,
+                        xhrFields: {
+                            responseType: 'blob' // Ensure the response is treated as binary data
+                        }*/
+                    }); 
+                } else {
+                    alert("Please select at least one item to print.");
+                }
+            });
+
+            $(document).on('click', '.dropdown-item', function () {
+                var _fileType = $(this).data('filetype'); // Get the file type from the clicked item
+
+                var checkedItems = [];
+                $('.chkItem:checked').each(function () {
+                    var ids = $(this).closest('.tables').find('#itemID').data("id");
+                    var dates = $(this).closest('.tables').find('#itemDate');
+                    var dateText = dates.text();
+                    if (ids && dateText) {
+                        checkedItems.push({
+                            WaterBill_ID: ids,
+                            DateBillMonth: dateText,
+                            WaterBill_Number: $('#wbNumber').val()
+                        });
+                    }
+                });
+
+                if (checkedItems.length > 0) {
+                    var formData = {
+                        Items: checkedItems,
+                        FileType: _fileType
+                    };
+
+                    $.ajax({
+                        url: '/ClerkWaterBilling/SaveFile',
+                        type: 'POST',
+                        data: JSON.stringify(formData),
+                        contentType: 'application/json; charset=utf-8',
+                        xhrFields: {
+                            responseType: 'blob' // This is crucial for handling binary data from the server
+                        },
+                        success: function (data, status, xhr) {
+                            var blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
+                            var link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            var fileName = xhr.getResponseHeader('Content-Disposition').split(';')[1].split('=')[1].trim();
+                            link.download = fileName;
+                            link.click();
+
+                            toastr.success("The file was downloaded");
+                        },
+                        error: function (xhr, status, err_m) {
+                            if (xhr.responseText) {
+                                console.log(xhr.responseText);
+                            } else {
+                                console.log("An error occurred while processing your request.");
+                            }
+                        }
+                    });
+                } else {
+                    alert("Please select at least one item to save.");
+                }
+            });
+
 
             function GetWaterBillByLocation() {
                 var _location = $('#location').val();
@@ -261,8 +338,17 @@
                 </select>
             </div>
             <div class="col d-flex justify-content-end">
-                <a id="btnPrint" class="btn btn-secondary me-2" asp-controller="ClerkWaterBilling" asp-action="Print" target="_blank">PRINT</a>
-                <button class="btn btn-secondary " id="btnExport">EXPORT</button>
+                <a id="btnPrint" class="btn btn-secondary me-2">PRINT</a>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Save as
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" data-fileType="pdf" id="btnPdf" href="#">PDF</a></li>
+                        <li><a class="dropdown-item" data-fileType="excel" id="btnExcel" href="#">EXCEL</a></li>
+                        <li><a class="dropdown-item" data-fileType="doc" id="btnDocument" href="#">DOCUMENT</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
         <div class="tableData mb-2">
@@ -349,7 +435,7 @@
                                     <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-2 contentView">
                                         <div class="d-flex flex-column align-items-center">
                                             <span class="fw-bold">#</span>
-                                            <span id="itemID">@(i+1) - @Model.WaterBill[i].WaterBill_ID</span>
+                                            <span id="itemID" data-id="@Model.WaterBill[i].WaterBill_ID">@(i+1)</span>
                                         </div>
                                         <div class="d-flex flex-column align-items-center">
                                             <span class="fw-bold">Name</span>

@@ -1,16 +1,40 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
-<xs:schema id="dsWaterBill" 
-                  targetNamespace="http://tempuri.org/dsWaterBill.xsd"
-                  elementFormDefault="qualified"
-                  attributeFormDefault="qualified"
-                  xmlns="http://tempuri.org/dsWaterBill.xsd"
-                  xmlns:mstns="http://tempuri.org/dsWaterBill.xsd"
-                  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                  xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
-                  xmlns:msprop="urn:schemas-microsoft-com:xml-msprop">
-    <xs:element name="dsWaterBill" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true">
-        <xs:complexType>
-            <xs:choice minOccurs="0" maxOccurs="unbounded"></xs:choice>
-        </xs:complexType>
-    </xs:element>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="dsWaterBill" targetNamespace="http://tempuri.org/dsWaterBill.xsd" xmlns:mstns="http://tempuri.org/dsWaterBill.xsd" xmlns="http://tempuri.org/dsWaterBill.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="dsWaterBill" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="dsWaterBill" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="dsWaterBill">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="report_waterbill" msprop:Generator_RowClassName="report_waterbillRow" msprop:Generator_RowEvHandlerName="report_waterbillRowChangeEventHandler" msprop:Generator_RowDeletedName="report_waterbillRowDeleted" msprop:Generator_RowDeletingName="report_waterbillRowDeleting" msprop:Generator_RowEvArgName="report_waterbillRowChangeEvent" msprop:Generator_TablePropName="report_waterbill" msprop:Generator_RowChangedName="report_waterbillRowChanged" msprop:Generator_UserTableName="report_waterbill" msprop:Generator_RowChangingName="report_waterbillRowChanging" msprop:Generator_TableClassName="report_waterbillDataTable" msprop:Generator_TableVarName="tablereport_waterbill">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="waterbill_id" msprop:Generator_UserColumnName="waterbill_id" msprop:Generator_ColumnPropNameInTable="waterbill_idColumn" msprop:Generator_ColumnPropNameInRow="waterbill_id" msprop:Generator_ColumnVarNameInTable="columnwaterbill_id" type="xs:string" minOccurs="0" />
+              <xs:element name="waterbill_no" msprop:Generator_UserColumnName="waterbill_no" msprop:Generator_ColumnPropNameInTable="waterbill_noColumn" msprop:Generator_ColumnPropNameInRow="waterbill_no" msprop:Generator_ColumnVarNameInTable="columnwaterbill_no" type="xs:string" minOccurs="0" />
+              <xs:element name="block" msprop:Generator_UserColumnName="block" msprop:Generator_ColumnPropNameInTable="blockColumn" msprop:Generator_ColumnPropNameInRow="block" msprop:Generator_ColumnVarNameInTable="columnblock" type="xs:string" minOccurs="0" />
+              <xs:element name="lot" msprop:Generator_UserColumnName="lot" msprop:Generator_ColumnPropNameInTable="lotColumn" msprop:Generator_ColumnPropNameInRow="lot" msprop:Generator_ColumnVarNameInTable="columnlot" type="xs:string" minOccurs="0" />
+              <xs:element name="name" msprop:Generator_UserColumnName="name" msprop:Generator_ColumnPropNameInTable="nameColumn" msprop:Generator_ColumnPropNameInRow="name" msprop:Generator_ColumnVarNameInTable="columnname" type="xs:string" minOccurs="0" />
+              <xs:element name="previous" msprop:Generator_UserColumnName="previous" msprop:Generator_ColumnPropNameInTable="previousColumn" msprop:Generator_ColumnPropNameInRow="previous" msprop:Generator_ColumnVarNameInTable="columnprevious" type="xs:string" minOccurs="0" />
+              <xs:element name="current" msprop:Generator_UserColumnName="current" msprop:Generator_ColumnPropNameInTable="currentColumn" msprop:Generator_ColumnPropNameInRow="current" msprop:Generator_ColumnVarNameInTable="columncurrent" type="xs:string" minOccurs="0" />
+              <xs:element name="datebillmonth" msprop:Generator_UserColumnName="datebillmonth" msprop:Generator_ColumnPropNameInTable="datebillmonthColumn" msprop:Generator_ColumnPropNameInRow="datebillmonth" msprop:Generator_ColumnVarNameInTable="columndatebillmonth" type="xs:string" minOccurs="0" />
+              <xs:element name="consumption" msprop:Generator_UserColumnName="consumption" msprop:Generator_ColumnPropNameInTable="consumptionColumn" msprop:Generator_ColumnPropNameInRow="consumption" msprop:Generator_ColumnVarNameInTable="columnconsumption" type="xs:string" minOccurs="0" />
+              <xs:element name="rate" msprop:Generator_UserColumnName="rate" msprop:Generator_ColumnPropNameInTable="rateColumn" msprop:Generator_ColumnPropNameInRow="rate" msprop:Generator_ColumnVarNameInTable="columnrate" type="xs:string" minOccurs="0" />
+              <xs:element name="date_issue" msprop:Generator_UserColumnName="date_issue" msprop:Generator_ColumnPropNameInTable="date_issueColumn" msprop:Generator_ColumnPropNameInRow="date_issue" msprop:Generator_ColumnVarNameInTable="columndate_issue" type="xs:string" minOccurs="0" />
+              <xs:element name="due_date" msprop:Generator_UserColumnName="due_date" msprop:Generator_ColumnPropNameInTable="due_dateColumn" msprop:Generator_ColumnPropNameInRow="due_date" msprop:Generator_ColumnVarNameInTable="columndue_date" type="xs:string" minOccurs="0" />
+              <xs:element name="previous_waterbill" msprop:Generator_UserColumnName="previous_waterbill" msprop:Generator_ColumnPropNameInTable="previous_waterbillColumn" msprop:Generator_ColumnPropNameInRow="previous_waterbill" msprop:Generator_ColumnVarNameInTable="columnprevious_waterbill" type="xs:string" minOccurs="0" />
+              <xs:element name="amount_due_now" msprop:Generator_UserColumnName="amount_due_now" msprop:Generator_ColumnPropNameInTable="amount_due_nowColumn" msprop:Generator_ColumnPropNameInRow="amount_due_now" msprop:Generator_ColumnVarNameInTable="columnamount_due_now" type="xs:string" minOccurs="0" />
+              <xs:element name="amount_previous" msprop:Generator_UserColumnName="amount_previous" msprop:Generator_ColumnPropNameInTable="amount_previousColumn" msprop:Generator_ColumnPropNameInRow="amount_previous" msprop:Generator_ColumnVarNameInTable="columnamount_previous" type="xs:string" minOccurs="0" />
+              <xs:element name="total" msprop:Generator_UserColumnName="total" msprop:Generator_ColumnPropNameInTable="totalColumn" msprop:Generator_ColumnPropNameInRow="total" msprop:Generator_ColumnVarNameInTable="columntotal" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

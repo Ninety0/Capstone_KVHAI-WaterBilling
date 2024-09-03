@@ -17,5 +17,8 @@ namespace KVHAI.Models
 
         public List<WaterBilling> Bill { get; set; }
         public string Date { get; set; } = string.Empty;
+
+        public List<ReportWaterBilling>? Items { get; set; } = new List<ReportWaterBilling>();
+        public string FileType { get; set; } = string.Empty;
     }
 }

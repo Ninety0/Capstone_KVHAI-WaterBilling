@@ -6,6 +6,8 @@ using KVHAI.Repository;
 using KVHAI.Routes;
 using KVHAI.SubscribeSqlDependency;
 
+AppContext.SetSwitch("System.Drawing.EnableUnixSupport", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 //Set content root  and web root
