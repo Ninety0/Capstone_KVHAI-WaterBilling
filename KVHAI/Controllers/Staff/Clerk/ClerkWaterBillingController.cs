@@ -24,6 +24,8 @@ namespace KVHAI.Controllers.Staff.Clerk
             //return View("ClerkWaterBilling");
             await _waterBilling.UseWaterBilling("1");
 
+
+
             return View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling);
             //return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
         }

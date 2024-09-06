@@ -16,6 +16,12 @@
                 defaults: new { controller = "ResLogin", action = "Signup" }
             );
 
+            endpoint.MapControllerRoute(
+                name: "AccountVerification",
+                pattern: "kvhai/resident/verifyaccount/{token?}",
+                defaults: new { controller = "ResLogin", action = "VerifyPage" }
+            );
+
         }
     }
 }

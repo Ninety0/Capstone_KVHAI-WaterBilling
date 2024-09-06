@@ -264,24 +264,40 @@ namespace KVHAI.Repository
         }
 
         //RETURN ID OF STREET
-        public async Task<int> GetStreetID(string street)
+        public async Task<List<Address>> GetStreetID(List<Address> street)
         {
-            var result = 0;
-            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            try
             {
-                using (var command = new SqlCommand("SELECT * FROM street_tb WHERE st_name like @name", connection))
+                var result = 0;
+                var st_IDS = new List<Address>();
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    command.Parameters.AddWithValue("@name", "%" + street + "%");
-                    using (var reader = await command.ExecuteReaderAsync())
+                    foreach (var st in street)
                     {
-                        if (await reader.ReadAsync())
+                        using (var command = new SqlCommand("SELECT * FROM street_tb WHERE st_name like @name", connection))
                         {
-                            result = Convert.ToInt32(reader["st_id"].ToString());
+                            command.Parameters.AddWithValue("@name", "%" + st.Street_Name + "%");
+                            using (var reader = await command.ExecuteReaderAsync())
+                            {
+                                if (await reader.ReadAsync())
+                                {
+                                    var address = new Address
+                                    {
+                                        Street_ID = Convert.ToInt32(reader["st_id"].ToString())
+                                    };
+
+                                    st_IDS.Add(address);
+                                }
+                            }
                         }
                     }
                 }
+                return st_IDS;
             }
-            return result;
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

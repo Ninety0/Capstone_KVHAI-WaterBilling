@@ -1,6 +1,7 @@
 ﻿using KVHAI.CustomClass;
 using KVHAI.Models;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace KVHAI.Repository
@@ -44,14 +45,11 @@ namespace KVHAI.Repository
                             _resident.Mname = reader[3]?.ToString() ?? string.Empty;
                             _resident.Phone = reader[4]?.ToString() ?? string.Empty;
                             _resident.Email = reader[5]?.ToString() ?? string.Empty;
-                            _resident.Block = reader[6]?.ToString() ?? string.Empty;
-                            _resident.Lot = reader[7]?.ToString() ?? string.Empty;
-                            _resident.Username = reader[8]?.ToString() ?? string.Empty;
-                            _resident.Password = reader[9]?.ToString() ?? string.Empty;
-                            _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
-                            _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
-                            _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
-                            _resident.Activated = (reader[13].ToString() == "false") ? "pending" : "activated";
+                            _resident.Username = reader[6]?.ToString() ?? string.Empty;
+                            _resident.Password = reader[7]?.ToString() ?? string.Empty;
+                            _resident.Date_Residency = reader[8]?.ToString() ?? string.Empty;
+                            _resident.Occupancy = reader[9]?.ToString() ?? string.Empty;
+                            _resident.Activated = (reader[11].ToString() == "false") ? "pending" : "activated";
                             resident.Add(_resident);
 
                         }
@@ -75,38 +73,49 @@ namespace KVHAI.Repository
             }
         }
 
-        //address id need to update the code
-        public async Task<int> CreateResident(Resident resident, SqlTransaction transaction, SqlConnection connection)
+        //CREATE
+        public async Task<string> CreateResident(Resident resident)
         {
             SanitizeFormData(resident);
             int resID = 0;
+            string verificationToken = "";
             var pass = _hash.HashPassword(resident.Password);
             var dt = GetTimeDate();
             var phone = "63" + resident.Phone;
+            var token = await CreateRandomToken();
 
-            using (var command = new SqlCommand("INSERT INTO resident_tb (lname, fname, mname, phone, email, block, lot, username, password, date_residency, occupancy, created_at,activated) OUTPUT INSERTED.res_id VALUES(@lname, @fname, @mname, @phone, @email, @blk, @lot, @user, @pass, @residency, @occupy, @create,@active)", connection, transaction))
+            try
             {
-                //command.Parameters.AddWithValue("@id", res_id);
-                command.Parameters.AddWithValue("@lname", resident.Lname);
-                command.Parameters.AddWithValue("@fname", resident.Fname);
-                command.Parameters.AddWithValue("@mname", resident.Mname);
-                command.Parameters.AddWithValue("@phone", phone);
-                command.Parameters.AddWithValue("@email", resident.Email);
-                command.Parameters.AddWithValue("@blk", resident.Block);
-                command.Parameters.AddWithValue("@lot", resident.Lot);
-                command.Parameters.AddWithValue("@user", resident.Username);
-                command.Parameters.AddWithValue("@pass", pass);
-                command.Parameters.AddWithValue("@residency", resident.Date_Residency);
-                command.Parameters.AddWithValue("@occupy", resident.Occupancy);
-                command.Parameters.AddWithValue("@create", dt);
-                command.Parameters.AddWithValue("@active", "false");
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                    INSERT INTO resident_tb (lname, fname, mname, phone, email, username, password, occupancy, verification_token) OUTPUT INSERTED.verification_token
+                    VALUES(@lname, @fname, @mname, @phone, @email, @user, @pass, @occupy,@vtoken)", connection))
+                    {
+                        //command.Parameters.AddWithValue("@id", res_id);
+                        command.Parameters.AddWithValue("@lname", resident.Lname);
+                        command.Parameters.AddWithValue("@fname", resident.Fname);
+                        command.Parameters.AddWithValue("@mname", resident.Mname);
+                        command.Parameters.AddWithValue("@phone", phone);
+                        command.Parameters.AddWithValue("@email", resident.Email);
+                        command.Parameters.AddWithValue("@user", resident.Username);
+                        command.Parameters.AddWithValue("@pass", pass);
+                        command.Parameters.AddWithValue("@occupy", resident.Occupancy);
+                        command.Parameters.AddWithValue("@vtoken", token);
 
-                resID = (int?)(await command.ExecuteScalarAsync()) ?? 0;
-
+                        var result = await command.ExecuteScalarAsync();
+                        return result?.ToString() ?? "";
+                    }
+                }
             }
-            return resID;
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
+        //CHECK EXIST
         public async Task<bool> UserExists(Resident resident)
         {
             try
@@ -253,77 +262,23 @@ namespace KVHAI.Repository
             formData.Mname = _sanitize.HTMLSanitizer(formData.Mname);
             formData.Phone = _sanitize.HTMLSanitizer(formData.Phone);
             formData.Email = _sanitize.HTMLSanitizer(formData.Email);
-            formData.Block = _sanitize.HTMLSanitizer(formData.Block);
-            formData.Lot = _sanitize.HTMLSanitizer(formData.Lot);
             formData.Username = _sanitize.HTMLSanitizer(formData.Username);
             formData.Password = _sanitize.HTMLSanitizer(formData.Password);
-            formData.Date_Residency = _sanitize.HTMLSanitizer(formData.Date_Residency);
             formData.Occupancy = _sanitize.HTMLSanitizer(formData.Occupancy);
         }
-
-
-        public async Task<int> CreateResidentandUploadImage(Resident formData, IFormFile file, string webRootPath, string street)
-        {
-            using (var connection = await _dbConnect.GetOpenConnectionAsync())
-            {
-                using (var transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        int residentID = await CreateResident(formData, transaction, connection);
-                        if (residentID > 0)
-                        {
-                            int imageResult = await _uploadRepository.ImageUpload(file, webRootPath, residentID, transaction, connection);
-
-                            int streetResult = await _streetRepository.GetStreetID(street);
-
-                            if (imageResult == 0)
-                            {
-                                throw new Exception("Image upload failed");
-                            }
-
-                            if (streetResult != 0)
-                            {
-                                int addressResult = await _addressRepository.CreateAddress(residentID, streetResult, transaction, connection);
-
-                                if (addressResult == 0)
-                                {
-                                    throw new Exception("Error Saving Address");
-                                }
-                            }
-                            else
-                            {
-                                throw new Exception("Error Fetching the Street ID");
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception("There was an error submitting the form");
-                        }
-
-                        transaction.Commit();
-                        return 1;
-                    }
-                    catch (Exception)
-                    {
-                        transaction.Rollback();
-                        // Log the exception here
-                        return 0;
-                    }
-                }
-            }
-
-        }
-
 
         //WITHOUT SEARCH
         public async Task<List<Resident>> GetAllResidentAsync(int offset, int limit, string active)
         {
             var residents = new List<Resident>();
+            var resID = "";
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand($"SELECT * FROM resident_tb WHERE activated = @active ORDER BY res_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
+                using (var command = new SqlCommand($@"
+                    SELECT * FROM resident_tb r
+                    JOIN address_tb a ON r.res_id = a.res_id  
+                    WHERE activated = @active ORDER BY r.res_id OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
                 {
                     command.Parameters.AddWithValue("@active", active);
                     using (var reader = await command.ExecuteReaderAsync())
@@ -331,21 +286,25 @@ namespace KVHAI.Repository
 
                         while (await reader.ReadAsync())
                         {
+                            resID = reader["res_id"]?.ToString() ?? string.Empty;
+
                             var _resident = new Resident();
-                            _resident.Res_ID = reader[0]?.ToString() ?? string.Empty;
-                            _resident.Lname = reader[1]?.ToString() ?? string.Empty;
-                            _resident.Fname = reader[2]?.ToString() ?? string.Empty;
-                            _resident.Mname = reader[3]?.ToString() ?? string.Empty;
-                            _resident.Phone = reader[4]?.ToString() ?? string.Empty;
-                            _resident.Email = reader[5]?.ToString() ?? string.Empty;
-                            _resident.Block = reader[6]?.ToString() ?? string.Empty;
-                            _resident.Lot = reader[7]?.ToString() ?? string.Empty;
-                            _resident.Username = reader[8]?.ToString() ?? string.Empty;
-                            _resident.Password = reader[9]?.ToString() ?? string.Empty;
-                            _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
-                            _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
-                            _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
-                            _resident.Activated = (reader[13].ToString() == "false") ? "pending" : "activated";
+                            _resident.Res_ID = reader["res_id"]?.ToString() ?? string.Empty;
+                            _resident.Lname = reader["lname"]?.ToString() ?? string.Empty;
+                            _resident.Fname = reader["fname"]?.ToString() ?? string.Empty;
+                            _resident.Mname = reader["mname"]?.ToString() ?? string.Empty;
+                            _resident.Phone = reader["phone"]?.ToString() ?? string.Empty;
+                            _resident.Email = reader["email"]?.ToString() ?? string.Empty;
+                            _resident.Username = reader["username"]?.ToString() ?? string.Empty;
+                            _resident.Password = reader["password"]?.ToString() ?? string.Empty;
+                            _resident.Date_Residency = reader["date_residency"]?.ToString() ?? string.Empty;
+                            _resident.Occupancy = reader["occupancy"]?.ToString() ?? string.Empty;
+                            _resident.Activated = (reader["activated"].ToString() == "false") ? "pending" : "activated";
+
+                            _resident.Block = reader["block"]?.ToString() ?? string.Empty;
+                            _resident.Lot = reader["lot"]?.ToString() ?? string.Empty;
+
+
                             residents.Add(_resident);
 
                         }
@@ -399,14 +358,11 @@ namespace KVHAI.Repository
                             _resident.Mname = reader[3]?.ToString() ?? string.Empty;
                             _resident.Phone = reader[4]?.ToString() ?? string.Empty;
                             _resident.Email = reader[5]?.ToString() ?? string.Empty;
-                            _resident.Block = reader[6]?.ToString() ?? string.Empty;
-                            _resident.Lot = reader[7]?.ToString() ?? string.Empty;
-                            _resident.Username = reader[8]?.ToString() ?? string.Empty;
-                            _resident.Password = reader[9]?.ToString() ?? string.Empty;
-                            _resident.Date_Residency = reader[10]?.ToString() ?? string.Empty;
-                            _resident.Occupancy = reader[11]?.ToString() ?? string.Empty;
-                            _resident.Created_At = reader[12]?.ToString() ?? string.Empty;
-                            _resident.Activated = (reader[13].ToString() == "false") ? "pending" : "activated";
+                            _resident.Username = reader[6]?.ToString() ?? string.Empty;
+                            _resident.Password = reader[7]?.ToString() ?? string.Empty;
+                            _resident.Date_Residency = reader[8]?.ToString() ?? string.Empty;
+                            _resident.Occupancy = reader[9]?.ToString() ?? string.Empty;
+                            _resident.Activated = (reader[11].ToString() == "false") ? "pending" : "activated";
                             residents.Add(_resident);
 
                         }
@@ -464,5 +420,88 @@ namespace KVHAI.Repository
                 }
             }
         }
+
+        public async Task VerifyToken()
+        {
+            //using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            //{
+            //    while (true)
+            //    {
+            //        string token = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+
+            //        using (var command = new SqlCommand($"SELECT COUNT(*) FROM resident_tb WHERE {columnName} = @token", connection))
+            //        {
+            //            command.Parameters.AddWithValue("@token", token);
+            //            int count = (int)await command.ExecuteScalarAsync();
+
+            //            if (count == 0)
+            //            {
+            //                return token; // Token is unique, return it
+            //            }
+            //            // If token exists, loop will continue and generate a new one
+            //        }
+            //    }
+            //}
+        }
+
+        private async Task<string> CreateRandomToken(string columnName = "verification_token")
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    while (true)
+                    {
+                        string token = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+
+                        using (var command = new SqlCommand($"SELECT COUNT(*) FROM resident_tb WHERE {columnName} = @token", connection))
+                        {
+                            command.Parameters.AddWithValue("@token", token);
+                            int count = (int)await command.ExecuteScalarAsync();
+
+                            if (count == 0)
+                            {
+                                return token; // Token is unique, return it
+                            }
+                            // If token exists, loop will continue and generate a new one
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // It's generally not a good practice to return exception messages as tokens
+                // Instead, log the error and throw an exception or return a failure indicator
+                //_logger.LogError(ex, "Error generating unique token");
+                //throw new Exception("Failed to generate a unique token", ex);
+                return null;
+            }
+        }
     }
 }
+
+/*
+ 
+
+        public async Task<List<Resident>> GetBlockAndLot(SqlConnection connection, string id)
+        {
+            var blockLot = new List<Resident>();
+            using (var command = new SqlCommand("SELECT * FROM address_tb where res_id =@id ", connection))
+            {
+                command.Parameters.AddWithValue("@id", id);
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var resident = new Resident
+                        {
+                            Block = reader["block"].ToString() ?? string.Empty,
+                            Lot = reader["lot"].ToString() ?? string.Empty,
+                        };
+                        blockLot.Add(resident);
+                    }
+                }
+            }
+            return blockLot;
+        }
+ */

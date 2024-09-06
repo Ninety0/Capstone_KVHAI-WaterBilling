@@ -1,5 +1,6 @@
 using KVHAI.CustomClass;
 using KVHAI.Hubs;
+using KVHAI.Interface;
 using KVHAI.MiddleWareExtension;
 using KVHAI.Models;
 using KVHAI.Repository;
@@ -19,7 +20,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 
 // Register DBConnect as a singleton or scoped service
-
+builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.AddSingleton<DBConnect>();
 builder.Services.AddSingleton<Hashing>();
 builder.Services.AddScoped<SubscribeStreetTableDependency>();

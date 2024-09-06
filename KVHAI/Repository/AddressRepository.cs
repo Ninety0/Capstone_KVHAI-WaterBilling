@@ -15,19 +15,56 @@ namespace KVHAI.Repository
             _sanitize = inputSanitize;
         }
 
-        public async Task<int> CreateAddress(int res_id, int st_id, SqlTransaction transaction, SqlConnection connection)
+        public async Task<int> CreateAddress(int res_id, List<Address> addressess, SqlTransaction transaction, SqlConnection connection)
         {
             try
             {
-                using (var command = new SqlCommand("INSERT INTO address_tb (res_id,st_id) VALUES(@res,@st)", connection, transaction))
+                foreach (var address in addressess)
                 {
-                    command.Parameters.AddWithValue("@res", res_id);
-                    command.Parameters.AddWithValue("@st", st_id);
+                    using (var command = new SqlCommand("INSERT INTO address_tb (res_id,block,lot,st_id,location) VALUES(@res,@blk,@lot,@st,@location)", connection, transaction))
+                    {
+                        int _location = 0;
+                        int _block;
+                        // Safely try to parse the block value, defaulting to 0 if it fails
+                        if (int.TryParse(address.Block, out _block))
+                        {
+                            if (_block >= 51 && _block <= 143)
+                            {
+                                _location = 1;
+                            }
+                            else if (_block >= 41 && _block <= 50)
+                            {
+                                _location = 2;
+                            }
+                            else if (_block >= 24 && _block <= 40)
+                            {
+                                _location = 3;
+                            }
+                            else if (_block >= 1 && _block <= 23)
+                            {
+                                _location = 4;
+                            }
+                        }
+                        else
+                        {
+                            // Handle the case where the block value is not valid (e.g., log it, skip, etc.)
+                            _block = 0; // or handle as needed
+                        }
 
-                    await command.ExecuteNonQueryAsync();
+                        command.Parameters.AddWithValue("@res", res_id);
+                        command.Parameters.AddWithValue("@blk", address.Block ?? "");
+                        command.Parameters.AddWithValue("@lot", address.Lot ?? "");
+                        command.Parameters.AddWithValue("@st", address.Street_ID);
+                        command.Parameters.AddWithValue("@location", _location);
 
-                    return 1;
+                        await command.ExecuteNonQueryAsync();
+                        //intDict.Add("Location", _location);
+                        //intDict.Add("ID", resID);
+
+                    }
                 }
+                return 1;
+
             }
             catch (Exception)
             {
@@ -175,5 +212,7 @@ namespace KVHAI.Repository
             }
             return count;
         }
+
+
     }
 }

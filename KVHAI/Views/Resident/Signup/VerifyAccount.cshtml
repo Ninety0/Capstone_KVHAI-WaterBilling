@@ -1,0 +1,203 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Verify Account";
+    var token = ViewData["token"] as string;
+}
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Signup</title>
+
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/toastr.min.css" rel="stylesheet" />
+    <link href="~/css/header-font.css" rel="stylesheet" />
+    <link href="/css/residentSignup.css" rel="stylesheet" />
+    <link href="/lib/editable-select/jquery-editable-select.css" rel="stylesheet" />
+    <style>
+        .invalid-length {
+            display: none;
+            width: 100%;
+            margin-top: .25rem;
+            color: #dc3545;
+        }
+
+        .row_address {
+            position: relative;
+        }
+
+        .btn_add, .btn_remove {
+            background-color: #16a34a;
+            color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 400;
+            height: 38px;
+            width: 150px;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 31px;
+        }
+
+        .btn_remove {
+            background-color: #dc2626;
+        }
+
+        input {
+            outline: 1px solid rgba(5, 37, 114,.2);
+        }
+
+        .btn_wrapper {
+            position: relative;
+        }
+
+        .btn_register {
+            position: absolute;
+            top: 31px;
+            left: 13px;
+            width: 331.33px;
+        }
+
+        .code_input {
+            border-radius: 6px;
+            height: 50px;
+            width: 50px;
+            margin-right: .5em;
+        }
+
+        #btn_Verify {
+            width: 280px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container vh-100">
+        <div class="container d-flex p-2 mb-3">
+            <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:80px;height:80px;">
+            <span class="d-flex align-items-center" id="header">KVHAI</span>
+            <button id="test-btn">Test</button>
+        </div>
+
+        <div class="container main-form">
+            <div class="center-form">
+                <ul class="d-flex justify-content-center p-3 m-0">
+                    <!-- PROCESS 1 -->
+                    <li class="me-2 d-flex">
+                        <div class="make-circle active"></div>
+
+                        <i class="process-seperator ms-2"></i>
+
+                    </li>
+
+                    <!-- PROCESS 2 -->
+                    <li class="me-2 d-flex">
+                        <div class="make-circle"></div>
+                </ul>
+
+                <div class="border"></div>
+
+                <div class="container-fluid main-process">
+                    <!--VERIFY ACCOUNT-->
+                    <div class="container mb-3" id="information">
+                        <div class="container-fluid d-flex justify-content-center mt-3">
+                            <h3>Verify Account @token</h3>
+                        </div>
+                        <div class="verify_content">
+                            <h6 class="text-center">Enter 4-digit code sent to your email.</h6>
+
+                            <div class="d-flex justify-content-center">
+                                <input class="code_input text-center" type="text" name="code1" id="code1" value="" maxlength="1" autocomplete="off" />
+                                <input class="code_input text-center" type="text" name="code2" id="code2" value="" maxlength="1" autocomplete="off" />
+                                <input class="code_input text-center" type="text" name="code3" id="code3" value="" maxlength="1" autocomplete="off" />
+                                <input class="code_input text-center" type="text" name="code4" id="code4" value="" maxlength="1" autocomplete="off" />
+                            </div>
+
+                            <div class="d-flex justify-content-center mt-3">
+                                <button class="btn btn-primary" id="btn_Verify">Verify</button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/js/toastr.min.js"></script>
+    @*<script src="~/js/residentSignup.js"></script>*@
+    <script src="~/lib/editable-select/jquery-editable-select.js"></script>
+    <script>
+        $(document).ready(function () {
+            var currentTab = 0;
+            var maxTab = 1;
+            var minTab = 0;
+
+            codeVerify()
+            updateTabDisplay();
+            $('#btn_Signup').click(handleRegistration);
+
+            function codeVerify() {
+                $('.code_input').on('input', function () {
+                    var $input = $(this);
+                    if ($input.val().length === 1) {
+                        // Move to the next input if the length is 1
+                        $input.next('.code_input').focus();
+                    }
+                });
+
+                $('.code_input').on('keydown', function (e) {
+                    var $input = $(this);
+                    if (e.key === "Backspace" && $input.val() === '') {
+                        // Move to the previous input if Backspace is pressed and input is empty
+                        $input.prev('.code_input').focus();
+                    }
+                });
+            }
+
+            function updateActiveClass() {
+                $('.make-circle').removeClass('active').eq(currentTab).addClass('active');
+            }
+
+
+            //METHOD TO ENSURE NUMBER ONLY
+            function InputKeyPress() {
+                if (currentTab === 1) {
+                    const form = $('.tab').eq(currentTab);
+                    const inputs = form.find('input');
+
+                    inputs.each(function () {
+                        $('.code_input').on('keypress', function (e) {
+
+                            var key = e.keyCode || e.which;
+
+                            if (key < 48 || key > 57) {
+                                e.preventDefault();
+                            }
+                        })
+                    });
+
+
+                }
+            }
+
+            $('input, select').on('input', function () {
+                $(this).removeClass('is-invalid');
+                $(this).closest('form').removeClass('was-validated');
+            });
+        });
+
+    </script>
+</body>
+</html>

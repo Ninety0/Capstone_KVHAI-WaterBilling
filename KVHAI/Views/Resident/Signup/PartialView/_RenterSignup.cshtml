@@ -1,0 +1,311 @@
+﻿ <!-- OCCUPANCY PROCESS -->
+<div class="container tab mt-3 mb-3 " id="occupancy">
+    <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+        <h3>Occupancy</h3>
+    </div>
+
+
+    <div class="form-check mb-3">
+        <select id="Occupancy" name="Occupancy" class="form-select form-select-lg mb-3" required>
+            <option value="" disabled selected hidden>Select</option>
+            <option value="1">Owner</option>
+            <option value="2">Renter</option>
+        </select>
+        <div class="invalid-feedback">
+            Required.
+        </div>
+    </div>
+
+
+</div>
+
+
+<!--END OCCUPANCY PROCESS -->
+<!-- INFORMATION PROCESS -->
+<div class="container tab" id="information">
+    <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+        <h3>Information Details</h3>
+        <button class="btn btn-info" id="btn_Test">Test</button>
+    </div>
+
+    @* ADDRESS *@
+    <div id="add_item">
+        <div class="row row_address">
+            <!-- BLOCK-->
+            <div class="col-md-3">
+                <div class="form-check mb-3">
+                    <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                    <input type="text" min="1" class="form-control" id="Block" name="Block" required>
+                    <div class="invalid-feedback">
+                        Required.
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOT-->
+            <div class="col-md-3">
+                <div class="form-check mb-3">
+                    <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                    <input type="text" min="1" class="form-control" id="Lot" name="Lot" required>
+                    <div class="invalid-feedback">
+                        Required.
+                    </div>
+                </div>
+            </div>
+
+            <!--STREET-->
+            <div class="col-md-4">
+                <div class="form-check mb-3">
+                    <label for="fname" class="form-label fw-bold fs-6">Street</label>
+
+                    <select id="select-street1" class="form-select" aria-label="Default select example" required>
+                        @{
+                            foreach (var item in Model)
+                            {
+                                <option value="@item.Street_ID">@item.Street_Name</option>
+                            }
+                        }
+                    </select>
+                    <div class="invalid-feedback">
+                        Required.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn_add">ADD</button>
+            </div>
+
+        </div>
+    </div>
+    @*END ADDRESS *@
+
+
+    @* PERSONAL INFO *@
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
+                <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
+                <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
+                <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
+                <div class="form-check input-group mb-3">
+                    @*<select class="form-select input-group-text" id="num-span" aria-label="Default select example">
+                            <option selected value="63">63</option>
+                            <option value="0">0</option>
+                        </select>*@
+                    <span class="input-group-text" id="num-span">63</span>
+                    <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required>
+                    <div class="invalid-feedback">
+                        Required.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="Email" class="form-label fw-bold fs-6">Email</label>
+                <input type="email" maxlength="50" class="form-control" id="Email" name="Email" required>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="Date_Residency" class="form-label fw-bold fs-6">Date of Residency</label>
+                <input type="date" class="form-control" id="Date_Residency" name="Date_Residency" required>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="Username" class="form-label fw-bold fs-6">Username</label>
+                <input type="text" maxlength="50" class="form-control" id="Username" name="Username" required>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="Password" class="form-label fw-bold fs-6">Password</label>
+                <input type="password" maxlength="50" class="form-control" id="Password" name="Password" minlength="8" required>
+                <div class="pass-validation">
+                    <div class="invalid-feedback">
+                        Required.
+                    </div>
+                    <div class="invalid-length">
+                        Password must be atleast 8 characters long.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class=" mb-3">
+                <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
+                <input type="password" maxlength="50" class="form-control" id="cpass" minlength="8" required>
+                <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
+            </div>
+
+        </div>
+
+    </div>
+    @* END PERSONAL INFO *@
+
+</div>
+<!-- END INFORMATION PROCESS -->
+<!-- PROOF PROCESS -->
+<div class="container tab" id="proof-validation">
+    <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+        <h3>Proof of Validation</h3>
+    </div>
+    <div class="input-group-sm form-check mb-3">
+        <input type="file" class="form-control" id="Image" accept="image/*" required>
+        <div class="invalid-feedback">
+            Required.
+        </div>
+    </div>
+</div>
+<!-- END PROOF PROCESS -->
+
+<script>
+//ADD MORE ADDRESS
+var countIdStreet = 1;
+$(document).on('click', '.btn_add', function (e) {
+    e.preventDefault();
+    countIdStreet++;
+    var id = "select-street" + countIdStreet;
+    //let count = $('#select-street').length;
+    //let newId = count > 0 ? 'select-street' + count : 'select-street';
+
+    console.log(countIdStreet);
+
+    $('#add_item').append(`<div class="row row_address">
+        <!-- BLOCK-->
+        <div class="col-md-3">
+            <div class="form-check mb-3">
+                <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                <input type="text" min="1" class="form-control" id="Block" name="Block" required>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+
+        <!-- LOT-->
+        <div class="col-md-3">
+            <div class="form-check mb-3">
+                <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                <input type="text" min="1" class="form-control" id="Lot" name="Lot" required>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+
+        <!--STREET-->
+        <div class="col-md-4">
+            <div class="form-check mb-3">
+                <label for="fname" class="form-label fw-bold fs-6">Street</label>
+
+                <select id="${id}" class="form-select" aria-label="Default select example" required>
+                    @{
+                        foreach (var item in Model)
+                        {
+                            <option value="@item.Street_ID">@item.Street_Name</option>
+                        }
+                    }
+                </select>
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn_remove">REMOVE</button>
+        </div>
+
+    </div>`);
+
+    //adding EDITABLE SELECT
+    $('#' + id).editableSelect();
+    $('input, select').on('input', function () {
+        $(this).removeClass('is-invalid');
+        $(this).closest('form').removeClass('was-validated');
+    });
+})
+
+//REMOVE ADDRESS ADDED
+$(document).on('click', '.btn_remove', function (e) {
+    e.preventDefault();
+    var rowItem = $(this).parent().parent();
+    $(rowItem).remove();
+    countIdStreet--;
+    //code to check parent parent
+    //$(this).parent().css({ "color": "red", "border": "2px solid red" });
+    //$(this).parent().parent().css({ "color": "red", "border": "2px solid yellow" });
+    //console.log(rowItem);
+});
+
+
+</script>
+
+<script>
+    $('#select-street1').editableSelect();
+
+    $(document).ready(function () {
+
+        //streets.forEach(street => {
+        //    formData.append('streets[]', street); // append each street value as an array
+        //});
+        $('#btn_Test').on('click', function (e) {
+            e.preventDefault()
+            var addresses = [];
+            $('.row_address').each(function (index, element) {
+                var id = "select-street" + (index + 1);
+                var block = $(element).find('#Block').val();
+                var lot = $(element).find('#Lot').val();
+                var street = $(element).find('#' + id).val();
+                console.log(id);
+                addresses.push({ block: block, lot: lot, street: street });
+            });
+            console.log(addresses);
+        })
+
+    });
+</script>

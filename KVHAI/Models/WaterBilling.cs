@@ -12,6 +12,7 @@
         public string Status { get; set; } = string.Empty;
         public string WaterBill_No { get; set; } = string.Empty;
 
+        public string DatePeriodCovered { get; set; } = string.Empty;
         public string PreviousWaterBill { get; set; } = string.Empty;
         public string PreviousWaterBillAmount { get; set; } = string.Empty;
 

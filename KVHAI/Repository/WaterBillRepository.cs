@@ -489,17 +489,25 @@ namespace KVHAI.Repository
         public async Task<WaterBilling> GetDateBilling(string date)
         {
             string DateFrom = date;
-            if (DateTime.TryParse(DateFrom, out DateTime result))
-            {
-                DateFrom = result.ToString("yyyy-MM-dd");
-            }
+            //if (DateTime.TryParse(DateFrom, out DateTime result))
+            //{
+            //    DateFrom = result.ToString("yyyy-MM-dd");
+            //}
 
-            string DateTo = DateTime.Now.ToString("yyyy-MM-dd");
+            //string DateTo = DateTime.Now.ToString("yyyy-MM-dd");
+
+            //var wb = new WaterBilling()
+            //{
+            //    Date_Issue_From = DateFrom,
+            //    Date_Issue_To = DateTo
+            //};
+            var dateFrom = DateTime.Now.ToString("yyyy-MM-dd");
+            var dateTo = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd");
 
             var wb = new WaterBilling()
             {
-                Date_Issue_From = DateFrom,
-                Date_Issue_To = DateTo
+                Date_Issue_From = dateFrom,
+                Date_Issue_To = dateTo
             };
             return wb;
         }

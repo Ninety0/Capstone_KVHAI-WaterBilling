@@ -21,6 +21,52 @@
             margin-top: .25rem;
             color: #dc3545;
         }
+        .row_address{
+            position:relative;
+        }
+
+        .btn_add, .btn_remove {
+            background-color: #16a34a;
+            color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 400;
+            height: 38px;
+            width: 150px;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 31px;
+        }
+        .btn_remove {
+            background-color: #dc2626;
+        }
+
+        input, select {
+            outline: 1px solid rgba(5, 37, 114,.2);
+        }
+        .btn_wrapper{
+            position:relative;
+        }
+        .btn_register {
+            position: absolute;
+            top: 31px;
+            left: 13px;
+            width: 331.33px;
+        }
+
+        .code_input{
+            border-radius:6px;
+            height:50px;
+            width:50px;
+            margin-right: .5em;
+        }
+        #btn_Verify{
+            width:280px;
+            font-weight:600;
+        }
     </style>
 </head>
 <body>
@@ -29,7 +75,7 @@
         <div class="container d-flex p-2 mb-3">
             <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:80px;height:80px;">
             <span class="d-flex align-items-center" id="header">KVHAI</span>
-            <button id="test-btn">Test</button>
+            <button class="btn btn-sm btn-info" id="test-btn">Test</button>
         </div>
 
         <div class="container main-form">
@@ -47,93 +93,28 @@
                     <li class="me-2 d-flex">
                         <div class="make-circle"></div>
 
-                        <i class="process-seperator ms-2"></i>
+                        @*<i class="process-seperator ms-2"></i>*@
 
                     </li>
 
                     <!-- PROCESS 3 -->
-                    <li class="me-2 d-flex">
+                    @*<li class="me-2 d-flex">
                         <div class="make-circle"></div>
 
-                    </li>
+                    </li>*@
                 </ul>
 
                 <div class="border"></div>
 
                 <div class="container-fluid main-process">
                     <form id="myForm" autocomplete="off" class="needs-validation" enctype="multipart/form-data" novalidate>
-
                         @Html.AntiForgeryToken()
 
-                        <!-- OCCUPANCY PROCESS -->
-                        <div class="container tab mt-3 mb-3 " id="occupancy">
-                            <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
-                                <h3>Occupancy</h3>
-                            </div>
-
-
-                            <div class="form-check mb-3">
-                                <select id="Occupancy" name="Occupancy" class="form-select form-select-lg mb-3" required>
-                                    <option value="" disabled selected hidden>Select</option>
-                                    <option value="1">Owner</option>
-                                    <option value="2">Renter</option>
-                                </select>
-                                <div class="invalid-feedback">
-                                    Required.
-                                </div>
-                            </div>
-
-
-                        </div>
-
-
-                        <!--END OCCUPANCY PROCESS -->
                         <!-- INFORMATION PROCESS -->
-                        <div class="container tab" id="information">
+                        <div class="container" id="information">
                             <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
                                 <h3>Information Details</h3>
                             </div>
-
-                            @* ADDRESS *@
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-check mb-3">
-                                        <label for="Block" class="form-label fw-bold fs-6">Block</label>
-                                        <input type="text" min="1" class="form-control" id="Block" name="Block" required>
-                                        <div class="invalid-feedback">
-                                            Required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check mb-3">
-                                        <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
-                                        <input type="text" min="1" class="form-control" id="Lot" name="Lot" required>
-                                        <div class="invalid-feedback">
-                                            Required.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check mb-3">
-                                        <label for="fname" class="form-label fw-bold fs-6">Street</label>
-                                        
-                                        <select id="select-street" class="form-select" aria-label="Default select example" required>
-                                            @{
-                                                foreach (var item in Model)
-                                                {
-                                                    <option value="@item.Street_ID">@item.Street_Name</option>
-                                                }
-                                            }
-                                        </select>
-                                        <div class="invalid-feedback">
-                                            Required.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @*END ADDRESS *@
-
 
                             @* PERSONAL INFO *@
                             <div class="row">
@@ -171,10 +152,6 @@
                                     <div class="form-check mb-3">
                                         <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
                                         <div class="form-check input-group mb-3">
-                                            @*<select class="form-select input-group-text" id="num-span" aria-label="Default select example">
-            <option selected value="63">63</option>
-            <option value="0">0</option>
-        </select>*@
                                             <span class="input-group-text" id="num-span">63</span>
                                             <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required>
                                             <div class="invalid-feedback">
@@ -182,7 +159,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-check mb-3">
@@ -193,17 +169,24 @@
                                         </div>
                                     </div>
                                 </div>
+                                
                                 <div class="col-md-4">
                                     <div class="form-check mb-3">
-                                        <label for="Date_Residency" class="form-label fw-bold fs-6">Date of Residency</label>
-                                        <input type="date" class="form-control" id="Date_Residency" name="Date_Residency" required>
+                                        <label for="Occupancy" class="form-label fw-bold fs-6">Occupancy</label>
+                                        <select id="Occupancy" name="Occupancy" class="form-select mb-3" required>
+                                            <option value="" disabled selected hidden>Select</option>
+                                            <option value="1">Owner</option>
+                                            <option value="2">Renter</option>
+                                        </select>
                                         <div class="invalid-feedback">
                                             Required.
                                         </div>
                                     </div>
                                 </div>
+                                
                             </div>
 
+                            <!--USER CREDENTIALS-->
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-check mb-3">
@@ -234,38 +217,24 @@
                                         <input type="password" maxlength="50" class="form-control" id="cpass" minlength="8" required>
                                         <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
                                     </div>
-                                    
+                                </div>
+                                <div class="col-md-4 btn_wrapper">
+                                    <div class="mb-3 ">
+                                    </div>
                                 </div>
 
                             </div>
                             @* END PERSONAL INFO *@
-
                         </div>
-                        <!-- END INFORMATION PROCESS -->
-                        <!-- PROOF PROCESS -->
-                        <div class="container tab" id="proof-validation">
-                            <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
-                                <h3>Proof of Validation</h3>
-                            </div>
-                            <div class="input-group-sm form-check mb-3">
-                                <input type="file" class="form-control" id="Image" accept="image/*" required>
-                                <div class="invalid-feedback">
-                                    Required.
-                                </div>
-                            </div>
-                        </div>
-                        <!-- END PROOF PROCESS -->
-
-
                     </form>
-                    <div class="container btn-buttons">
-                        <button class="p-2 mb-3 btn-prev me-2" id="prev-btn">Previous</button>
-                        <button class="p-2 mb-3" type="submit" id="btn-register">TEST</button>
-                        <button class="p-2 mb-3 btn-next" id="next-btn">Next</button>
+
+                    <!--BUTTON SIGNUP-->
+                    <div class="container d-flex justify-content-end">
+                        <button class="p-2 mb-3 me-2 btn btn-primary text-uppercase fw-bold" id="btn_Signup">Signup</button>
                     </div>
                 </div>
-
-            </div>
+                </div>
+                
         </div>
 
     </div>
@@ -275,11 +244,206 @@
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
     <script src="~/js/toastr.min.js"></script>
-    <script src="~/js/residentSignup.js"></script>
+    @*<script src="~/js/residentSignup.js"></script>*@
     <script src="~/lib/editable-select/jquery-editable-select.js"></script>
     <script>
-        $('#select-street').editableSelect();
-    </script>
+        $(document).ready(function () {
+            var token = "";
+            var currentTab = 0;
+            var maxTab = 1;
+            var minTab = 0;
 
+            $('#cpass').on('change', ConfirmPassword);
+            $('#btn_Signup').click(checkInputLength);
+
+            $('#btn_Signup').click(handleRegistration);
+
+            $('#test-btn').on('click', function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '/ResLogin/SendEmail',
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        toastr.success("GOOds");
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            })
+
+            function handleRegistration(e) {
+                e.preventDefault();
+
+                if (!validateCurrentTab()) {
+                    toastr.error('Please fill out all required fields correctly.');
+                    return;
+                }
+
+                var formData = new FormData($('#myForm')[0]);
+
+                $.ajax({
+                    type: 'POST',
+                    url: window.location.origin + '/kvhai/resident/signup',
+                    contentType: false,
+                    processData: false,
+                    data: formData,
+                    success: function (response) {
+                        if (response.message) {
+                            toastr.success(response.message);
+                        }
+                        if (response.token) {
+                            localStorage.setItem('verificationToken', response.token);
+                            console.log("Verification Token:", response.token);
+                        }
+                        //window.location.href = '/Resident/VerifyPage?token=' + encodeURIComponent(response.token);
+                        window.location.href = '/kvhai/resident/verifyaccount/' + encodeURIComponent(response.token);
+                        //var test = '/Resident/VerifyPage?token=' + encodeURIComponent(response.token);
+
+                        console.log(test);
+                        //setTimeout(function () {
+                        //    location.reload();
+                        //}, 3000);
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function validateCurrentTab() {
+                const form = $('#myForm'); // jQuery
+                const inputs = form.find('input, select');
+                let isValid = true;
+
+                inputs.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    if (this.id === 'cpass') {
+                        // Handle confirm password separately
+                        if (!ConfirmPassword())
+                        {
+                            isValid = false;
+                            input.addClass('is-invalid');
+                        }
+                        else
+                        {
+                            input.removeClass('is-invalid');
+                        }
+                    } else {
+                        // Handle other inputs
+                        if (!this.checkValidity()) {
+                            isValid = false;
+                            input.addClass('is-invalid');
+                        } else {
+                            input.removeClass('is-invalid');
+                        }
+                    }
+                });
+
+                return isValid;
+            }
+
+            function updateActiveClass() {
+                $('.make-circle').removeClass('active').eq(currentTab).addClass('active');
+            }
+
+            //METHOD TO CHECK INPUT LENgTH
+            function checkInputLength() {
+                const form = $('#myForm'); // jQuery
+                const inputs = form.find('input');
+                let isValid = true;
+
+                inputs.each(function () {
+                    if (this.id === 'Password') {
+                        var str = $('#Password').val();
+                        if (str.length < 8) {
+                            toastr.error("Password atleast 8 characters")
+                            this.classList.add('is-invalid');
+                        }
+                        else {
+                            this.classList.remove('is-invalid');
+                            $('.invalid-length').addClass('d-none');
+                        }
+                    }
+                });
+            }
+
+            //METHOD TO ENSURE NUMBER ONLY
+            function InputKeyPress() {
+                if (currentTab === 1) {
+                    const form = $('.tab').eq(currentTab);
+                    const inputs = form.find('input');
+
+                    inputs.each(function () {
+                        if (this.id === 'Phone') {
+                            $('#Phone').on('keypress', function (e) {
+
+                                var key = e.keyCode || e.which;
+
+                                if (key < 48 || key > 57) {
+                                    e.preventDefault();
+                                }
+                            })
+                        }
+                        else if (this.id === 'Block') {
+                            $('#Block').on('keypress', function (e) {
+
+                                var key = e.keyCode || e.which;
+
+                                if (key < 48 || key > 57) {
+                                    e.preventDefault();
+                                }
+                            })
+                        }
+                        else if (this.id === 'Lot') {
+                            $('#Lot').on('keypress', function (e) {
+
+                                var key = e.keyCode || e.which;
+
+                                if (key < 48 || key > 57) {
+                                    e.preventDefault();
+                                }
+                            })
+                        }
+                    });
+
+
+                }
+            }
+
+            //METHOD CONFIRM PASOWRD
+            function ConfirmPassword() {
+                //console.log("jQuery version:", $.fn.jquery);
+                //console.log("Password element:", $('#Password').length);
+                //console.log("Password value:", $('#Password').val());
+                //console.log("cpass element:", $('#cpass').length);
+                //console.log("cpass value:", $('#cpass').val());
+
+                const pass = document.getElementById('Password').value;
+                const cpass = document.getElementById('cpass');
+                const errorMsg = document.getElementById('err-msg');
+
+                const isValid = pass === cpass.value;
+
+                cpass.classList.toggle('is-invalid', !isValid);
+                errorMsg.style.display = isValid ? 'none' : 'block';
+
+                //if (!isValid) {
+                //    alert("GGWP");
+                //}
+
+                return isValid;
+            }
+
+            $('input, select').on('input', function () {
+                $(this).removeClass('is-invalid');
+                $(this).closest('form').removeClass('was-validated');
+            });
+        });
+        
+    </script>
 </body>
 </html>

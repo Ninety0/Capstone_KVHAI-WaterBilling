@@ -72,12 +72,27 @@
         .form-check {
             cursor: pointer;
         }
+
+        .txtWarning {
+            color: #27272a;
+            font-size:1.2rem;
+            text-align:center;
+        }
     </style>
 }
 
 @section scripts{
     <script defer>
         $(document).ready(function () {
+            var isExist = $('.tableRow').find('.txtWarning');
+            if (isExist.length > 0)
+            {
+                alert("ggwp"); console.log(isExist);
+                setTimeout(function () {
+                    window.location.href = window.location.origin + '/kvhai/staff/water-reading/'; 
+                }, 3000);
+            }
+
             var isCheck = false;
             $('#wbText').text("WaterBill No. " + $('#wbNumber').find('option:selected').val());
 
@@ -368,63 +383,77 @@
                 @{
                     try
                     {
-                        for (int i = 0; i < Model.ResidentAddress.Count; i++)
+                        if (Model.CurrentReading?.Count < Model.PreviousReading?.Count)
                         {
-                            // Define default values for cases where data might be missing
-                            string previousReading = "N/A";
-                            string currentReading = "N/A";
-                            string cubicMeter = "N/A";
-                            string dateTextList = "N/A";
-                            string billAmount = "N/A";
-                            string waterBillNumber = "N/A";
-                            string prevWaterBill = "";
-                            string prevWaterBillAmount = "N/A";
-                            string total = "N/A";
-
-
-                            if (i< Model.Total.Count)
+                            <div class="alert alert-warning container-fluid" role="alert">
+                                <i class="fa-solid fa-triangle-exclamation txtWarning"></i> 
+                                <span class="txtWarning fw-medium text-center">Complete water reading Consumption first before proceeding here! You will be directed to Water Reading in a second...</span>
+                            </div>
+                        }
+                        else
+                        {
+                            for (int i = 0; i < Model.ResidentAddress.Count; i++)
                             {
-                                total = Model.Total[i].ToString("F2");
-                            }
+                                // Define default values for cases where data might be missing
+                                string previousReading = "N/A";
+                                string currentReading = "N/A";
+                                string cubicMeter = "N/A";
+                                string dateTextList = "N/A";
+                                string billAmount = "N/A";
+                                string waterBillNumber = "N/A";
+                                string prevWaterBill = "";
+                                string prevWaterBillAmount = "N/A";
+                                string total = "N/A";
+                                string dueDate = "";
 
-                            // Fetch the previous reading if available
-                            if (i < Model.PreviousReading.Count)
-                            {
-                                previousReading = Model.PreviousReading[i]?.Consumption ?? "N/A";
-                            }
+                                if (i < Model.DueDate.Count)
+                                {
+                                    dueDate = Model.DueDate[i]??"";
+                                }
 
-                            // Fetch the current reading if available
-                            if (i < Model.CurrentReading.Count)
-                            {
-                                currentReading = Model.CurrentReading[i]?.Consumption ?? "N/A";
-                            }
+                                if (i< Model.Total.Count)
+                                {
+                                    total = Model.Total[i].ToString("F2");
+                                }
 
-                            // Fetch the WBDateTextList if available
-                            if (i < Model.WBDateTextList.Count)
-                            {
-                                dateTextList = Model.WBDateTextList[i] ?? "N/A";
-                            }
+                                // Fetch the previous reading if available
+                                if (i < Model.PreviousReading.Count)
+                                {
+                                    previousReading = Model.PreviousReading[i]?.Consumption ?? "N/A";
+                                }
 
-                            // Fetch the calculated cubic meter if available
-                            if (i < Model.CubicMeter.Count)
-                            {
-                                cubicMeter = Model.CubicMeter[i].ToString();
-                            }
+                                // Fetch the current reading if available
+                                if (i < Model.CurrentReading.Count)
+                                {
+                                    currentReading = Model.CurrentReading[i]?.Consumption ?? "N/A";
+                                }
 
-                            // Fetch the calculated bill amount if available
-                            if (i < Model.BillAmount.Count)
-                            {
-                                billAmount = Model.BillAmount[i].ToString("F2");
-                            }
+                                // Fetch the WBDateTextList if available
+                                if (i < Model.WBDateTextList.Count)
+                                {
+                                    dateTextList = Model.WBDateTextList[i] ?? "N/A";
+                                }
 
-                            if (i < Model.PreviousBillAmount.Count)
-                            {
-                                prevWaterBillAmount = Model.PreviousBillAmount[i].ToString("F2");
-                            }
-                            if (i < Model.UnpaidWaterBill.Count)
-                            {
-                                prevWaterBill = Model.UnpaidWaterBill[i]?.PreviousWaterBill ?? "N/A";
-                            }
+                                // Fetch the calculated cubic meter if available
+                                if (i < Model.CubicMeter.Count)
+                                {
+                                    cubicMeter = Model.CubicMeter[i].ToString();
+                                }
+
+                                // Fetch the calculated bill amount if available
+                                if (i < Model.BillAmount.Count)
+                                {
+                                    billAmount = Model.BillAmount[i].ToString("F2");
+                                }
+
+                                if (i < Model.PreviousBillAmount.Count)
+                                {
+                                    prevWaterBillAmount = Model.PreviousBillAmount[i].ToString("F2");
+                                }
+                                if (i < Model.UnpaidWaterBill.Count)
+                                {
+                                    prevWaterBill = Model.UnpaidWaterBill[i]?.PreviousWaterBill ?? "N/A";
+                                }
 
                             <div class="d-flex tables">
                                 <!--@i BILL-->
@@ -513,7 +542,7 @@
                                                         <div class="fw-bold text-uppercase ms-3">Due Date:</div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="text-uppercase text-center">@Model.WaterBill[i].Due_Date_From - @Model.WaterBill[i].Due_Date_To</div>
+                                                        <div class="text-uppercase text-center">@dueDate</div>
                                                     </div>
                                                 </div>
 
@@ -581,6 +610,7 @@
                                 </div>
                             </div>
                             <!--END @i BILL-->
+                        }
                         }
                     }
                     catch (Exception ex)

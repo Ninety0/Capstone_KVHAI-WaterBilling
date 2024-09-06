@@ -8,7 +8,7 @@
     };
 
     var currentTab = 0;
-    var maxTab = 2;
+    var maxTab = 1;
     var minTab = 0;
 
     
@@ -174,7 +174,6 @@
 
         return isValid;
     }
-    
 
     //METHOD CONFIRM PASOWRD
     function ConfirmPassword() {
@@ -208,8 +207,19 @@
             toastr.error('Please fill out all required fields correctly.');
             return;
         }
+        var addresses = [];
+        var streets = [];
+        $('.row_address').each(function (index, element) {
+            var id = "select-street" + (index + 1);
+            var block = $(element).find('#Block').val();
+            var lot = $(element).find('#Lot').val();
+            var street = $(element).find('#' + id).val();
+            addresses.push({ block: block, lot: lot, street: street });
+        });
 
         var formData = new FormData($('#myForm')[0]);
+        formData.append('addresses', JSON.stringify(addresses));
+
         var fileInput = document.getElementById('Image');
         var _st = $('#select-street').val();
         formData.append('file', fileInput.files[0]);
@@ -222,20 +232,21 @@
             processData: false,
             data: formData,
             success: function (response) {
-                console.log(response);
-                const errorMessage = 'There was an error saving the resident and the image.';
-                const successMessage = 'Registration Successful.';
+                //console.log(response);
+                //const errorMessage = 'There was an error saving the resident and the image.';
+                //const successMessage = 'Registration Successful.';
 
-                if (response.message.includes('error')) {
-                    toastr.error(errorMessage);
-                }
-                else if (response.message.includes('exist')) {
-                    toastr.error('Email or Username already taken.');
-                }
-                else {
-                    toastr.success(successMessage);
-                    location.reload();
-                }
+                //if (response.message.includes('error')) {
+                //    toastr.error(errorMessage);
+                //}
+                //else if (response.message.includes('exist')) {
+                //    toastr.error('Email or Username already taken.');
+                //}
+                //else {}
+                    toastr.success(response);
+                    setTimeout(function () {
+                        location.reload();
+                    },3000);
             },
             error: function (xhr, status, error) {
                 //console.log(xhr.responseText);
@@ -249,8 +260,6 @@
         $(this).removeClass('is-invalid');
         $(this).closest('form').removeClass('was-validated');
     });
-
-    
 });
 
 

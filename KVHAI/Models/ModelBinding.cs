@@ -6,6 +6,7 @@ namespace KVHAI.Models
     {
         public IEnumerable<Resident>? Residents { get; set; }
         public IEnumerable<Employee>? Employees { get; set; }
+        public List<Resident>? ResidentsAddress { get; set; }
 
         public Pagination<Employee>? EmployeePagination { get; set; }
         public Pagination<Resident>? ResidentPagination { get; set; }
