@@ -75,7 +75,7 @@
         <div class="container d-flex p-2 mb-3">
             <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:80px;height:80px;">
             <span class="d-flex align-items-center" id="header">KVHAI</span>
-            <button class="btn btn-sm btn-info" id="test-btn">Test</button>
+            @*<button class="btn btn-sm btn-info" id="test-btn">Test</button>*@
         </div>
 
         <div class="container main-form">
@@ -293,19 +293,14 @@
                     success: function (response) {
                         if (response.message) {
                             toastr.success(response.message);
+                            if (response.token) {
+                                console.log("Verification Token:", response.token);
+                                document.cookie = "verifyToken=" + encodeURIComponent(response.token) + "; path=/kvhai/resident";
+                                setTimeout(function () {
+                                    window.location.href = '/kvhai/resident/verifyaccount/';
+                                }, 3000);
+                            }
                         }
-                        if (response.token) {
-                            localStorage.setItem('verificationToken', response.token);
-                            console.log("Verification Token:", response.token);
-                        }
-                        //window.location.href = '/Resident/VerifyPage?token=' + encodeURIComponent(response.token);
-                        window.location.href = '/kvhai/resident/verifyaccount/' + encodeURIComponent(response.token);
-                        //var test = '/Resident/VerifyPage?token=' + encodeURIComponent(response.token);
-
-                        console.log(test);
-                        //setTimeout(function () {
-                        //    location.reload();
-                        //}, 3000);
                     },
                     error: function (xhr, status, error) {
                         //console.log(xhr.responseText);

@@ -14,8 +14,9 @@ namespace KVHAI.Repository
         private readonly ImageUploadRepository _uploadRepository;
         private readonly StreetRepository _streetRepository;
         private readonly AddressRepository _addressRepository;
+        private readonly LoginRepository _loginRepository;
 
-        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize, ImageUploadRepository uploadRepository, StreetRepository streetRepository, AddressRepository addressRepository)
+        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize, ImageUploadRepository uploadRepository, StreetRepository streetRepository, AddressRepository addressRepository, LoginRepository loginRepository)
         {
             _dbConnect = dbconn;
             _hash = hash;
@@ -23,6 +24,7 @@ namespace KVHAI.Repository
             _uploadRepository = uploadRepository;
             _streetRepository = streetRepository;
             _addressRepository = addressRepository;
+            _loginRepository = loginRepository;
         }
 
         public async Task<List<Resident>> GetAllResidentAsync()
@@ -115,6 +117,190 @@ namespace KVHAI.Repository
             }
         }
 
+        //REGION START
+        #region CODE NEED TO BE MIGRATE
+        //VALIDATE ACCOUNT
+        public async Task<bool> ValidateAccount(Resident resident)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    // Query to get the hashed password based on the username
+                    using (var command = new SqlCommand("SELECT COUNT(username) FROM resident_tb WHERE username = @user", connection))
+                    {
+                        command.Parameters.AddWithValue("@user", resident.Username);
+
+                        // Execute the query and get the hashed password
+                        var count = await command.ExecuteScalarAsync();
+
+                        return Convert.ToInt32(count) > 0;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Handle any exception as needed (logging, etc.)
+                return false;
+            }
+        }
+
+        //VERIFY PASSWORD
+        public async Task<bool> ValidatePassword(Resident resident)
+        {
+            try
+            {
+                string passFromDB = string.Empty;
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    // Query only by username to get the hashed password
+                    using (var command = new SqlCommand("SELECT password FROM resident_tb WHERE username = @user", connection))
+                    {
+                        command.Parameters.AddWithValue("@user", resident.Username);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                // Retrieve the hashed password from the database
+                                passFromDB = reader["password"].ToString() ?? string.Empty;
+                            }
+                        }
+
+                        // If no password was found, return false
+                        if (string.IsNullOrEmpty(passFromDB))
+                        {
+                            return false; // Username not found or password missing
+                        }
+
+                        // Verify the input password with the hashed password from the database
+                        if (_hash.VerifyPassword(passFromDB, resident.Password))
+                            return true; // Password is correct
+                        else
+                            return false; // Password is incorrect
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Handle exception (logging, etc.)
+                return false;
+            }
+        }
+
+        //VERIFY PASSWORD
+        public async Task<List<Resident>> VerifiedAt(Resident resident)
+        {
+            try
+            {
+                var resList = new List<Resident>();
+                string passFromDB = string.Empty;
+                string verified_At = string.Empty;
+                string token = string.Empty;
+                string email = string.Empty;
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    // Query only by username to get the hashed password and verification status
+                    using (var command = new SqlCommand("SELECT * FROM resident_tb WHERE username = @user", connection))
+                    {
+                        command.Parameters.AddWithValue("@user", resident.Username);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                passFromDB = reader["password"].ToString() ?? string.Empty;
+                                verified_At = reader["verified_at"].ToString() ?? string.Empty;
+                                token = reader["verification_token"].ToString() ?? string.Empty;
+                                email = reader["email"].ToString() ?? string.Empty;
+                            }
+                        }
+
+                        // If no password was found, return null
+                        if (string.IsNullOrEmpty(passFromDB))
+                        {
+                            return null; // User not found
+                        }
+
+                        // Verify the input password with the hashed password from the database
+                        if (_hash.VerifyPassword(passFromDB, resident.Password))
+                        {
+                            var credentials = new Resident
+                            {
+                                Verified_At = verified_At,
+                                Verification_Token = token,
+                                Email = email
+                            };
+
+                            resList.Add(credentials);
+                            return resList;
+                        }
+                        else
+                        {
+                            return null; // Password incorrect
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Handle exception (logging, etc.)
+                return null;
+            }
+        }
+
+        public async Task<string> GetEmailByToken(string token)
+        {
+            string email = string.Empty;
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT email FROM resident_tb WHERE verification_token = @token", connection))
+                    {
+                        command.Parameters.AddWithValue("@token", token);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                email = reader["email"].ToString() ?? string.Empty;
+                            }
+                        }
+
+                        return email;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return email;
+            }
+        }
+
+        //VALIDATE TOKEN EXISTENCE
+        public async Task<bool> IsTokenExist(string token)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT COUNT(*) FROM resident_tb WHERE verification_token = @token", connection))
+                    {
+                        command.Parameters.AddWithValue("@token", token);
+                        int count = (int)command.ExecuteScalar();
+                        return count > 0;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         //CHECK EXIST
         public async Task<bool> UserExists(Resident resident)
         {
@@ -134,6 +320,163 @@ namespace KVHAI.Repository
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        //EMAIL TOKEN
+        public async Task<int> AddVerification(string email)
+        {
+            /*
+             return type int
+                0 fail
+                1 success
+                2 code already sent and still valid
+             */
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    // Check if a valid token already exists
+                    using (var command = new SqlCommand("SELECT reset_token_expire FROM resident_tb WHERE email = @email", connection))
+                    {
+                        command.Parameters.AddWithValue("@email", email);
+                        var result = await command.ExecuteScalarAsync();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            var expiryDate = (DateTime)result;
+                            if (expiryDate > DateTime.Now)
+                            {
+                                return 2; // Code already sent and still valid
+                            }
+                        }
+                    }
+
+                    // Generate new verification code
+                    var codeGenerate = await _loginRepository.GenerateVerificationCode(4);
+                    if (string.IsNullOrEmpty(codeGenerate[0].Code))
+                    {
+                        return 0; // Failed to generate code
+                    }
+
+                    // Update resident_tb with new token and expiration
+                    using (var command = new SqlCommand("UPDATE resident_tb SET password_reset_token = @token, reset_token_expire = @time WHERE email = @email", connection))
+                    {
+                        command.Parameters.AddWithValue("@token", codeGenerate[0].Code);
+                        command.Parameters.AddWithValue("@time", codeGenerate[0].Expiration);
+                        command.Parameters.AddWithValue("@email", email);
+                        var updateResult = await command.ExecuteNonQueryAsync();
+
+                        if (updateResult > 0)
+                        {
+                            var sendEmail = new EmailDto
+                            {
+                                To = email
+                            };
+                            await _loginRepository.SendEmail(sendEmail, codeGenerate[0].Code);
+                            return 1; // Success
+                        }
+                    }
+                }
+
+                return 0; // Fail (no rows updated)
+            }
+            catch (Exception)
+            {
+                // Consider logging the exception here
+                return 0; // Fail
+            }
+        }
+
+        public async Task<int> IsCodeTheSame(string userProvidedCode, string email)
+        {
+            /*
+             return type int
+                0 date expires
+                1 success
+                2 code not match
+             */
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    // Retrieve the stored code and expiration date from the database
+                    using (var command = new SqlCommand("SELECT password_reset_token, reset_token_expire FROM resident_tb WHERE email = @email", connection))
+                    {
+                        command.Parameters.AddWithValue("@email", email);
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                var storedCode = reader["password_reset_token"].ToString();
+                                var expiryDate = (DateTime)reader["reset_token_expire"];
+
+                                // Check if the provided code matches the stored code and if it's still valid
+                                if (!string.IsNullOrEmpty(storedCode) && expiryDate > DateTime.Now && storedCode == userProvidedCode)
+                                {
+                                    // Close the reader before executing the update
+                                    reader.Close();
+
+                                    // Update the verified_at column
+                                    using (var updateCommand = new SqlCommand("UPDATE resident_tb SET verified_at = @verifiedAt WHERE email = @email", connection))
+                                    {
+                                        updateCommand.Parameters.AddWithValue("@verifiedAt", DateTime.Now);
+                                        updateCommand.Parameters.AddWithValue("@email", email);
+                                        var updateResult = await updateCommand.ExecuteNonQueryAsync();
+                                        if (updateResult > 0)
+                                        {
+                                            // Clear the password_reset_token and reset_token_expire columns
+                                            using (var clearCommand = new SqlCommand("UPDATE resident_tb SET password_reset_token = '', reset_token_expire = '' WHERE email = @email", connection))
+                                            {
+                                                clearCommand.Parameters.AddWithValue("@email", email);
+                                                await clearCommand.ExecuteNonQueryAsync();
+                                                return 1; // Success
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    return 0; // Code is not valid
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return 0; // Fail (no matching code found)
+            }
+            catch (Exception)
+            {
+                // Consider logging the exception here
+                return 0; // Fail
+            }
+        }
+
+        #endregion
+        //END REGION
+
+        public async Task<int> UpdatePassword(string password, string email)
+        {
+            var _password = await _sanitize.HTMLSanitizerAsync(password);
+            var _email = await _sanitize.HTMLSanitizerAsync(email);
+            var hashPassword = _hash.HashPassword(_password);
+
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("UPDATE resident_tb set password = @pass where email =@email", connection))
+                    {
+                        command.Parameters.AddWithValue("@pass", hashPassword);
+                        command.Parameters.AddWithValue("@email", _email);
+
+                        return await command.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
             }
         }
 

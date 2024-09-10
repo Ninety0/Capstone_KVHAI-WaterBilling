@@ -26,6 +26,7 @@ builder.Services.AddSingleton<Hashing>();
 builder.Services.AddScoped<SubscribeStreetTableDependency>();
 builder.Services.AddScoped<StreetHub>();
 
+builder.Services.AddTransient<LoginRepository>();
 builder.Services.AddTransient<InputSanitize>();
 builder.Services.AddTransient<WaterBillingFunction>();
 builder.Services.AddTransient(typeof(Pagination<>));

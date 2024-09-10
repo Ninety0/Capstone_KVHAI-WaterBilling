@@ -22,11 +22,11 @@
 
         public string Verification_Token { get; set; } = string.Empty;
 
-        public DateTime? Verified_At { get; set; }
+        public string Verified_At { get; set; } = string.Empty;
 
         public string Password_Reset_Token { get; set; } = string.Empty;
 
-        public DateTime? Reset_Token_Expire { get; set; }
+        public string Reset_Token_Expire { get; set; } = string.Empty;
 
         public string Date_Residency { get; set; } = string.Empty;
 

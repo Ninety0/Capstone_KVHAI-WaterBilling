@@ -1,5 +1,4 @@
 ﻿using KVHAI.CustomClass;
-using KVHAI.Interface;
 using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Mvc;
@@ -12,19 +11,19 @@ namespace KVHAI.Controllers.Homeowner
         private readonly ResidentRepository _residentRepository;
         private readonly StreetRepository _streetRepository;
         private readonly ImageUploadRepository _imageRepository;
+        private readonly LoginRepository _loginRepository;
         private readonly InputSanitize _sanitize;
         private readonly IWebHostEnvironment _environment;
-        private readonly IEmailSender _emailService;
 
 
-        public ResLoginController(ResidentRepository residentRepository, StreetRepository streetRepository, InputSanitize sanitize, ImageUploadRepository imageUpload, IWebHostEnvironment environment, IEmailSender emailService)
+        public ResLoginController(ResidentRepository residentRepository, StreetRepository streetRepository, InputSanitize sanitize, ImageUploadRepository imageUpload, LoginRepository loginRepository, IWebHostEnvironment environment)
         {
             _residentRepository = residentRepository;
             _streetRepository = streetRepository;
             _sanitize = sanitize;
             _imageRepository = imageUpload;
+            _loginRepository = loginRepository;
             _environment = environment;
-            _emailService = emailService;
         }
 
         public IActionResult Index()
@@ -45,18 +44,67 @@ namespace KVHAI.Controllers.Homeowner
             }
         }
 
-        public async Task<IActionResult> VerifyPage(string token)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(Resident credentials)
+        {
+            var userExist = await _residentRepository.ValidateAccount(credentials);
+            var verifiedAt = await _residentRepository.VerifiedAt(credentials);
+
+            if (!await _residentRepository.ValidatePassword(credentials))
+            {
+                return BadRequest("Password is incorrect.");
+            }
+
+            if (!userExist)
+            {
+                return BadRequest("User not found.");
+            }
+
+
+            if (string.IsNullOrEmpty(verifiedAt[0].Verified_At))
+            {
+                return Ok(new { message = "Account is not verified!", token = verifiedAt[0].Verification_Token, email = verifiedAt[0].Email });
+            }
+
+            // If login is successful and verified, return a JSON response instead of redirecting
+            return Ok(new { redirectUrl = Url.Action("LoggedIn", "ResLogin") });
+            //ViewData["Username"] = credentials.Username;
+
+            //return RedirectToAction("LoggedIn");
+        }
+
+        public async Task<IActionResult> LoggedIn()
+        {
+            return View("~/Views/Resident/LoggedIn/LoggedIn.cshtml");
+        }
+
+        public async Task<IActionResult> VerifyPage()
         {
             try
             {
-                if (string.IsNullOrEmpty(token))
-                {
-                    return View("~/Views/Resident/RLogin/Index.cshtml");
-                }
-
-                ViewData["token"] = token;
-
+                //if (Request.Cookies.ContainsKey("verifyToken"))
+                //{
+                //    // Retrieve the token from the cookie
+                //    string token = Request.Cookies["verifyToken"] ?? string.Empty;
+                //    string email = await _residentRepository.GetEmailByToken(token);
+                //    if (!string.IsNullOrEmpty(token))
+                //    {
+                //        // Validate the token (e.g., check in the database)
+                //        if (await _residentRepository.IsTokenExist(token))
+                //        {
+                //            if (!string.IsNullOrEmpty(email))
+                //            {
+                //                ViewData["Email"] = email;
+                //                return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
+                //            }
+                //        }
+                //    }
+                //}
                 return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
+                //return View("~/Views/Resident/RLogin/Index.cshtml");
+
+                //return View("~/Views/Shared/Error.cshtml");
             }
             catch (Exception)
             {
@@ -81,11 +129,10 @@ namespace KVHAI.Controllers.Homeowner
                 }
 
 
-                //string result = await _residentRepository.CreateResident(formData);
-                string result = "token";
+                string result = await _residentRepository.CreateResident(formData);
 
                 if (string.IsNullOrEmpty(result))
-                    return BadRequest("There was an error saving the resident and the image.");
+                    return BadRequest("There was an error creating the account. Please try again later.");
 
                 //Response.Cookies.Append("verificationToken", result, new CookieOptions
                 //{
@@ -105,14 +152,62 @@ namespace KVHAI.Controllers.Homeowner
         }
 
         [HttpPost]
-        public IActionResult SendEmail(EmailDto request)
+        public async Task<IActionResult> VerifyCode(string Code, string Email)
         {
-            request.To = "dorojavince@gmail.com";
-            request.Subject = "Verification";
-            request.Body = "1234";
-            _emailService.SendEmail(request);
-            return Ok();
+            int result = await _residentRepository.IsCodeTheSame(Code, Email);
+            switch (result)
+            {
+                case 1:
+                    await DeleteTokenCookie();
+                    return Ok("The code is valid.");
+                case 0:
+                    return BadRequest("Invalid code. Please try again.");
+                default:
+                    return StatusCode(500, "An unexpected error occurred. Please try again later.");
+            }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> SendCode(string Email)
+        {
+            int result = await _residentRepository.AddVerification(Email);
+            switch (result)
+            {
+                case 0:
+                    return BadRequest("There was an error sending the verification code. Please try again later.");
+                case 1:
+                    return Ok("Verification code sent successfully. Please check your email.");
+                case 2:
+                    return BadRequest("A verification code has already been sent and is still valid. Please check your email or wait before requesting a new code.");
+                default:
+                    return BadRequest("An unexpected error occurred. Please contact support.");
+            }
+
+        }
+
+        public async Task<IActionResult> ForgotPassword()
+        {
+
+            return View("~/Views/Resident/RLogin/ForgotPassword.cshtml");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdatePassword(string password, string email)
+        {
+            int result = await _residentRepository.UpdatePassword(password, email);
+            if (result < 1)
+            {
+                return BadRequest("There was an error changing your password. Please try again later");
+            }
+            return Ok("The password changed successfully");
+        }
+
+        public async Task DeleteTokenCookie()
+        {
+            Response.Cookies.Delete("verifyToken");
+        }
+
 
     }
 }

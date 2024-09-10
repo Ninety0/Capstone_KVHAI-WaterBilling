@@ -22,6 +22,12 @@
                 defaults: new { controller = "ResLogin", action = "VerifyPage" }
             );
 
+            endpoint.MapControllerRoute(
+               name: "AccountVerification",
+               pattern: "kvhai/error",
+               defaults: new { controller = "ResLogin", action = "VerifyPage" }
+           );
+
         }
     }
 }

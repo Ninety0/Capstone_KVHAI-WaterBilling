@@ -1,4 +1,5 @@
-﻿@{
+﻿
+@{
     Layout = null;
     ViewData["Title"] = "Verify Account";
     var token = ViewData["token"] as string;
@@ -69,14 +70,13 @@
             margin-right: .5em;
         }
 
-        #btn_Verify {
+        #btn_Verify, #btn_Send {
             width: 280px;
             font-weight: 600;
         }
     </style>
 </head>
 <body>
-
     <div class="container vh-100">
         <div class="container d-flex p-2 mb-3">
             <img src="~/img/kvhai.png" alt="katarungan vilalge" class="me-2" style="width:80px;height:80px;">
@@ -89,7 +89,7 @@
                 <ul class="d-flex justify-content-center p-3 m-0">
                     <!-- PROCESS 1 -->
                     <li class="me-2 d-flex">
-                        <div class="make-circle active"></div>
+                        <div class="make-circle"></div>
 
                         <i class="process-seperator ms-2"></i>
 
@@ -97,7 +97,7 @@
 
                     <!-- PROCESS 2 -->
                     <li class="me-2 d-flex">
-                        <div class="make-circle"></div>
+                        <div class="make-circle active"></div>
                 </ul>
 
                 <div class="border"></div>
@@ -106,21 +106,26 @@
                     <!--VERIFY ACCOUNT-->
                     <div class="container mb-3" id="information">
                         <div class="container-fluid d-flex justify-content-center mt-3">
-                            <h3>Verify Account @token</h3>
+                            <h3>Verify Account</h3>
                         </div>
                         <div class="verify_content">
-                            <h6 class="text-center">Enter 4-digit code sent to your email.</h6>
+                            <h6 class="text-center">Enter 4-digit code sent to your email <b id="email">@ViewData["Email"]</b></h6>
 
-                            <div class="d-flex justify-content-center">
+                            <div class="d-flex justify-content-center inputs">
                                 <input class="code_input text-center" type="text" name="code1" id="code1" value="" maxlength="1" autocomplete="off" />
                                 <input class="code_input text-center" type="text" name="code2" id="code2" value="" maxlength="1" autocomplete="off" />
                                 <input class="code_input text-center" type="text" name="code3" id="code3" value="" maxlength="1" autocomplete="off" />
                                 <input class="code_input text-center" type="text" name="code4" id="code4" value="" maxlength="1" autocomplete="off" />
                             </div>
-
+                            <div class="container d-flex justify-content-center mt-3 d-none" id="timer">
+                                <span>Time Remaining</span>
+                                <span class="ms-1 fw-bold" id="time">3:00</span>
+                            </div>
+                            <div class="d-flex justify-content-center mt-3">
+                                <button class="btn btn-primary" id="btn_Send">Send Code</button>
+                            </div>
                             <div class="d-flex justify-content-center mt-3">
                                 <button class="btn btn-primary" id="btn_Verify">Verify</button>
-
                             </div>
                         </div>
                     </div>
@@ -131,7 +136,6 @@
 
     </div>
 
-
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
@@ -140,13 +144,18 @@
     <script src="~/lib/editable-select/jquery-editable-select.js"></script>
     <script>
         $(document).ready(function () {
+
             var currentTab = 0;
             var maxTab = 1;
             var minTab = 0;
 
-            codeVerify()
-            updateTabDisplay();
-            $('#btn_Signup').click(handleRegistration);
+            //INITIALIZE METHOD
+
+            codeVerify();
+            //TokenExist();
+            //END INITIALIZING METHOD
+
+            $('#btn_Verify').click(SubmitCode)
 
             function codeVerify() {
                 $('.code_input').on('input', function () {
@@ -195,6 +204,115 @@
             $('input, select').on('input', function () {
                 $(this).removeClass('is-invalid');
                 $(this).closest('form').removeClass('was-validated');
+            });
+
+            $(document).on('click', '#btn_Send', function () {
+                $(this).addClass('disabled');
+                SendCodeToEmail();
+            });
+
+            function TokenExist() {
+                var email = $('#email').text()
+                if (!email) {
+                    alert("not Exist");
+                    window.location.replace('/kvhai/resident/login');
+                    
+                }
+            }
+
+            function SubmitCode() {
+                var allInputsFilled = true;
+
+                //this code check empty inputs
+                $('.inputs input').each(function () {
+                    if ($(this).val().trim() === '') {
+                        allInputsFilled = false;
+                        toastr.error("Please fill out the code");
+                        return false; // Exit the loop immediately
+                    }
+                });
+                var _code = getVerificationCode();//join the 4 inputs in one string
+                if (allInputsFilled) {
+                    var formData = {
+                        Code: _code,
+                        Email: $('#email').text()
+                    };
+                    $.ajax({
+                        type: 'POST',
+                        url: '/ResLogin/VerifyCode',
+                        data: formData,
+                        success: function (response) {
+                            toastr.info(response);
+                            window.locationwindow.location.href = '/kvhai/resident/login';
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error(xhr.responseText);
+                            $('#btn_Send').removeClass('disabled');
+                        }
+                    });
+                }
+            }
+
+            function getVerificationCode() {
+                var verificationCode = '';
+                $('.code_input').each(function () {
+                    verificationCode += $(this).val().trim();
+                });
+
+                if (verificationCode.length === 4) {
+                    return verificationCode;
+                } //else {
+                //    toastr.error("Please fill out all 4 digits of the verification code.");
+                //    return null;
+                //}
+            }
+
+            function SendCodeToEmail() {
+                var formData = {
+                    Email: $('#email').text()
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: '/ResLogin/SendCode',
+                    data: formData,
+                    success: function (response) {
+                        toastr.info(response);
+                        var threeMinutes = 60 * 3,
+                            display = $('#time');
+                        startTimer(threeMinutes, display);
+                        $('#timer').removeClass('d-none');
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error(xhr.responseText);
+                        $('#btn_Send').removeClass('disabled');
+                    }
+                });
+            }
+
+            function startTimer(duration, display) {
+                var timer = duration, minutes, seconds;
+                var interval = setInterval(function () {
+                    minutes = parseInt(timer / 60, 10);
+                    seconds = parseInt(timer % 60, 10);
+                    minutes = minutes < 10 ? "0" + minutes : minutes;
+                    seconds = seconds < 10 ? "0" + seconds : seconds;
+                    display.text(minutes + ":" + seconds);
+                    if (--timer < 0) {
+                        clearInterval(interval);
+                        $('#btn_Send').removeClass('disabled');
+                        $('#timer').addClass('d-none');
+                    }
+                }, 1000);
+            }
+
+            $(window).on('beforeunload', function () {
+                // Delete the cookie when the page is unloaded (closed or refreshed)
+                document.cookie = "verifyToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/kvhai/resident;";
+            });
+
+            $(window).on('popstate', function () {
+                // Delete the cookie when the back button is clicked
+                document.cookie = "verifyToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/kvhai/resident;";
             });
         });
 
