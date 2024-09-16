@@ -299,5 +299,21 @@ namespace KVHAI.Repository
                 return null;
             }
         }
+
+        //RETURN STREET NAME
+        public async Task<string> GetStreetName(string id)
+        {
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand("SELECT st_name FROM street_tb where st_id = @id", connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+                    var result = await command.ExecuteScalarAsync();
+
+                    return result?.ToString() ?? string.Empty;
+                }
+            }
+        }
     }
 }

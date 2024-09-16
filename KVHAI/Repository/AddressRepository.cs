@@ -1,6 +1,7 @@
 ﻿using KVHAI.CustomClass;
 using KVHAI.Models;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
 
 namespace KVHAI.Repository
 {
@@ -8,20 +9,38 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         private readonly InputSanitize _sanitize;
+        private readonly StreetRepository _streetRepository;
+        private readonly ImageUploadRepository _uploadRepository;
 
-        public AddressRepository(DBConnect dBConnect, InputSanitize inputSanitize)
+        private bool DataExist = false;
+        private int CounterDataExistence = 0;
+
+        public AddressRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, ImageUploadRepository uploadRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
+            _streetRepository = streetRepository;
+            _uploadRepository = uploadRepository;
         }
-
-        public async Task<int> CreateAddress(int res_id, List<Address> addressess, SqlTransaction transaction, SqlConnection connection)
+        //CREATE
+        public async Task<List<Address>> CreateAddress(string res_id, List<Address> addressess, SqlTransaction transaction, SqlConnection connection)
         {
             try
             {
+                var addressIDList = new List<Address>();
+
                 foreach (var address in addressess)
                 {
-                    using (var command = new SqlCommand("INSERT INTO address_tb (res_id,block,lot,st_id,location) VALUES(@res,@blk,@lot,@st,@location)", connection, transaction))
+                    // Use the same connection and transaction for checking if the address exists
+                    var isExist = await IsAddressExist(res_id, address.Block, address.Lot, address.Street_ID, connection, transaction);
+
+                    if (isExist)
+                    {
+                        CounterDataExistence++;
+                        continue; // Skip this address and continue to the next
+                    }
+
+                    using (var command = new SqlCommand("INSERT INTO address_tb (res_id,block,lot,st_id,location, is_verified) OUTPUT INSERTED.addr_id VALUES(@res,@blk,@lot,@st,@location,'false')", connection, transaction))
                     {
                         int _location = 0;
                         int _block;
@@ -57,21 +76,51 @@ namespace KVHAI.Repository
                         command.Parameters.AddWithValue("@st", address.Street_ID);
                         command.Parameters.AddWithValue("@location", _location);
 
-                        await command.ExecuteNonQueryAsync();
+                        var id = (int?)(await command.ExecuteScalarAsync()) ?? 0;
                         //intDict.Add("Location", _location);
                         //intDict.Add("ID", resID);
+                        var addressModel = new Address { Address_ID = id };
 
+                        addressIDList.Add(addressModel);
                     }
                 }
-                return 1;
+                return addressIDList;
 
             }
             catch (Exception)
             {
-                return 0;
+                return null;
             }
 
         }
+
+        // CHECK IF EXIST
+        public async Task<bool> IsAddressExist(string res_id, string block, string lot, int st_id, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                using (var command = new SqlCommand(@"
+            SELECT COUNT(*) 
+            FROM address_tb 
+            WHERE res_id = @id AND block = @blk AND lot = @lot AND st_id = @st", connection, transaction)) // Removed extra parenthesis
+                {
+                    command.Parameters.AddWithValue("@id", res_id);
+                    command.Parameters.AddWithValue("@blk", block);
+                    command.Parameters.AddWithValue("@lot", lot);
+                    command.Parameters.AddWithValue("@st", st_id);
+
+                    int result = (int)await command.ExecuteScalarAsync();
+                    return result > 0; // Return true if the address exists, otherwise false
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log exception for debugging
+                Console.WriteLine($"Error: {ex.Message}");
+                return false; // Return false in case of an error
+            }
+        }
+
 
         public async Task<List<ResidentAddress>> GetResidentAddressList()
         {
@@ -211,6 +260,366 @@ namespace KVHAI.Repository
                 }
             }
             return count;
+        }
+
+        public async Task<int> CreateAddressandUploadImage(string residentID, List<Address> addressess, List<IFormFile> file, string webRootPath)
+        {
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var streetResult = await _streetRepository.GetStreetID(addressess);
+
+                        if (streetResult != null || streetResult.Count > 0)
+                        {
+                            var modelAddressList = new List<Address>();//create new model address list
+                            for (int i = 0; i < addressess.Count; i++)//loop them to combine
+                            {
+                                var _address = new Address
+                                {
+                                    Block = addressess[i].Block,
+                                    Lot = addressess[i].Lot,
+                                    Street_ID = streetResult[i].Street_ID
+                                };
+                                modelAddressList.Add(_address);//add the model in the list
+                            }
+
+                            var addressResult = await CreateAddress(residentID, modelAddressList, transaction, connection);
+
+                            if (CounterDataExistence == modelAddressList.Count)
+                            {
+                                return 2;
+                            }
+
+                            if (addressResult == null || addressResult.Count < 1)
+                            {
+                                throw new Exception("Error Saving Address");
+                            }
+
+                            if (addressResult.Count > 0)
+                            {
+                                int imageResult = await _uploadRepository.ImageUpload(file, webRootPath, addressResult, transaction, connection, residentID);
+
+
+                                if (imageResult == 0)
+                                {
+                                    throw new Exception("Image upload failed");
+                                }
+
+
+                            }
+                            else
+                            {
+                                throw new Exception("There was an error registering address");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Error Fetching the Street ID");
+                        }
+
+
+                        //int location = residentValues["Location"];
+
+
+                        transaction.Commit();
+                        return 1;
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        // Log the exception here
+                        return 0;
+                    }
+                }
+            }
+
+        }
+
+        public async Task<int> UpdateAddressStatus(int addresID, string status)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("UPDATE address_tb set is_verified =@status WHERE addr_id = @id", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", addresID);
+                        command.Parameters.AddWithValue("@status", status);
+
+                        return await command.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        public async Task<List<Address>> GetAddressById(string addresID)
+        {
+            try
+            {
+                var addressList = new List<Address>();
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT * FROM address_tb WHERE is_verified = 'true'AND res_id = @id", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", addresID);
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var address = new Address
+                                {
+                                    Address_ID = Convert.ToInt32(reader["addr_id"].ToString()),
+                                    Block = reader["block"].ToString() ?? String.Empty,
+                                    Lot = reader["lot"].ToString() ?? String.Empty,
+                                    Street_ID = Convert.ToInt32(reader["st_id"].ToString()),
+                                    Remove_Request_Token = reader["remove_request_token"].ToString() ?? string.Empty,
+                                    Street_Name = await _streetRepository.GetStreetName(reader["st_id"].ToString())
+                                };
+
+                                addressList.Add(address);
+                            }
+                        }
+                        return addressList;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<int> RequestRemoveTokenUpdate(string addresID, string residentID)
+        {
+            /*
+             aid = address id
+             rid = resident id
+             */
+            try
+            {
+                var token = await CreateRandomToken();
+                var date = DateTime.Now;
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("UPDATE address_tb set remove_request_token =@token, remove_token_date = @date WHERE addr_id = @aid AND res_id =@rid", connection))
+                    {
+                        command.Parameters.AddWithValue("@aid", addresID);
+                        command.Parameters.AddWithValue("@rid", residentID);
+                        command.Parameters.AddWithValue("@token", token);
+                        command.Parameters.AddWithValue("@date", date);
+
+                        return await command.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        public async Task<int> CancelRequestRemoveTokenUpdate(string addresID, string residentID)
+        {
+            /*
+             aid = address id
+             rid = resident id
+             */
+            try
+            {
+                var token = await CreateRandomToken();
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("UPDATE address_tb set remove_request_token =@token, remove_token_date = @date  WHERE addr_id = @aid AND res_id =@rid", connection))
+                    {
+                        command.Parameters.AddWithValue("@aid", addresID);
+                        command.Parameters.AddWithValue("@rid", residentID);
+                        command.Parameters.AddWithValue("@token", DBNull.Value);
+                        command.Parameters.AddWithValue("@date", DBNull.Value);
+
+                        return await command.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        public async Task<bool> CheckRemoveTokenExist(string addresID, string residentID)
+        {
+            /*
+             aid = address id
+             rid = resident id
+             */
+            try
+            {
+                var token = await CreateRandomToken();
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT remove_request_token FROM address_tb WHERE addr_id = @aid AND res_id =@rid", connection))
+                    {
+                        command.Parameters.AddWithValue("@aid", addresID);
+                        command.Parameters.AddWithValue("@rid", residentID);
+
+                        var result = await command.ExecuteScalarAsync();
+                        if (string.IsNullOrEmpty(result?.ToString()))
+                        {
+                            return false;//if empty, the existence are none 
+                        }
+                    }
+                }
+                return true;//if has value, the existence are there
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private async Task<string> CreateRandomToken(string tableName = "")
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+        }
+
+        public async Task<List<Address>> GetPendingRemovalRequests()
+        {
+            var pendingAddresses = new List<Address>();
+
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                        SELECT * FROM address_tb WHERE remove_request_token IS NOT NULL AND remove_token_date IS NOT NULL  ORDER BY remove_token_date DESC
+                        ", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var address = new Address
+                                {
+                                    Address_ID = Convert.ToInt32(reader["addr_id"].ToString()),
+                                    Resident_ID = Convert.ToInt32(reader["res_id"].ToString()),
+                                    Block = reader["block"].ToString() ?? String.Empty,
+                                    Lot = reader["lot"].ToString() ?? String.Empty,
+                                    Street_ID = Convert.ToInt32(reader["st_id"].ToString()),
+                                    Remove_Request_Token = reader["remove_request_token"].ToString() ?? string.Empty,
+                                    Remove_Token_Date = reader["remove_token_date"].ToString() ?? string.Empty,
+                                    Resident_Name = await GetNameByID(reader["res_id"].ToString() ?? string.Empty),
+                                    Street_Name = await _streetRepository.GetStreetName(reader["st_id"].ToString() ?? string.Empty)
+                                };
+                                pendingAddresses.Add(address);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log exception and handle it
+                Console.WriteLine(ex.Message);
+            }
+
+            return pendingAddresses;
+        }
+
+        //APPROVE REQUEST DELETE
+        public async Task<int> ConfirmAndRemoveAddress(string addressID, string residentID, string token)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Check if token matches
+                            using (var checkCommand = new SqlCommand("SELECT remove_request_token FROM address_tb WHERE addr_id = @aid AND res_id = @rid", connection, transaction))
+                            {
+                                checkCommand.Parameters.AddWithValue("@aid", addressID);
+                                checkCommand.Parameters.AddWithValue("@rid", residentID);
+
+                                var tokenInDB = (string)await checkCommand.ExecuteScalarAsync();
+
+                                if (tokenInDB != token)
+                                {
+                                    return -1; // Token mismatch
+                                }
+                            }
+
+                            // Token matches, proceed with deletion
+                            using (var deleteCommand = new SqlCommand("DELETE FROM address_tb WHERE addr_id = @aid AND res_id = @rid", connection, transaction))
+                            {
+                                deleteCommand.Parameters.AddWithValue("@aid", addressID);
+                                deleteCommand.Parameters.AddWithValue("@rid", residentID);
+
+                                int result = await deleteCommand.ExecuteNonQueryAsync();
+                                transaction.Commit();
+                                return result;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            Console.WriteLine(ex.Message);
+                            return 0;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+                Console.WriteLine(ex.Message);
+                return 0;
+            }
+        }
+
+
+        //GET NAME BY ID
+        public async Task<string> GetNameByID(string id)
+        {
+            try
+            {
+                var name = "";
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    // Query only by username to get the hashed password
+                    using (var command = new SqlCommand("SELECT lname,fname,mname FROM resident_tb WHERE res_id = @id", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", id);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                var lname = reader["lname"].ToString() ?? String.Empty;
+                                var fname = reader["fname"].ToString() ?? String.Empty;
+                                var mname = reader["mname"].ToString() ?? String.Empty;
+
+                                name = string.Join(", ", lname, fname, mname);
+                            }
+                            return name;
+                        }
+
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Handle exception (logging, etc.)
+                return null;
+            }
         }
 
 

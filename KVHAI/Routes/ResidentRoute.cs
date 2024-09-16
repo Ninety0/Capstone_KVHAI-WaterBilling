@@ -28,6 +28,19 @@
                defaults: new { controller = "ResLogin", action = "VerifyPage" }
            );
 
+            //LOGGEDIN HOME
+            endpoint.MapControllerRoute(
+                name: "ResidentLoggedIn",
+                pattern: "kvhai/resident",
+                defaults: new { controller = "LoggedIn", action = "LoggedIn" }
+            );
+            //MY ADDRESS
+            endpoint.MapControllerRoute(
+                name: "ResidentMyAddress",
+                pattern: "kvhai/resident/my-address",
+                defaults: new { controller = "MyAddress", action = "Index" }
+            );
+
         }
     }
 }

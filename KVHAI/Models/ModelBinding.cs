@@ -9,7 +9,7 @@ namespace KVHAI.Models
         public List<Resident>? ResidentsAddress { get; set; }
 
         public Pagination<Employee>? EmployeePagination { get; set; }
-        public Pagination<Resident>? ResidentPagination { get; set; }
+        public Pagination<AddressWithResident>? ResidentPagination { get; set; }
 
         public List<WaterReading>? PreviousReading { get; set; }
         public List<WaterReading>? CurrentReading { get; set; }
@@ -21,5 +21,9 @@ namespace KVHAI.Models
 
         public List<ReportWaterBilling>? Items { get; set; } = new List<ReportWaterBilling>();
         public string FileType { get; set; } = string.Empty;
+
+        public List<Streets>? ListStreet { get; set; }
+        public List<Address>? ListAddress { get; set; }
+
     }
 }

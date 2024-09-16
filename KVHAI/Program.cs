@@ -11,6 +11,14 @@ AppContext.SetSwitch("System.Drawing.EnableUnixSupport", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+//set cookie
+builder.Services.AddAuthentication("MyCookieAuth").AddCookie("MyCookieAuth", options =>
+{
+    options.Cookie.Name = "UserLoginCookie";
+    options.LoginPath = "/kvhai/resident/login";
+    options.AccessDeniedPath = "/kvhai/error";
+});
+
 //Set content root  and web root
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 builder.WebHost.UseWebRoot("wwwroot");
@@ -55,6 +63,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

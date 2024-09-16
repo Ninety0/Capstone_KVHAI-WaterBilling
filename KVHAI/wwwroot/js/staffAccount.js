@@ -1,5 +1,10 @@
 ﻿$(document).ready(function () {
 
+    // Call GetCurrentTab on page load
+    $(document).ready(function () {
+        GetCurrentTab();
+    });
+
     //event listener
     $(document).on('change', '#emp-search', function () {
         emppagination();
@@ -11,6 +16,39 @@
         var emppage = parseInt($(this).data('emppagination'), 10);
         emppagination(emppage);
     });
+
+    /*   NAVBAR    */
+    // Hide all sections initially
+    $('section').hide();
+
+    // Handle click events on header links
+    $('.link-header').click(function (e) {
+        e.preventDefault();
+        $('.link-header').removeClass('active'); // Remove 'active' class from all links
+        $(this).addClass('active'); // Add 'active' class to clicked link
+        var targetSection = $(this).attr('href'); // Get the target section from the href attribute
+        localStorage.setItem("tab", targetSection);
+        $('section').hide(); // Hide all sections
+        $(targetSection).show(); // Show the target section
+    });
+
+    // Function to get and show the current tab
+    function GetCurrentTab() {
+        var tab = localStorage.getItem("tab");
+        if (tab) {
+            $('section').hide(); // Hide all sections
+            $(tab).show(); // Show the saved tab
+            $('.link-header').removeClass('active'); // Remove 'active' class from all links
+            $('[href="' + tab + '"]').addClass('active'); // Add 'active' class to the corresponding link
+        } else {
+            // If no tab is saved, show the default tab
+            $('#staff').show();
+            $('[href="#staff"]').addClass('active');
+        }
+    }
+   
+    /* END  NAVBAR    */
+   
 
     function emppagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
         var _search = $('#emp-search').val();

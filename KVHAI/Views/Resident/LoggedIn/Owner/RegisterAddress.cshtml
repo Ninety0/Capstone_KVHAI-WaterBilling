@@ -1,0 +1,340 @@
+﻿
+@{
+    ViewData["Title"] = "Register Address";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+@model List<Streets>;
+
+@section head{
+    <style>
+        .row_address {
+            position: relative;
+        }
+
+        .btn_add, .btn_remove {
+            background-color: #16a34a;
+            color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 400;
+            height: 38px;
+            width: 150px;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 31px;
+        }
+
+        .btn_remove {
+            background-color: #dc2626;
+        }
+
+        #btn_Register {
+            height: 38px;
+            width: 150px;
+        }
+    </style>
+}
+
+
+<div class="content-container p-3">
+    <div class="row">
+        <div class="col">
+            <div class="d-flex flex-column align-items-start">
+                <span class="title">Add Address </span>
+            </div>
+        </div>
+    </div>
+    <div class="container border mb-3" id="tableView"></div>
+    <div class="container" id="tableView">
+        <form id="myForm" autocomplete="off" class="needs-validation" enctype="multipart/form-data" novalidate>
+            @Html.AntiForgeryToken()
+            @* ADDRESS *@
+            <div id="add_item">
+                <div class="row row_address">
+                    <!-- BLOCK-->
+                    <div class="col-md-3">
+                        <div class="form-check mb-3">
+                            <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                            <input type="text" min="1" class="form-control" id="Block" name="Block" required>
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LOT-->
+                    <div class="col-md-3">
+                        <div class="form-check mb-3">
+                            <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                            <input type="text" min="1" class="form-control" id="Lot" name="Lot" required>
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--STREET-->
+                    <div class="col-md-4">
+                        <div class="form-check mb-3">
+                            <label for="fname" class="form-label fw-bold fs-6">Street</label>
+
+                            <select id="select-street1" class="form-select" aria-label="Default select example" required>
+                                @{
+                                    foreach (var item in Model)
+                                    {
+                                        <option value="@item.Street_ID">@item.Street_Name</option>
+                                    }
+                                }
+                            </select>
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button class="btn_add">ADD</button>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check mb-3">
+                            <label for="formFile" class="form-label fw-bold fs-6">Upload Proof</label>
+                            <input class="form-control file_upload" type="file" id="formFile">
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @*<div class="row">
+                    <div class="col">
+                        <div class="form-check mb-3">
+                            <label for="formFile" class="form-label fw-bold fs-6">Upload Proof</label>
+                            <input class="form-control file_upload" type="file" id="formFile">
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+                </div>*@
+            </div>
+            @*END ADDRESS *@
+            <div class="container border mt-3 mb-3" id="tableView"></div>
+
+            <div class=" d-flex justify-content-end ">
+                <button class="btn btn-primary" id="btn_Register">Register</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $('#select-street1').editableSelect();
+
+        $(document).ready(function () {
+
+            //streets.forEach(street => {
+            //    formData.append('streets[]', street); // append each street value as an array
+            //});
+            $('#btn_Register').on('click', function (e) {
+                e.preventDefault()
+                //var formData = new FormData($('#myForm')[0]);
+
+                //console.log(formData);
+
+                //var fileInput = $('#formFile');
+                //formData.append('file', fileInput.files[0]);
+                if (validateForm()) {
+                    var formData = new FormData();
+                    var addressesData = [];
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $('.row_address').each(function (index, element) {
+                        var id = "select-street" + (index + 1);
+                        var block = $(element).find('#Block').val();
+                        var lot = $(element).find('#Lot').val();
+                        var street = $(element).find('#' + id).val();
+                        var fileInput = $(element).find('.file_upload')[0];
+
+                        var addressData = { block: block, lot: lot, street: street };
+                        addressesData.push(addressData);
+
+                        if (fileInput.files.length > 0) {
+                            formData.append('files', fileInput.files[0]);
+                        }
+                    });
+                    formData.append('addresses', JSON.stringify(addressesData));
+                    formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/LoggedIn/Register',
+                        contentType: false,
+                        processData: false,
+                        data: formData,
+                        success: function (response) {
+                            //console.log(response);
+                            //const errorMessage = 'There was an error saving the resident and the image.';
+                            //const successMessage = 'Registration Successful.';
+
+                            //if (response.message.includes('error')) {
+                            //    toastr.error(errorMessage);
+                            //}
+                            //else if (response.message.includes('exist')) {
+                            //    toastr.error('Email or Username already taken.');
+                            //}
+                            //else {}
+                            toastr.info(response);
+                            setTimeout(function () {
+                                location.reload();
+                            }, 5000);
+                        },
+                        error: function (xhr, status, error) {
+                            //console.log(xhr.responseText);
+                            toastr.error(xhr.responseText);
+                        }
+                    });
+
+                } 
+                
+            })
+
+
+            function validateForm() {
+                var isValid = true;
+                //var inputs = document.querySelectorAll('#myForm input[required], #myForm select[required]');
+                const form = $('#myForm'); // jQuery
+                const inputs = form.find('input, select');
+                const file = form.find('.file_upload');
+
+                inputs.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                });
+
+                file.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    if (!input.val()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                });
+
+                return isValid;
+               
+            }
+
+            //ADD MORE ADDRESS
+            var countIdStreet = 1;
+            $(document).on('click', '.btn_add', function (e) {
+                e.preventDefault();
+                countIdStreet++;
+                var id = "select-street" + countIdStreet;
+                //let count = $('#select-street').length;
+                //let newId = count > 0 ? 'select-street' + count : 'select-street';
+
+                console.log(countIdStreet);
+
+                $('#add_item').append(`<div class="row row_address">
+                    <!-- BLOCK-->
+                    <div class="col-md-3">
+                        <div class="form-check mb-3">
+                            <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                            <input type="text" min="1" class="form-control" id="Block" name="Block" required>
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LOT-->
+                    <div class="col-md-3">
+                        <div class="form-check mb-3">
+                            <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                            <input type="text" min="1" class="form-control" id="Lot" name="Lot" required>
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--STREET-->
+                    <div class="col-md-4">
+                        <div class="form-check mb-3">
+                            <label for="fname" class="form-label fw-bold fs-6">Street</label>
+
+                            <select id="${id}" class="form-select" aria-label="Default select example" required>
+                                @{
+                                    foreach (var item in Model)
+                                    {
+                                        <option value="@item.Street_ID">@item.Street_Name</option>
+                                    }
+                                }
+                            </select>
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button class="btn_remove">REMOVE</button>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check mb-3">
+                            <label for="formFile" class="form-label fw-bold fs-6">Upload Proof</label>
+                            <input class="form-control file_upload" type="file" id="formFile">
+                            <div class="invalid-feedback">
+                                Required.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                `);
+
+                //adding EDITABLE SELECT
+                $('#' + id).editableSelect();
+                $('input, select').on('input', function () {
+                    $(this).removeClass('is-invalid');
+                    $(this).closest('form').removeClass('was-validated');
+                });
+            })
+
+
+        });
+        //REMOVE ADDRESS ADDED
+        $(document).on('click', '.btn_remove', function (e) {
+            e.preventDefault();
+            var rowItem = $(this).parent().parent();
+            //var rowUpload = $(this).parent().parent().next();
+            $(rowItem).remove();
+            //countIdStreet--;
+            //code to check parent parent
+            //$(this).parent().css({ "color": "red", "border": "2px solid red" });
+            //$(this).parent().parent().css({ "color": "red", "border": "2px solid yellow" });
+            //$(this).parent().parent().next().css({ "color": "red", "border": "2px solid blue" });
+            //console.log(rowItem);
+        });
+
+        $('input, select').on('input', function () {
+            $(this).removeClass('is-invalid');
+            $(this).closest('form').removeClass('was-validated');
+        });
+
+    </script>
+}

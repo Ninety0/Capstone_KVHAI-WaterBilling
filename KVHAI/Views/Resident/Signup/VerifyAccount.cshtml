@@ -243,7 +243,9 @@
                         data: formData,
                         success: function (response) {
                             toastr.info(response);
-                            window.locationwindow.location.href = '/kvhai/resident/login';
+                            setTimeout(function () {
+                                 window.location.replace('/kvhai/resident/login');
+                            },1000);
                         },
                         error: function (xhr, status, error) {
                             toastr.error(xhr.responseText);

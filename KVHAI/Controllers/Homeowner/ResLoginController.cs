@@ -1,7 +1,9 @@
 ﻿using KVHAI.CustomClass;
 using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace KVHAI.Controllers.Homeowner
 
@@ -10,16 +12,18 @@ namespace KVHAI.Controllers.Homeowner
     {
         private readonly ResidentRepository _residentRepository;
         private readonly StreetRepository _streetRepository;
+        private readonly AddressRepository _addressRepository;
         private readonly ImageUploadRepository _imageRepository;
         private readonly LoginRepository _loginRepository;
         private readonly InputSanitize _sanitize;
         private readonly IWebHostEnvironment _environment;
 
 
-        public ResLoginController(ResidentRepository residentRepository, StreetRepository streetRepository, InputSanitize sanitize, ImageUploadRepository imageUpload, LoginRepository loginRepository, IWebHostEnvironment environment)
+        public ResLoginController(ResidentRepository residentRepository, StreetRepository streetRepository, AddressRepository addressRepository, InputSanitize sanitize, ImageUploadRepository imageUpload, LoginRepository loginRepository, IWebHostEnvironment environment)
         {
             _residentRepository = residentRepository;
             _streetRepository = streetRepository;
+            _addressRepository = addressRepository;
             _sanitize = sanitize;
             _imageRepository = imageUpload;
             _loginRepository = loginRepository;
@@ -67,42 +71,57 @@ namespace KVHAI.Controllers.Homeowner
                 return Ok(new { message = "Account is not verified!", token = verifiedAt[0].Verification_Token, email = verifiedAt[0].Email });
             }
 
-            // If login is successful and verified, return a JSON response instead of redirecting
-            return Ok(new { redirectUrl = Url.Action("LoggedIn", "ResLogin") });
+            var id = await _residentRepository.GetResidentID(credentials);
+
+            if (id < 1)
+            {
+                return BadRequest("There was an error accessing your account.");
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, credentials.Username),
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()??"0") // You can add roles or other claims here
+            };
+
+            var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+            var principal = new ClaimsPrincipal(identity);
+            var props = new AuthenticationProperties();
+
+            await HttpContext.SignInAsync("MyCookieAuth", principal, props);
+
+            return Ok(new { redirectUrl = Url.Action("LoggedIn", "LoggedIn") });
             //ViewData["Username"] = credentials.Username;
 
             //return RedirectToAction("LoggedIn");
         }
 
-        public async Task<IActionResult> LoggedIn()
-        {
-            return View("~/Views/Resident/LoggedIn/LoggedIn.cshtml");
-        }
+
 
         public async Task<IActionResult> VerifyPage()
         {
             try
             {
-                //if (Request.Cookies.ContainsKey("verifyToken"))
-                //{
-                //    // Retrieve the token from the cookie
-                //    string token = Request.Cookies["verifyToken"] ?? string.Empty;
-                //    string email = await _residentRepository.GetEmailByToken(token);
-                //    if (!string.IsNullOrEmpty(token))
-                //    {
-                //        // Validate the token (e.g., check in the database)
-                //        if (await _residentRepository.IsTokenExist(token))
-                //        {
-                //            if (!string.IsNullOrEmpty(email))
-                //            {
-                //                ViewData["Email"] = email;
-                //                return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
-                //            }
-                //        }
-                //    }
-                //}
-                return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
-                //return View("~/Views/Resident/RLogin/Index.cshtml");
+                if (Request.Cookies.ContainsKey("verifyToken"))
+                {
+                    // Retrieve the token from the cookie
+                    string token = Request.Cookies["verifyToken"] ?? string.Empty;
+                    string email = await _residentRepository.GetEmailByToken(token);
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        // Validate the token (e.g., check in the database)
+                        if (await _residentRepository.IsTokenExist(token))
+                        {
+                            if (!string.IsNullOrEmpty(email))
+                            {
+                                ViewData["Email"] = email;
+                                return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
+                            }
+                        }
+                    }
+                }
+                //return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
+                return View("~/Views/Resident/RLogin/Index.cshtml");
 
                 //return View("~/Views/Shared/Error.cshtml");
             }

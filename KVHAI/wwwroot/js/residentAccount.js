@@ -6,11 +6,11 @@
         var lblSwitch = $('#lblSwitch');
 
         if (toggle) {
-            lblSwitch.html('<b>ACTIVE</b>');
+            lblSwitch.html('<b>VERIFIED</b>');
             lblSwitch.css('background-color', '#22c55e');
         }
         else {
-            lblSwitch.html('<b>PENDING</b>');
+            lblSwitch.html('<b>NOT VERIFIED</b>');
             lblSwitch.css('background-color', '#ef4444');
         }
 
@@ -18,56 +18,56 @@
     });
 
     $(document).on('click', '.btn-res-edit', function () {
-        var res_ID = $(this).data('id');
+        var addresID = $(this).data('id');
         var _status = "true";
-        var _data = { res_id: res_ID, status:_status };
-        if (res_ID) {
+        var _data = { addrID: addresID, status:_status };
+        if (addresID) {
             $.ajax({
                 type: 'POST',
-                url: '/adminaccount/UpdateStatus',
+                url: '/ResidentAddress/UpdateStatus',
                 data: _data,
                 success: function (response) {
-                    toastr.success("Resident status was updated");
+                    toastr.success("Resident address was approved");
                     var result = $(response).find('#res-tableData').html();
                     $('#res-tableData').html(result);
                 },
                 error: function (xhr, status, err_m) {
                     toastr.error(xhr.responseText);
-                    if (xhr.status === 404) {
-                        toastr.error("Resource not found");
-                    } else if (xhr.status === 500) {
-                        toastr.error("Server error. Please try again later.");
-                    } else {
-                        toastr.error(xhr.responseText || "An unknown error occurred");
-                    }
+                    //if (xhr.status === 404) {
+                    //    toastr.error("Resource not found");
+                    //} else if (xhr.status === 500) {
+                    //    toastr.error("Server error. Please try again later.");
+                    //} else {
+                    //    toastr.error(xhr.responseText || "An unknown error occurred");
+                    //}
                 }
             });
         }
     })
 
     $(document).on('click', '.btn-res-delete', function () {
-        var res_ID = $(this).data('id');
+        var addressID = $(this).data('id');
         var _status = "null";
-        var _data = { res_id: res_ID, status: _status };
-        if (res_ID) {
+        var _data = { addrID: addressID, status: _status };
+        if (addressID) {
             $.ajax({
                 type: 'POST',
-                url: '/adminaccount/UpdateStatus',
+                url: '/ResidentAddress/UpdateStatus',
                 data: _data,
                 success: function (response) {
-                    toastr.success("Resident status was updated");
+                    toastr.success("Resident address was disapprove");
                     var result = $(response).find('#res-tableData').html();
                     $('#res-tableData').html(result);
                 },
                 error: function (xhr, status, err_m) {
                     toastr.error(xhr.responseText);
-                    if (xhr.status === 404) {
-                        toastr.error("Resource not found");
-                    } else if (xhr.status === 500) {
-                        toastr.error("Server error. Please try again later.");
-                    } else {
-                        toastr.error(xhr.responseText || "An unknown error occurred");
-                    }
+                    //if (xhr.status === 404) {
+                    //    toastr.error("Resource not found");
+                    //} else if (xhr.status === 500) {
+                    //    toastr.error("Server error. Please try again later.");
+                    //} else {
+                    //    toastr.error(xhr.responseText || "An unknown error occurred");
+                    //}
                 }
             });
         }
@@ -101,105 +101,79 @@
         }, 2000);
     }
 
-    /*   NAVBAR    */
-    $('section').hide(); // Hide all sections initially
+    /*IMAGE GET METHOD*/
+    $(document).on('click', '.load-image', function () {
+        //var addressID = $(this).siblings('#res_id').val();
+        var addressID = $(this).data('id');
 
+        if (addressID) { // Check if residentId has a value
+            $('#staticBackdrop').data('address-id', addressID); // Store the residentId in a data attribute of the modal
 
-    $('#staff').show(); // Show the default section (Staff)
+            // Show preloader before triggering the modal to open
+            // Trigger the modal to open
+            showPreloader();
+            $('#staticBackdrop').modal('show');
+        } else {
+            alert('No resident ID found.');
+        }
+    });
+    /*END IMAGE METHOD*/
 
+    // Add this new event listener
+    $('#staticBackdrop').on('shown.bs.modal', function (e) { // changed to 'shown.bs.modal'
+        var modal = $(this);
+        var addressID = modal.data('address-id');
 
-    $('.link-header').click(function (e) { // Handle click events on header links
-        e.preventDefault();
-
-
-        $('.link-header').removeClass('active');// Remove 'active' class from all links
-
-
-        $(this).addClass('active');// Add 'active' class to clicked link
-
-
-        var targetSection = $(this).attr('href');// Get the target section from the href attribute
-
-        console.log(targetSection)
-
-        $('section').hide(); // Hide all sections
-
-
-        $(targetSection).show(); // Show the target section
-        /* END  NAVBAR    */
-
-
-        /*IMAGE GET METHOD*/
-        $('.load-image').on('click', function () {
-            var residentId = $(this).siblings('#res_id').val();
-            if (residentId) { // Check if residentId has a value
-                $('#staticBackdrop').data('resident-id', residentId); // Store the residentId in a data attribute of the modal
-
-                // Show preloader before triggering the modal to open
-                // Trigger the modal to open
-                $('#staticBackdrop').modal(showPreloader(), 'show');
-            } else {
-                alert('No resident ID found.');
-            }
-        });
-        /*END IMAGE METHOD*/
-
-        // Add this new event listener
-        $('#staticBackdrop').on('shown.bs.modal', function (e) { // changed to 'shown.bs.modal'
-            var modal = $(this);
-            var residentId = modal.data('resident-id');
-
-            if (residentId) {
-                $.ajax({
-                    type: 'GET',
-                    url: '/adminaccount/GetImageBase64',
-                    //url: '@Url.Action("GetImageBase64", "AdminAccount")',
-                    data: { id: residentId },
-                    success: function (result) {
-                        if (result.success) {
-                            $('#modalImage').attr('src', 'data:image/jpeg;base64,' + result.imageBase64);
-                            $('#modalImage').show();
-                        } else {
-                            alert('Failed to load image.');
-                        }
-                        //hidePreloader(); // Hide preloader after the image is successfully loaded
-                    },
-                    error: function () {
-                        alert('An error occurred while loading the image.');
-                        hidePreloader(); // Hide preloader if there's an error
+        if (addressID) {
+            $.ajax({
+                type: 'GET',
+                url: '/ResidentAddress/GetImageBase64',
+                //url: '@Url.Action("GetImageBase64", "AdminAccount")',
+                data: { id: addressID },
+                success: function (result) {
+                    if (result.success) {
+                        $('#modalImage').attr('src', 'data:image/jpeg;base64,' + result.imageBase64);
+                        $('#modalImage').show();
+                    } else {
+                        alert('Failed to load image.');
                     }
-                });
-            } else {
-                hidePreloader(); // Hide preloader if there's no residentId
-                alert('No resident ID available.');
-            }
-        });
+                    //hidePreloader(); // Hide preloader after the image is successfully loaded
+                },
+                error: function () {
+                    alert('An error occurred while loading the image.');
+                    hidePreloader(); // Hide preloader if there's an error
+                }
+            });
+        } else {
+            hidePreloader(); // Hide preloader if there's no residentId
+            alert('No resident ID available.');
+        }
+    });
 
-        // Hide preloader when the modal is hidden
-        $('#staticBackdrop').on('hidden.bs.modal', function () {
-            // Reset modal content when it's closed
-            $('#modalImage').attr('src', '').hide();
-            $('#imagePreloader').show();
-        });
+    // Hide preloader when the modal is hidden
+    $('#staticBackdrop').on('hidden.bs.modal', function () {
+        // Reset modal content when it's closed
+        $('#modalImage').attr('src', '').hide();
+        $('#imagePreloader').show();
     });
 
     function respagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
         var _search = $('#res-search').val();
         var _category = $('#res-category').val();
         var _isActive = $('#toggleSwitch').prop('checked');
-
+        console.log(`Category = ${_category}, Active = ${_isActive}`);
 
         var array = {
             search: _search,
             category: _category.toLowerCase(),
-            active: _isActive.toString(),
+            is_verified: _isActive.toString(),
             page_index: i
             
         };
 
  
         $.ajax({
-            url: window.location.origin + '/adminaccount/ResidentPagination',
+            url: window.location.origin + '/ResidentAddress/ResidentPagination',
             type: "POST",
             data: array,
             success: function (response) {

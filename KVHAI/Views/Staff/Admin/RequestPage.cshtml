@@ -1,0 +1,153 @@
+﻿@{
+    ViewBag.Title = "Request Page";
+}
+
+@section head{
+    <link href="/lib/just-select/justselect.css" rel="stylesheet" />
+    <link href="/css/custom-search.css" rel="stylesheet" />
+}
+
+@section scripts{
+    @*<script src="~/js/signalr.min.js"></script>*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(document).on('click', '.btn_approve', function () {
+                var addr_ID = $(this).data('id');
+                //toastr.info(addr_ID);
+                $.ajax({
+                    type: 'POST',
+                    url: '/RequestPage/ApprovePending',
+                    data: '',
+                    success: function (response) {
+                        toastr.success("");
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            })
+        });
+    </script>
+}
+
+<!--MODAL-->
+<div class="modal fade" id="modal-street" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Streets</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-street" autocomplete="off" class="needs-validation m-0" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="container tab" id="information">
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check mb-3">
+                                    <label for="St_Name" class="form-label fw-bold fs-6">Street Name</label>
+                                    <input type="text" maxlength="50" class="form-control" id="St_Name" name="Street_Name" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer p-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="btn-streets">Register</button>
+                    <button type="submit" class="btn btn-primary d-none" id="btn-update">Update</button>
+
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<!--EMD MODAL-->
+
+<div class="content-container p-4">
+    <div class="container border">
+        <div class="row d-flex align-items-center mb-3">
+            <!-- CATEGORY -->
+            <div class="col-12 order-2 col-lg-6 mb-3 order-lg-1 d-flex mt-3 justify-content-center justify-content-lg-start mt-sm-0 mb-lg-0">
+                <h3 class="fw-bold">Request</h3>
+                <span class="ms-2 me-2">by</span>
+                <select class="form-select w-50" aria-label="Default select example">
+                    <option disabled selected hidden>Select Category</option>
+                    <option value="address_tb">Address</option>
+                    <option value="water_reading_tb">Water Reading</option>
+                </select>
+            </div>
+
+            <!--SEArCH-->
+            <div class="col-12 order-1 mb-3 col-lg-6 order-lg-2 mb-lg-0">
+                <div class="search-wrapper">
+                    <div class="left">
+                        <span><i class="fa-solid fa-magnifying-glass ms-2 me-2"></i></span>
+                        <input type="search" class="search-input" id="st-search" placeholder="Search...">
+                    </div>
+                    <div class="vertical-divider"></div>
+                    <div class="right">
+                        <select class="justselect" id="category">
+                            <option selected value="lname">Name</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--MAIN BODY-->
+        <div class="row">
+            <div class="col-12 order-2 order-xl-1 col-xl-9 border border-danger">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Resident ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Address_ID</td>
+                                        <td>@item.Resident_Name</td>
+                                        <td>BLK @item.Block LOT @item.Lot @item.Street_Name Street </td>
+                                        <td>@item.Remove_Token_Date</td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <button class="btn btn-success btn-sm btn_approve" data-id="@item.Address_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                                    <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm ms-2 btn_reject" data-id="@item.Address_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-12 order-1 order-xl-2 col-xl-3 border border-danger">col2</div>
+        </div>
+    </div>
+</div>
