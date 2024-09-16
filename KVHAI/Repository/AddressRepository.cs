@@ -11,16 +11,18 @@ namespace KVHAI.Repository
         private readonly InputSanitize _sanitize;
         private readonly StreetRepository _streetRepository;
         private readonly ImageUploadRepository _uploadRepository;
+        private readonly RequestDetailsRepository _requestDetailsRepository;
 
         private bool DataExist = false;
         private int CounterDataExistence = 0;
 
-        public AddressRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, ImageUploadRepository uploadRepository)
+        public AddressRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, ImageUploadRepository uploadRepository, RequestDetailsRepository requestDetailsRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
             _streetRepository = streetRepository;
             _uploadRepository = uploadRepository;
+            _requestDetailsRepository = requestDetailsRepository;
         }
         //CREATE
         public async Task<List<Address>> CreateAddress(string res_id, List<Address> addressess, SqlTransaction transaction, SqlConnection connection)
@@ -359,7 +361,7 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<List<Address>> GetAddressById(string addresID)
+        public async Task<List<Address>> GetAddressById(string resID)
         {
             try
             {
@@ -368,18 +370,24 @@ namespace KVHAI.Repository
                 {
                     using (var command = new SqlCommand("SELECT * FROM address_tb WHERE is_verified = 'true'AND res_id = @id", connection))
                     {
-                        command.Parameters.AddWithValue("@id", addresID);
+                        command.Parameters.AddWithValue("@id", resID);
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
                             {
+                                int addr_id = Convert.ToInt32(reader["addr_id"].ToString());
+                                int res_id = Convert.ToInt32(reader["res_id"].ToString());
+                                int request_id = await _requestDetailsRepository.GetRequestID(addr_id.ToString(), resID.ToString());
+
                                 var address = new Address
                                 {
-                                    Address_ID = Convert.ToInt32(reader["addr_id"].ToString()),
+                                    Address_ID = addr_id,
+                                    Resident_ID = res_id,
                                     Block = reader["block"].ToString() ?? String.Empty,
                                     Lot = reader["lot"].ToString() ?? String.Empty,
                                     Street_ID = Convert.ToInt32(reader["st_id"].ToString()),
                                     Remove_Request_Token = reader["remove_request_token"].ToString() ?? string.Empty,
+                                    Request_ID = request_id,
                                     Street_Name = await _streetRepository.GetStreetName(reader["st_id"].ToString())
                                 };
 
@@ -404,18 +412,69 @@ namespace KVHAI.Repository
              */
             try
             {
+                var result = 0;
                 var token = await CreateRandomToken();
-                var date = DateTime.Now;
+                var currentDateTime = DateTime.Now;
+
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("UPDATE address_tb set remove_request_token =@token, remove_token_date = @date WHERE addr_id = @aid AND res_id =@rid", connection))
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        command.Parameters.AddWithValue("@aid", addresID);
-                        command.Parameters.AddWithValue("@rid", residentID);
-                        command.Parameters.AddWithValue("@token", token);
-                        command.Parameters.AddWithValue("@date", date);
+                        try
+                        {
+                            // Step 1: Update address table to include remove_request_token
+                            using (var updateCommand = new SqlCommand(@"
+                        UPDATE address_tb 
+                        SET remove_request_token = @token 
+                        WHERE addr_id = @aid 
+                        AND res_id = @rid", connection, transaction))
+                            {
+                                updateCommand.Parameters.AddWithValue("@aid", addresID);
+                                updateCommand.Parameters.AddWithValue("@rid", residentID);
+                                updateCommand.Parameters.AddWithValue("@token", token);
 
-                        return await command.ExecuteNonQueryAsync();
+                                await updateCommand.ExecuteNonQueryAsync();
+
+                                // If the token was successfully added
+                                if (!string.IsNullOrEmpty(token))
+                                {
+                                    /* status type:
+                                     0 = pending
+                                     1 = approved
+                                     2 = rejected
+                                     3 = cancel
+                                     */
+                                    string requestType = "Removal of address";
+                                    int status = 0;
+                                    string comments = "";  // Initially no comments
+
+                                    // Step 2: Insert new request into request_tb
+                                    using (var insertCommand = new SqlCommand(@"
+                                INSERT INTO request_tb(res_id,addr_id, request_type, date_created, status, status_updated) OUTPUT INSERTED.request_id VALUES(@res_id, @addr_id, @type, @date_created, @status, @status_updated)", connection, transaction))
+                                    {
+                                        insertCommand.Parameters.AddWithValue("@res_id", residentID);
+                                        insertCommand.Parameters.AddWithValue("@addr_id", addresID);
+                                        insertCommand.Parameters.AddWithValue("@type", requestType);
+                                        insertCommand.Parameters.AddWithValue("@date_created", currentDateTime);
+                                        insertCommand.Parameters.AddWithValue("@status", status.ToString());
+                                        insertCommand.Parameters.AddWithValue("@status_updated", currentDateTime); // Track when status was set
+
+                                        result = (int)await insertCommand.ExecuteScalarAsync();
+
+                                    }
+                                }
+                            }
+
+                            // Step 3: Commit the transaction if everything is successful
+                            transaction.Commit();
+                            return result;
+                        }
+                        catch (Exception)
+                        {
+                            // If something goes wrong, roll back the transaction
+                            transaction.Rollback();
+                            return 0;
+                        }
                     }
                 }
             }
@@ -425,25 +484,64 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<int> CancelRequestRemoveTokenUpdate(string addresID, string residentID)
+
+        public async Task<int> CancelRequestRemoveTokenUpdate(string addresID, string residentID, string request_id)
         {
-            /*
-             aid = address id
-             rid = resident id
-             */
             try
             {
-                var token = await CreateRandomToken();
+                /* status type:
+                    0 = pending
+                    1 = approved
+                    2 = rejected
+                    3 = cancel
+                    */
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("UPDATE address_tb set remove_request_token =@token, remove_token_date = @date  WHERE addr_id = @aid AND res_id =@rid", connection))
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        command.Parameters.AddWithValue("@aid", addresID);
-                        command.Parameters.AddWithValue("@rid", residentID);
-                        command.Parameters.AddWithValue("@token", DBNull.Value);
-                        command.Parameters.AddWithValue("@date", DBNull.Value);
+                        try
+                        {
+                            // Update the address_tb to nullify the token and token date
+                            using (var command = new SqlCommand(@"
+                                UPDATE address_tb 
+                                SET remove_request_token = @token  
+                                WHERE addr_id = @aid AND res_id = @rid", connection, transaction))
+                            {
+                                command.Parameters.AddWithValue("@aid", addresID);
+                                command.Parameters.AddWithValue("@rid", residentID);
+                                command.Parameters.AddWithValue("@token", DBNull.Value);
 
-                        return await command.ExecuteNonQueryAsync();
+                                await command.ExecuteNonQueryAsync();
+                            }
+
+                            // Update the request_tb to set the status as 'Canceled' (e.g., status = 2) and add comments
+                            using (var updateRequestCommand = new SqlCommand(@"
+                                UPDATE request_tb 
+                                SET status = @status, comments = @comments, status_updated = @statusUpdated
+                                WHERE request_id = @rid", connection, transaction)) // Assuming '0' is for pending
+                            {
+                                int canceledStatus = 3; // Assuming '2' is the status for canceled
+                                string comments = "Request canceled by resident";
+                                DateTime statusUpdated = DateTime.Now;
+
+                                updateRequestCommand.Parameters.AddWithValue("@rid", request_id);
+                                updateRequestCommand.Parameters.AddWithValue("@status", canceledStatus);
+                                updateRequestCommand.Parameters.AddWithValue("@comments", comments);
+                                updateRequestCommand.Parameters.AddWithValue("@statusUpdated", statusUpdated);
+
+                                await updateRequestCommand.ExecuteNonQueryAsync();
+                            }
+
+                            // Commit the transaction if both updates succeed
+                            transaction.Commit();
+                            return 1;
+                        }
+                        catch (Exception)
+                        {
+                            // Rollback the transaction if something goes wrong
+                            transaction.Rollback();
+                            return 0;
+                        }
                     }
                 }
             }
@@ -452,6 +550,7 @@ namespace KVHAI.Repository
                 return 0;
             }
         }
+
 
         public async Task<bool> CheckRemoveTokenExist(string addresID, string residentID)
         {
@@ -489,48 +588,6 @@ namespace KVHAI.Repository
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
         }
 
-        public async Task<List<Address>> GetPendingRemovalRequests()
-        {
-            var pendingAddresses = new List<Address>();
-
-            try
-            {
-                using (var connection = await _dbConnect.GetOpenConnectionAsync())
-                {
-                    using (var command = new SqlCommand(@"
-                        SELECT * FROM address_tb WHERE remove_request_token IS NOT NULL AND remove_token_date IS NOT NULL  ORDER BY remove_token_date DESC
-                        ", connection))
-                    {
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                var address = new Address
-                                {
-                                    Address_ID = Convert.ToInt32(reader["addr_id"].ToString()),
-                                    Resident_ID = Convert.ToInt32(reader["res_id"].ToString()),
-                                    Block = reader["block"].ToString() ?? String.Empty,
-                                    Lot = reader["lot"].ToString() ?? String.Empty,
-                                    Street_ID = Convert.ToInt32(reader["st_id"].ToString()),
-                                    Remove_Request_Token = reader["remove_request_token"].ToString() ?? string.Empty,
-                                    Remove_Token_Date = reader["remove_token_date"].ToString() ?? string.Empty,
-                                    Resident_Name = await GetNameByID(reader["res_id"].ToString() ?? string.Empty),
-                                    Street_Name = await _streetRepository.GetStreetName(reader["st_id"].ToString() ?? string.Empty)
-                                };
-                                pendingAddresses.Add(address);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log exception and handle it
-                Console.WriteLine(ex.Message);
-            }
-
-            return pendingAddresses;
-        }
 
         //APPROVE REQUEST DELETE
         public async Task<int> ConfirmAndRemoveAddress(string addressID, string residentID, string token)

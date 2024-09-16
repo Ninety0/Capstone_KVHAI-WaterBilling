@@ -47,6 +47,7 @@ builder.Services.AddScoped<StreetRepository>();
 builder.Services.AddScoped<AddressRepository>();
 builder.Services.AddScoped<WaterReadingRepository>();
 builder.Services.AddScoped<WaterBillRepository>();
+builder.Services.AddScoped<RequestDetailsRepository>();
 
 var app = builder.Build();
 

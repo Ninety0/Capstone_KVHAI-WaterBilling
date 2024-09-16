@@ -26,7 +26,7 @@ namespace KVHAI.Controllers.Staff.Admin
             //RESIDENT
             var pagination2 = new Pagination<AddressWithResident>
             {
-                ModelList = await _residentRepository.GetAllResidentAsync(0, 10),
+                ModelList = await _residentRepository.GetAllResidentAsync(0, 10, "false"),
                 NumberOfData = await _residentRepository.CountResidentData("false"),
                 ScriptName = "respagination"
             };

@@ -13,9 +13,9 @@ namespace KVHAI.Controllers.Staff.Admin
         }
         public async Task<IActionResult> Index()
         {
-            var model = await _addressRepository.GetPendingRemovalRequests();
+            //var model = await _addressRepository.GetPendingRemovalRequests();
 
-            return View("~/Views/Staff/Admin/RequestPage.cshtml", model);
+            return View("~/Views/Staff/Admin/PageRequest.cshtml", model);//UPDATE TOMMOROW
         }
 
         [HttpPost]

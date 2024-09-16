@@ -51,15 +51,15 @@ namespace KVHAI.Controllers.Homeowner
                 return BadRequest("There was an error requesting for address removal. Please Try again later.");
             }
 
-            return Ok("Request of removing address are now on process.");
+            return Ok(new { message = "Request of removing address are now on process.", request_id = result });
         }
 
         [HttpPost]
-        public async Task<IActionResult> CancelRemoveToken(string addressID)
+        public async Task<IActionResult> CancelRemoveToken(string addressID, string requestID)
         {
             var resID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var tokenExist = await _addressRepository.CheckRemoveTokenExist(addressID, resID);
-            int result = await _addressRepository.CancelRequestRemoveTokenUpdate(addressID, resID);
+            int result = await _addressRepository.CancelRequestRemoveTokenUpdate(addressID, resID, requestID);
 
             if (!tokenExist)
             {

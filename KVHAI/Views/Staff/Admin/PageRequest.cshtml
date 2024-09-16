@@ -1,0 +1,114 @@
+﻿@{
+    ViewBag.Title = "Request Page";
+}
+
+@section head{
+    <style>
+        .normal_btn{
+            padding:6px;
+        }
+    </style>
+}
+
+@section scripts{
+    @*<script src="~/js/signalr.min.js"></script>*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(document).on('click', '.btn_approve', function () {
+                var addr_ID = $(this).data('id');
+                //toastr.info(addr_ID);
+                $.ajax({
+                    type: 'POST',
+                    url: '/RequestPage/ApprovePending',
+                    data: '',
+                    success: function (response) {
+                        toastr.success("");
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            })
+        });
+    </script>
+}
+
+<div class="content-container p-4">
+    <div class="container border">
+        <!-- FILTER -->
+        <div class="row mt-3 mb-3">
+            <div class="col">
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20">
+                        <path fill="currentColor" d="M12.25 13.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1 0-1.5z" />
+                    </svg>
+                </span>
+                <span style="font-size:.8rem; font-weight:400;">FILTER</span>
+            </div>
+            <div class="col d-flex justify-content-end">
+                <div class="dropdown ms-3">
+                    <button class="form-control border border-2  dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        STATUS
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Pending</a></li>
+                        <li><a class="dropdown-item" href="#">Approve</a></li>
+                        <li><a class="dropdown-item" href="#">Reject</a></li>
+                        <li><a class="dropdown-item" href="#">Cancel</a></li>
+                    </ul>
+                </div>
+                <div class="ms-3">
+                    <input type="date" class="form-control border border-2" name="name" value="" />
+                </div>
+            </div>
+        </div>
+           
+
+        <!--MAIN BODY-->
+        <div class="row">
+            <div class="col-12 order-2 order-xl-1 col-xl-9 border border-danger">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Resident ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Address_ID</td>
+                                        <td>@item.Resident_Name</td>
+                                        <td>BLK @item.Block LOT @item.Lot @item.Street_Name Street </td>
+                                        <td>@item.Remove_Token_Date</td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <button class="btn btn-success btn-sm btn_approve" data-id="@item.Address_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                                    <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm ms-2 btn_reject" data-id="@item.Address_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-12 order-1 order-xl-2 col-xl-3 border border-danger">col2</div>
+        </div>
+    </div>
+</div>

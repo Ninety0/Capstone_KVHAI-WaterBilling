@@ -112,10 +112,10 @@
                         </div>
 
                         <div class="col-md-2 mt-3 d-flex justify-content-evenly">
-                            <button class="btn btn-danger btn-sm me-2 btn_remove @btn_remove" data-id="@Model.ListAddress[i].Address_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                            <button class="btn btn-danger btn-sm me-2 btn_remove @btn_remove" data-id="@Model.ListAddress[i].Address_ID" data-request-id="@Model.ListAddress[i].Request_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
-                            <button class="btn btn-secondary btn-sm btn_cancel @btn_cancel" data-id="@Model.ListAddress[i].Address_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                            <button class="btn btn-secondary btn-sm btn_cancel @btn_cancel" data-id="@Model.ListAddress[i].Address_ID" data-request-id="@Model.ListAddress[i].Request_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
                                 <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
                                 <i class="fa-solid fa-ban"></i>
                             </button>
@@ -228,8 +228,12 @@
                     url: '/MyAddress/RemoveToken',
                     data: formData,
                     success: function (response) {
-                        toastr.info(response);
+                        toastr.info(response.message);
                         console.log(btn);
+                        if (response.request_id) {
+                            alert(response.request_id);
+                            $(btn).siblings().data('request-id', response.request_id)
+                        }
 
                         $(btn).siblings().removeClass('disabled');
                         $(btn).addClass('disabled');
@@ -246,11 +250,13 @@
 
             //CANCEL BTN
             $(document).on('click', '.btn_cancel', function () {
-                var id = $(this).data('id');
+                var aid = $(this).data('id'); //address ID
+                var rid = $(this).data('request-id'); // Request ID
                 var btn = $(this);
-                
+                alert(rid);
                 var formData = {
-                    addressID: id
+                    addressID: aid,
+                    requestID: rid
                 };
                 $.ajax({
                     type: 'POST',
@@ -260,6 +266,7 @@
                         toastr.info(response);
 
                         $(btn).addClass('disabled');
+                        $(btn).data('request-id','0')
                         $(btn).siblings().removeClass('disabled');
                         //setTimeout(function () {
                         //    location.reload();
