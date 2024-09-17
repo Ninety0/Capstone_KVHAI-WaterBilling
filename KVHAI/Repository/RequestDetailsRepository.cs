@@ -39,7 +39,7 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<List<RequestDetails>> GetPendingRemovalRequests()
+        public async Task<List<RequestDetails>> GetPendingRemovalRequests(string status = "")
         {
             var pendingAddresses = new List<RequestDetails>();
 
@@ -48,7 +48,61 @@ namespace KVHAI.Repository
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                        SELECT * FROM request_tb
+                        SELECT * FROM request_tb WHERE status LIKE @status
+                        ", connection))
+                    {
+                        command.Parameters.AddWithValue("@status", "%" + status + "%");
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var addressList = await GetAddressById(reader["addr_id"].ToString() ?? string.Empty);
+                                var name = await GetNameByID(reader["res_id"].ToString() ?? string.Empty);
+                                var address = "";
+
+                                foreach (var item in addressList)
+                                {
+                                    address = $"Blk {item.Block} Lot {item.Lot} {item.Street_Name} Street";
+                                }
+
+                                var request = new RequestDetails
+                                {
+                                    Request_ID = reader.GetInt32(0),
+                                    Resident_ID = reader.GetInt32(1),
+                                    Address_ID = reader.GetInt32(2),
+                                    RequestType = reader["request_type"].ToString() ?? string.Empty,
+                                    DateCreated = reader.GetDateTime(4),
+                                    Status = reader.GetInt32(5),
+                                    StatusUpdated = reader.GetDateTime(6),
+                                    Comments = reader["comments"].ToString() ?? string.Empty,
+                                    Resident_Name = name,
+                                    Address_Name = address
+                                };
+                                pendingAddresses.Add(request);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log exception and handle it
+                Console.WriteLine(ex.Message);
+            }
+
+            return pendingAddresses;
+        }
+
+        public async Task<List<RequestDetails>> GetPendingRemovalRequestsDateFilter(string date = "")
+        {
+            var pendingAddresses = new List<RequestDetails>();
+
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                        SELECT * FROM request_tb WHERE status LIKE @status
                         ", connection))
                     {
                         using (var reader = await command.ExecuteReaderAsync())

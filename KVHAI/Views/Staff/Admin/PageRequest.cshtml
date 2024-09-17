@@ -3,35 +3,61 @@
 }
 
 @section head{
+    <link href="/lib/just-select/justselect.css" rel="stylesheet" />
+    <link href="/css/custom-search.css" rel="stylesheet" />
     <style>
-        .normal_btn{
-            padding:6px;
-        }
-        .status{
-            font-size:1rem;
-            font-weight:600;
-            padding:8px;
-            border-radius:5px;
-            background-color:gray;
-            text-align:center;
+        .normal_btn {
+            padding: 6px;
         }
 
-            .status.approve {
+        .status {
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 8px;
+            border-radius: 5px;
+            background-color: gray;
+            text-align: center;
+        }
+
+            .approve {
                 background-color: #d1fae5;
                 color: #16a34a;
             }
-            .status.reject {
+
+            .reject {
                 background-color: #fee2e2;
                 color: #ef4444;
             }
-            .status.pending {
+
+            .pending {
                 background-color: #fef3c7;
                 color: #d97706;
             }
-            .status.cancel {
+
+            .cancel {
                 background-color: #e2e8f0;
                 color: #475569;
             }
+
+        .status_text{
+            font-size:.8rem;
+            font-weight:600;
+        }
+
+        .filter_pill {
+            padding: 5px;
+            background-color: white;
+            box-shadow: 2px 3px 5px rgba(5, 37, 114,.5);
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 600;
+        }
+
+        .search-wrapper{
+            font-size:1rem;
+            height:40px;
+            width:400px;
+        }
     </style>
 }
 
@@ -39,7 +65,38 @@
     @*<script src="~/js/signalr.min.js"></script>*@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
     <script>
+        $('#filter_name').editableSelect();
         $(document).ready(function () {
+
+            
+
+            // Event listeners
+            $(document).on('click', '#btn_pending', function () {
+                updateStatus('Pending', 'pending');
+                var statusID = $(this).data('status');
+                statusFilter(statusID);
+            });
+
+            $(document).on('click', '#btn_approve', function () {
+                updateStatus('Approved', 'approve');
+                var statusID = $(this).data('status');
+                statusFilter(statusID);
+
+            });
+
+            $(document).on('click', '#btn_reject', function () {
+                updateStatus('Rejected', 'reject');
+                var statusID = $(this).data('status');
+                statusFilter(statusID);
+
+            });
+
+            $(document).on('click', '#btn_cancel', function () {
+                updateStatus('Canceled', 'cancel');
+                var statusID = $(this).data('status');
+                statusFilter(statusID);
+
+            });
             $(document).on('click', '.btn_approve', function () {
                 var addr_ID = $(this).data('id');
                 //toastr.info(addr_ID);
@@ -55,39 +112,87 @@
                     }
                 });
             })
+
+            function updateStatus(statusText, statusClass) {
+                var $statusText = $('.status_text');
+
+                // Fade out, update content and class, then fade in
+                $statusText.fadeOut(200, function () {
+                    $(this)
+                        .text(statusText) // Update the text inside the span
+                        .removeClass('pending approve reject cancel') // Remove previous status classes
+                        .addClass(statusClass) // Add the new status class
+                        .fadeIn(200); // Fade in with the new text
+                });
+            }
+
+            function statusFilter(statusID) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/RequestPage/StatusFilter',
+                    data: { status: statusID }, // Pass statusID to the server
+                    success: function (response) {
+                        // Handle the response if needed
+                        var result = $(response).find('.table').html();
+                        $('.table').html(result);
+                        console.log(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                        $(document).find('.table').empty();
+                    }
+                });
+            }
         });
     </script>
 }
 
 <div class="content-container p-4">
-    <div class="container border">
-        <div class="container d-flex">
-            <div class="status pending">Pending</div>
-            <div class="status approve">Approve</div>
-            <div class="status reject">Reject</div>
-            <div class="status cancel">Canceled</div>
-        </div>
+    <div class="container border border-2">
         <!-- FILTER -->
         <div class="row mt-3 mb-3">
             <div class="col d-flex">
-                <span>
+                <span class="me-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20">
                         <path fill="currentColor" d="M12.25 13.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1 0-1.5z" />
                     </svg>
                 </span>
-                <span style="font-size:.8rem; font-weight:400;">FILTER</span>
-                <span class="form-control ms-3">HERE WILL BE PUT THE FILTERS</span>
-            </div>
-            <div class="col d-flex justify-content-end">
-                <div class="dropdown ms-3">
+                <div class="search-wrapper">
+                    <div class="left">
+                        <span><i class="fa-solid fa-magnifying-glass ms-2 me-2"></i></span>
+                        <input type="search" class="search-input" id="filter_search" placeholder="Search...">
+                    </div>
+                    <div class="vertical-divider"></div>
+                    <div class="right">
+                        <select class="justselect" id="category">
+                            <option selected value="lname">Name</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dropdown ms-3 ">
                     <button class="form-control border border-2  dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         STATUS
+                        <span class="status_text "></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Pending</a></li>
-                        <li><a class="dropdown-item" href="#">Approve</a></li>
-                        <li><a class="dropdown-item" href="#">Reject</a></li>
-                        <li><a class="dropdown-item" href="#">Cancel</a></li>
+                        <li class="d-flex align-items-center">
+                            <div class="container mb-2"><a class="dropdown-item status pending"  data-status="0" id="btn_pending">Pending</a></div>
+                        </li>
+                        <li>
+                            <div class="container mb-2">
+                                <a class="dropdown-item status approve" id="btn_approve" data-status="1">Approved</a>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="container mb-2">
+                                <a class="dropdown-item status reject" id="btn_reject" data-status="2">Reject</a>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="container mb-2">
+                                <a class="dropdown-item status cancel" id="btn_cancel" data-status="3">Canceled</a>
+                            </div>
+                        </li>
                     </ul>
                 </div>
                 <div class="ms-3">
@@ -99,12 +204,11 @@
 
         <!--MAIN BODY-->
         <div class="row">
-            <div class="col-12 border border-danger">
+            <div class="col-12 ">
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th scope="col">#</th>
                                 <th scope="col">Name</th>
                                 <th scope="col">Address</th>
                                 <th scope="col">Request</th>
@@ -155,7 +259,6 @@
                                         statusName = "";
                                     }
                                     <tr>
-                                        <th scope="row">@i</th>
                                         <td>@item.Resident_Name</td>
                                         <td>@item.Address_Name</td>
                                         <td>@item.RequestType</td>
@@ -169,8 +272,16 @@
                                                     <i class="fa-solid fa-ellipsis"></i>
                                                 </button>
                                                 <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item  approve" href="#">Approve</a></li>
-                                                    <li><a class="dropdown-item  reject mt-3" href="#">Reject</a></li>
+                                                    <li>
+                                                        <div class="container mb-2">
+                                                            <a class="dropdown-item status approve" href="#">Approved</a>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="container mb-2">
+                                                            <a class="dropdown-item status reject" href="#">Reject</a>
+                                                        </div>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </td>
