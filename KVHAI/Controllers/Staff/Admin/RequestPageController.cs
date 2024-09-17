@@ -6,14 +6,16 @@ namespace KVHAI.Controllers.Staff.Admin
     public class RequestPageController : Controller
     {
         private readonly AddressRepository _addressRepository;
+        private readonly RequestDetailsRepository _requestDetailsRepository;
 
-        public RequestPageController(AddressRepository addressRepository)
+        public RequestPageController(AddressRepository addressRepository, RequestDetailsRepository requestDetailsRepository)
         {
             _addressRepository = addressRepository;
+            _requestDetailsRepository = requestDetailsRepository;
         }
         public async Task<IActionResult> Index()
         {
-            //var model = await _addressRepository.GetPendingRemovalRequests();
+            var model = await _requestDetailsRepository.GetPendingRemovalRequests();
 
             return View("~/Views/Staff/Admin/PageRequest.cshtml", model);//UPDATE TOMMOROW
         }

@@ -8,11 +8,13 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         private readonly InputSanitize _sanitize;
+        private readonly StreetRepository _streetRepository;
 
-        public RequestDetailsRepository(DBConnect dBConnect, InputSanitize inputSanitize)
+        public RequestDetailsRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
+            _streetRepository = streetRepository;
         }
 
         public async Task<int> GetRequestID(string addresID, string residentID)
@@ -37,33 +39,45 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<List<Address>> GetPendingRemovalRequests()
+        public async Task<List<RequestDetails>> GetPendingRemovalRequests()
         {
-            var pendingAddresses = new List<Address>();
+            var pendingAddresses = new List<RequestDetails>();
 
             try
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                        SELECT * FROM address_tb WHERE remove_request_token IS NOT NULL AND remove_token_date IS NOT NULL  ORDER BY remove_token_date DESC
+                        SELECT * FROM request_tb
                         ", connection))
                     {
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
                             {
-                                var address = new Address
+                                var addressList = await GetAddressById(reader["addr_id"].ToString() ?? string.Empty);
+                                var name = await GetNameByID(reader["res_id"].ToString() ?? string.Empty);
+                                var address = "";
+
+                                foreach (var item in addressList)
                                 {
-                                    Address_ID = Convert.ToInt32(reader["addr_id"].ToString()),
-                                    Resident_ID = Convert.ToInt32(reader["res_id"].ToString()),
-                                    Block = reader["block"].ToString() ?? String.Empty,
-                                    Lot = reader["lot"].ToString() ?? String.Empty,
-                                    Street_ID = Convert.ToInt32(reader["st_id"].ToString()),
-                                    Remove_Request_Token = reader["remove_request_token"].ToString() ?? string.Empty,
-                                    Remove_Token_Date = reader["remove_token_date"].ToString() ?? string.Empty,
+                                    address = $"Blk {item.Block} Lot {item.Lot} {item.Street_Name} Street";
+                                }
+
+                                var request = new RequestDetails
+                                {
+                                    Request_ID = reader.GetInt32(0),
+                                    Resident_ID = reader.GetInt32(1),
+                                    Address_ID = reader.GetInt32(2),
+                                    RequestType = reader["request_type"].ToString() ?? string.Empty,
+                                    DateCreated = reader.GetDateTime(4),
+                                    Status = reader.GetInt32(5),
+                                    StatusUpdated = reader.GetDateTime(6),
+                                    Comments = reader["comments"].ToString() ?? string.Empty,
+                                    Resident_Name = name,
+                                    Address_Name = address
                                 };
-                                pendingAddresses.Add(address);
+                                pendingAddresses.Add(request);
                             }
                         }
                     }
@@ -78,5 +92,81 @@ namespace KVHAI.Repository
             return pendingAddresses;
         }
 
+        private async Task<List<Address>> GetAddressById(string adddressID)
+        {
+            try
+            {
+                var addressList = new List<Address>();
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT * FROM address_tb WHERE is_verified = 'true'AND addr_id = @id", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", adddressID);
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                int addr_id = Convert.ToInt32(reader["addr_id"].ToString());
+                                int res_id = Convert.ToInt32(reader["res_id"].ToString());
+
+                                var address = new Address
+                                {
+                                    Address_ID = addr_id,
+                                    Resident_ID = res_id,
+                                    Block = reader["block"].ToString() ?? String.Empty,
+                                    Lot = reader["lot"].ToString() ?? String.Empty,
+                                    Street_ID = Convert.ToInt32(reader["st_id"].ToString()),
+                                    Remove_Request_Token = reader["remove_request_token"].ToString() ?? string.Empty,
+                                    Street_Name = await _streetRepository.GetStreetName(reader["st_id"].ToString())
+                                };
+
+                                addressList.Add(address);
+                            }
+                        }
+                        return addressList;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        //GET NAME BY ID
+        private async Task<string> GetNameByID(string residentID)
+        {
+            try
+            {
+                var name = "";
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    // Query only by username to get the hashed password
+                    using (var command = new SqlCommand("SELECT lname,fname,mname FROM resident_tb WHERE res_id = @id", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", residentID);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                var lname = reader["lname"].ToString() ?? String.Empty;
+                                var fname = reader["fname"].ToString() ?? String.Empty;
+                                var mname = reader["mname"].ToString() ?? String.Empty;
+
+                                name = string.Join(", ", lname, fname, mname);
+                            }
+                            return name;
+                        }
+
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Handle exception (logging, etc.)
+                return null;
+            }
+        }
     }
 }

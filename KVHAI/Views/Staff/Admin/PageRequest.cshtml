@@ -7,6 +7,31 @@
         .normal_btn{
             padding:6px;
         }
+        .status{
+            font-size:1rem;
+            font-weight:600;
+            padding:8px;
+            border-radius:5px;
+            background-color:gray;
+            text-align:center;
+        }
+
+            .status.approve {
+                background-color: #d1fae5;
+                color: #16a34a;
+            }
+            .status.reject {
+                background-color: #fee2e2;
+                color: #ef4444;
+            }
+            .status.pending {
+                background-color: #fef3c7;
+                color: #d97706;
+            }
+            .status.cancel {
+                background-color: #e2e8f0;
+                color: #475569;
+            }
     </style>
 }
 
@@ -36,15 +61,22 @@
 
 <div class="content-container p-4">
     <div class="container border">
+        <div class="container d-flex">
+            <div class="status pending">Pending</div>
+            <div class="status approve">Approve</div>
+            <div class="status reject">Reject</div>
+            <div class="status cancel">Canceled</div>
+        </div>
         <!-- FILTER -->
         <div class="row mt-3 mb-3">
-            <div class="col">
+            <div class="col d-flex">
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20">
                         <path fill="currentColor" d="M12.25 13.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1 0-1.5z" />
                     </svg>
                 </span>
                 <span style="font-size:.8rem; font-weight:400;">FILTER</span>
+                <span class="form-control ms-3">HERE WILL BE PUT THE FILTERS</span>
             </div>
             <div class="col d-flex justify-content-end">
                 <div class="dropdown ms-3">
@@ -63,52 +95,93 @@
                 </div>
             </div>
         </div>
-           
+
 
         <!--MAIN BODY-->
         <div class="row">
-            <div class="col-12 order-2 order-xl-1 col-xl-9 border border-danger">
+            <div class="col-12 border border-danger">
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th scope="col">Resident ID</th>
+                                <th scope="col">#</th>
                                 <th scope="col">Name</th>
                                 <th scope="col">Address</th>
-                                <th scope="col">Date</th>
+                                <th scope="col">Request</th>
+                                <th scope="col">Date Created</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Comments</th>
+                                <th scope="col">Status Updated</th>
                                 <th scope="col">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             @{
+                                /* status type:
+                                    0 = pending
+                                    1 = approve
+                                    2 = reject
+                                    3 = cancel
+                                */
+                                int i = 1;
                                 foreach (var item in Model)
                                 {
+                                    string className = "";
+                                    string statusName = "";
+                                    if (item.Status == 0)//pending
+                                    {
+                                        className = "pending";
+                                        statusName = "Pending";
+
+                                    }
+                                    else if (item.Status == 1)//approve
+                                    {
+                                        className = "approve";
+                                        statusName = "Approved";
+                                    }
+                                    else if (item.Status == 2)//reject
+                                    {
+                                        className = "reject";
+                                        statusName = "Reject";
+                                    }
+                                    else if (item.Status == 3)//cancel
+                                    {
+                                        className = "cancel";
+                                        statusName = "Canceled";
+                                    }
+                                    else
+                                    {
+                                        className = "";
+                                        statusName = "";
+                                    }
                                     <tr>
-                                        <td>@item.Address_ID</td>
+                                        <th scope="row">@i</th>
                                         <td>@item.Resident_Name</td>
-                                        <td>BLK @item.Block LOT @item.Lot @item.Street_Name Street </td>
-                                        <td>@item.Remove_Token_Date</td>
+                                        <td>@item.Address_Name</td>
+                                        <td>@item.RequestType</td>
+                                        <td>@item.DateCreated</td>
+                                        <td><div class="status @className">@statusName</div></td>
+                                        <td>@item.Comments</td>
+                                        <td>@item.StatusUpdated</td>
                                         <td>
-                                            <div class="d-flex">
-                                                <button class="btn btn-success btn-sm btn_approve" data-id="@item.Address_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
-                                                    <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
-                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                            <div class="dropdown">
+                                                <button class="form-control border border-2 " type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa-solid fa-ellipsis"></i>
                                                 </button>
-                                                <button class="btn btn-danger btn-sm ms-2 btn_reject" data-id="@item.Address_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
-                                                    <i class="fa-solid fa-trash-can"></i>
-                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item  approve" href="#">Approve</a></li>
+                                                    <li><a class="dropdown-item  reject mt-3" href="#">Reject</a></li>
+                                                </ul>
                                             </div>
                                         </td>
                                     </tr>
+                                    i++;
                                 }
                             }
-
-
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="col-12 order-1 order-xl-2 col-xl-3 border border-danger">col2</div>
         </div>
     </div>
 </div>
