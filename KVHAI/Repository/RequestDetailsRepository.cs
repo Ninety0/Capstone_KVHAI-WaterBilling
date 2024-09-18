@@ -39,19 +39,28 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<List<RequestDetails>> GetPendingRemovalRequests(string status = "")
+        public async Task<List<RequestDetails>> GetPendingRemovalRequests(string status = "", string date = "")
         {
             var pendingAddresses = new List<RequestDetails>();
+            string query = "";
+            if (string.IsNullOrEmpty(date))
+            {
+                date = DateTime.Now.ToString("yyyy-MM-dd");
+            }
+
 
             try
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                        SELECT * FROM request_tb WHERE status LIKE @status
-                        ", connection))
+                        SELECT * 
+                        FROM request_tb 
+                        WHERE status LIKE @status AND CAST(date_created AS DATE) = @date", connection))
                     {
                         command.Parameters.AddWithValue("@status", "%" + status + "%");
+                        command.Parameters.AddWithValue("@date", date);
+
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())

@@ -51,8 +51,9 @@ namespace KVHAI.Controllers.Staff.Waterworks
                 }
 
                 await _hubContext.Clients.All.SendAsync("ReceiveReading");
-
                 return Ok("Submit successfully");
+                //ViewData["Message"] = "Reading submit successfully!";
+                //return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
@@ -63,7 +64,6 @@ namespace KVHAI.Controllers.Staff.Waterworks
         [HttpGet]
         public async Task<IActionResult> GetName(ResidentAddress residentAddress)
         {
-            int index = 1;
             try
             {
                 var resident = await _addressRepository.GetName(residentAddress);
@@ -72,7 +72,6 @@ namespace KVHAI.Controllers.Staff.Waterworks
                 {
                     return BadRequest("There is no resident in specified address");
                 }
-                index++;
 
                 //return View("~/Views/Staff/Waterworks/Index.cshtml");
                 return Json(resident);

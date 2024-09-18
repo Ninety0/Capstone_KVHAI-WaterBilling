@@ -20,11 +20,11 @@ namespace KVHAI.Controllers.Staff.Admin
             return View("~/Views/Staff/Admin/PageRequest.cshtml", model);//UPDATE TOMMOROW
         }
 
-        public async Task<IActionResult> StatusFilter(string status)
+        public async Task<IActionResult> StatusFilter(string status = "", string date = "")
         {
-            var model = await _requestDetailsRepository.GetPendingRemovalRequests(status);
+            var model = await _requestDetailsRepository.GetPendingRemovalRequests(status, date);
 
-            if (model == null || model.Count < 1)
+            if (model == null)
             {
                 return BadRequest("No data found with specified status");
             }

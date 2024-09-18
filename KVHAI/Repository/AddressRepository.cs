@@ -192,6 +192,7 @@ namespace KVHAI.Repository
             }
         }
 
+        //GET NAME BY BLOCK AND LOT
         public async Task<List<ResidentAddress>> GetName(ResidentAddress residentAddress)
         {
             try
@@ -202,33 +203,28 @@ namespace KVHAI.Repository
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                    SELECT addr_id as ID, Name, block, lot, st_name as street
-                    FROM (
-                        SELECT 
-		                    a.addr_id,
-                            CONCAT(res.lname, ', ', res.fname, ', ', res.mname) AS Name, 
-                            res.block, 
-                            res.lot, 
-                            st.st_name 
-                        FROM address_tb a
-                        JOIN street_tb st ON a.st_id = st.st_id
-                        JOIN resident_tb res ON a.res_id = res.res_id
-                    ) AS ResidentAddress
-                    WHERE block= @block AND lot= @lot AND st_name LIKE @st", connection))
+                        select r.res_id,addr_id, lname,fname,mname, st_name from address_tb a
+                        JOIN resident_tb r ON a.res_id = r.res_id
+                        JOIN street_tb s ON a.st_id = s.st_id
+                        WHERE block= @block AND lot= @lot AND st_name = @st", connection))
                     {
                         command.Parameters.AddWithValue("@block", string.IsNullOrEmpty(residentAddress.Block) ? "" : await _sanitize.HTMLSanitizerAsync(residentAddress.Block));
 
                         command.Parameters.AddWithValue("@lot", string.IsNullOrEmpty(residentAddress.Lot) ? "" : await _sanitize.HTMLSanitizerAsync(residentAddress.Lot));
 
-                        command.Parameters.AddWithValue("@st", "%" + street + "%");
+                        command.Parameters.AddWithValue("@st", street);
 
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             if (await reader.ReadAsync())
                             {
-                                var _resident = new ResidentAddress();
-                                _resident.ID = Convert.ToInt32(reader["ID"].ToString());
-                                _resident.Name = reader["Name"].ToString() ?? string.Empty;
+                                string name = string.Join(", ", reader["lname"].ToString(), reader["fname"].ToString(), reader["mname"].ToString());
+                                var _resident = new ResidentAddress
+                                {
+                                    ID = Convert.ToInt32(reader["res_id"].ToString()),
+                                    Address_ID = Convert.ToInt32(reader["addr_id"].ToString()),
+                                    Name = name
+                                };
 
                                 resident.Add(_resident);
                             }

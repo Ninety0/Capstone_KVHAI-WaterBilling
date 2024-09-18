@@ -7,7 +7,7 @@ namespace KVHAI.Controllers.Staff.Clerk
 {
     public class ClerkController : Controller
     {
-        //private readonly WaterReadingRepository _waterReadingRepository;
+        private readonly WaterReadingRepository _waterReadingRepository;
         private readonly WaterBillingFunction _waterBilling;
         private readonly WaterBillRepository _waterBillRepository;
 
@@ -30,7 +30,8 @@ namespace KVHAI.Controllers.Staff.Clerk
 
             //};
 
-            await _waterBilling.UseWaterBilling("1");
+            //await _waterBilling.WaterReadingFunction("1");
+            await _waterBilling.WaterReading(location: "4");
 
             return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
         }
@@ -48,7 +49,7 @@ namespace KVHAI.Controllers.Staff.Clerk
                 {
                     toDate = _to.ToString("yyyy-MM");
                 }
-                await _waterBilling.UseWaterBilling(location, fromDate, toDate);
+                await _waterBilling.WaterReadingFunction(location, fromDate, toDate);
 
                 return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
             }
@@ -71,7 +72,7 @@ namespace KVHAI.Controllers.Staff.Clerk
                 {
                     toDate = _to.ToString("yyyy-MM");
                 }
-                await _waterBilling.UseWaterBilling("1", fromDate, toDate);
+                await _waterBilling.WaterReading("4", fromDate, toDate);
 
                 return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
             }

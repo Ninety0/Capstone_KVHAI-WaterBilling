@@ -79,17 +79,79 @@ namespace KVHAI.CustomClass
             BillAmount = new List<Double>();
         }
 
-        //public async Task UseWaterBillingByBatch()
-        //{
-        //    var prevReading = await _waterReadingRepository.GetPreviousReading(location);
-        //    var currentReading = await _waterReadingRepository.GetCurrentReading(location);
-        //}
-
-        public async Task UseWaterBilling(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
+        public async Task WaterReading(string location = "", string dateFrom = "", string dateTo = "")
         {
-            //var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
+            var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
+            var currentReading = await _waterReadingRepository.GetCurrentReading(location, dateTo);
+
+            (this.ReadingStartDateRange, this.ReadingEndDateRange) = await _waterReadingRepository.WaterReadingList();
+            this.MonthlyBillText = DateTime.Now.AddMonths(-1).ToString("MMM");
+
+
+            this.PreviousReading = prevReading.PreviousReading;
+            this.CurrentReading = currentReading.CurrentReading;
+            this.ResidentAddress = prevReading.ResidentAddress;
+
+            // PARSING DATES WATER READING
+            this.WRCurrentFirstDate = CurrentReading?.Count < 1 ? string.Empty : ParseStartDate(CurrentReading?[0].Date);
+            this.WRCurrentLastDate = CurrentReading?.Count < 1 ? string.Empty : ParseLastDate(CurrentReading?[GetLastIndex(CurrentReading)].Date);
+            this.WRCurrentMonth = CurrentReading?.Count < 1 ? string.Empty : "-" + ParseMonth(CurrentReading?[0].Date) + "-";
+
+            this.WRPrevFirstDate = PreviousReading?.Count < 1 ? string.Empty : ParseStartDate(PreviousReading?[0].Date);//PreviousReading?[0].Date.ToString() ?? string.Empty;
+            this.WRPrevLastDate = PreviousReading?.Count < 1 ? string.Empty : ParseLastDate(PreviousReading?[GetLastIndex(PreviousReading)].Date);
+            this.WRPrevMonth = PreviousReading?.Count < 1 ? string.Empty : "-" + ParseMonth(PreviousReading?[0].Date) + "-";
+            //END PARSING
+
+            this.CountData = await _addressRepository.GetCountByLocation(location);
+            this.ClassActive = CurrentReading?.Count == CountData ? "active" : "disabled";
+
+            this.GenerateButton = await Button(location);
+            this.GenerateSelect = await WaterReadingSelect();
+
+            try
+            {
+                for (int i = 0; i < ResidentAddress.Count; i++)
+                {
+                    var cubic = 0.0;
+                    var amount = 0.0;
+                    double previousConsumption = 0;
+                    double currentConsumption = 0;
+
+                    // Check if the index is within range for PreviousReading
+                    if (i < PreviousReading.Count && !double.TryParse(PreviousReading[i].Consumption, out previousConsumption))
+                    {
+                        previousConsumption = 0; // Default value if parsing fails
+                    }
+
+                    // Check if the index is within range for CurrentReading
+                    if (i < CurrentReading.Count && !double.TryParse(CurrentReading[i].Consumption, out currentConsumption))
+                    {
+                        currentConsumption = 0; // Default value if parsing fails
+                    }
+
+                    // Calculate cubic difference
+                    cubic = (currentConsumption - previousConsumption) < 1 ? 0 : currentConsumption - previousConsumption;
+
+                    // Calculate bill amount
+                    amount = cubic * WaterRate;
+
+                    // Add the computed values to the lists
+                    this.CubicMeter.Add(cubic);
+                    this.BillAmount.Add(amount);
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+                throw;
+            }
+
+        }
+        public async Task WaterReadingFunction(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
+        {
+            var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
             //var currentReading = await _waterReadingRepository.GetCurrentReading(location, dateTo);
-            var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
+            //var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
             var currentReading = await _waterBillRepository.GetCurrentReading(location, dateTo, wbnumber);
 
             //this.WaterBillNumbers = await _waterReadingRepository.GetWaterBillNo();

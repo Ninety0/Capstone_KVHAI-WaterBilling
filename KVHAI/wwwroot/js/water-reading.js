@@ -7,10 +7,11 @@
     InputKeyPress();
 
     //EVENT LISTENERS
+    $('#select-street').editableSelect();
     $('input, select').on('input change', handleInputChange);
     $(document).on('click', '#btn-cancel', CancelSubmit);
 
-    $('#select-street').on('blur', function () {
+    $(document).on('blur', '#select-street', function () {
         $(this).removeClass('is-invalid');
         $(this).closest('.form-check').find('.invalid-feedback').css('display', 'none');
 
@@ -35,7 +36,7 @@
                 data: formData,
                 success: function (response) {
                     var result = response[0];
-                    address_id = result.id;
+                    address_id = result.address_ID;
                     alert(address_id);
                     $('#input-name').val(result.name);
                 },
@@ -96,8 +97,10 @@
                 url: '/WaterWorks/SubmitReading',
                 data: formData,
                 success: function (response) {
+                    //var result = $(response).find('.information-section').html();
                     toastr.success(response);
                     $('#form-reading')[0].reset();
+                    //$('.information-section').html(result);
                     $('#input-name').val('');
                 },
                 error: function (xhr, status, err_m) {

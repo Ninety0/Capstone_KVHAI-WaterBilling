@@ -193,19 +193,17 @@
                 </select>
             </div>
             <div class="col d-flex justify-content-end">
-                <div id="btnGenerate">
-                    @{
-                        if (Model.GenerateButton != null)
-                        {
-                            @Model.GenerateButton
-                        }
+                @{
+                    if (Model.GenerateButton != null)
+                    {
+                        @Model.GenerateButton
                     }
-                </div>
+                }
 
             </div>
         </div>
 
-        <div class="table-responsive mt-4">
+        <div class="table-responsive ">
             <table class="table" id="tableData">
                 <thead>
                     <tr>

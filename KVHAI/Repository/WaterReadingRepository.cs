@@ -24,9 +24,9 @@ namespace KVHAI.Repository
                 waterReading.Date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO water_reading_tb (emp_id,addr_id,consumption,date_reading) VALUES(@emp_id, @addr_id, @cons2umption, @date)", connection))
+                    using (var command = new SqlCommand("INSERT INTO water_reading_tb (emp_id,addr_id,consumption,date_reading) VALUES(@emp_id, @addr_id, @consumption, @date)", connection))
                     {
-                        command.Parameters.AddWithValue("@emp_id", 1);
+                        command.Parameters.AddWithValue("@emp_id", 1);//this will nedd to change if admin has login form yet
                         command.Parameters.AddWithValue("@addr_id", waterReading.Address_ID);
                         command.Parameters.AddWithValue("@consumption", await _sanitize.HTMLSanitizerAsync(waterReading.Consumption));
                         command.Parameters.AddWithValue("@date", waterReading.Date);
@@ -39,7 +39,7 @@ namespace KVHAI.Repository
             }
             catch (Exception ex)
             {
-                throw;
+                return 0;
             }
         }
 
@@ -84,12 +84,15 @@ namespace KVHAI.Repository
             var residentAddress = new List<ResidentAddress>();
             var models = new ModelBinding();
 
-            var query = await GetSqlQuery(location);
-
-
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand(query, connection))
+                using (var command = new SqlCommand(@"
+                select * from resident_tb r 
+                JOIN address_tb a ON r.res_id = a.res_id
+                JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
+                WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND a.location LIKE @location 
+                ORDER BY CAST(block as INT);
+                ", connection))
                 {
                     command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
                     command.Parameters.AddWithValue("@location", "%" + location + "%");
@@ -113,14 +116,6 @@ namespace KVHAI.Repository
                                 Block = reader["block"].ToString() ?? string.Empty,
                                 Lot = reader["lot"].ToString() ?? string.Empty,
                             };
-                            //var wr = new WaterReading();
-                            //var address = new ResidentAddress();
-
-                            //address.Name = string.Concat(", ", reader["lname"].ToString(), reader["fname"].ToString()) ?? string.Empty;
-                            //address.Block = reader["block"].ToString() ?? string.Empty;
-                            //address.Lot = reader["lot"].ToString() ?? string.Empty;
-                            //wr.Consumption = reader["consumption"].ToString() ?? string.Empty;
-                            //wr.Date = reader["date_reading"].ToString() ?? string.Empty;
 
                             waterReading.Add(wr);
                             residentAddress.Add(address);
@@ -139,13 +134,18 @@ namespace KVHAI.Repository
         {
             var prevDate = string.IsNullOrEmpty(date) ? DateTime.Now.ToString("yyyy-MM") : date;
             var waterReading = new List<WaterReading>();
+            var waterBilling = new List<WaterBilling>();
             var models = new ModelBinding();
-            var query = await GetSqlQuery(location);
-
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
-                using (var command = new SqlCommand(query, connection))
+                using (var command = new SqlCommand(@"
+                    select * from resident_tb r 
+                    JOIN address_tb a ON r.res_id = a.res_id
+                    JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
+                    WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND a.location LIKE @location
+                    ORDER BY CAST(block as INT);
+                ", connection))
                 {
                     command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
                     command.Parameters.AddWithValue("@location", "%" + location + "%");
@@ -160,10 +160,7 @@ namespace KVHAI.Repository
 
                                 Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd") : string.Empty
                             };
-
-
                             waterReading.Add(wr);
-
                         }
                     }
                 }

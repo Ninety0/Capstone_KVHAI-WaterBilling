@@ -58,6 +58,12 @@
             height:40px;
             width:400px;
         }
+        .clear_text {
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #334155;
+        }
     </style>
 }
 
@@ -67,36 +73,54 @@
     <script>
         $('#filter_name').editableSelect();
         $(document).ready(function () {
-
-            
+            //GLOBAL VARIABLES
+            let statusCode = '';
 
             // Event listeners
+            clearFilters();
+            GetDate();
+
             $(document).on('click', '#btn_pending', function () {
                 updateStatus('Pending', 'pending');
                 var statusID = $(this).data('status');
+                statusCode = statusID.toString();
+                
                 statusFilter(statusID);
+                showClearFilter();
             });
 
             $(document).on('click', '#btn_approve', function () {
                 updateStatus('Approved', 'approve');
                 var statusID = $(this).data('status');
-                statusFilter(statusID);
+                statusCode = statusID.toString();
 
+                statusFilter(statusID);
+                showClearFilter();
             });
 
             $(document).on('click', '#btn_reject', function () {
                 updateStatus('Rejected', 'reject');
                 var statusID = $(this).data('status');
-                statusFilter(statusID);
+                statusCode = statusID.toString();
 
+                statusFilter(statusID);
+                showClearFilter();
             });
 
             $(document).on('click', '#btn_cancel', function () {
                 updateStatus('Canceled', 'cancel');
                 var statusID = $(this).data('status');
-                statusFilter(statusID);
+                statusCode = statusID.toString();
 
+                statusFilter(statusID);
+                showClearFilter();
             });
+
+            $(document).on('change', '#filter_date', function () {
+                showClearFilter();
+                statusFilter(statusCode);
+            });
+
             $(document).on('click', '.btn_approve', function () {
                 var addr_ID = $(this).data('id');
                 //toastr.info(addr_ID);
@@ -113,6 +137,42 @@
                 });
             })
 
+            function GetDate() {
+                // Get the current date
+                var today = new Date();
+
+                // Format the date as yyyy-mm-dd (this is the format required for input[type="date"])
+                var formattedDate = today.toISOString().split('T')[0];
+
+                // Set the input value to the formatted date
+                $('#filter_date').val(formattedDate);
+            }
+
+            function showClearFilter() {
+                var clearFilter = $('.clear_text');
+                clearFilter.removeClass('d-none');
+            }
+
+            function clearFilters() {
+                $(document).on('click', '.clear_text', function () {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/RequestPage/Index',
+                        success: function (response) {
+                            statusCode = '';
+                            GetDate();
+                            $('.status_text').fadeOut(200);
+                            $('.clear_text').addClass('d-none');
+                            var result = $(response).find('#table_body').html();
+                            $('#table_body').html(result);
+                        },
+                        error: function (xhr) {
+                            toastr.error(xhr.responseText);
+                        }
+                    });
+                });
+            }
+
             function updateStatus(statusText, statusClass) {
                 var $statusText = $('.status_text');
 
@@ -127,19 +187,22 @@
             }
 
             function statusFilter(statusID) {
+                var _date = $('#filter_date').val();
+
+                var formData = { status: statusID, date: _date };
+
                 $.ajax({
                     type: 'POST',
                     url: '/RequestPage/StatusFilter',
-                    data: { status: statusID }, // Pass statusID to the server
+                    data: formData, // Pass statusID to the server
                     success: function (response) {
                         // Handle the response if needed
-                        var result = $(response).find('.table').html();
-                        $('.table').html(result);
-                        console.log(result);
+                        var result = $(response).find('#table_body').html();
+                        $('#table_body').html(result);
                     },
                     error: function (xhr) {
                         toastr.error(xhr.responseText);
-                        $(document).find('.table').empty();
+                        $(document).find('#table_body').empty();
                     }
                 });
             }
@@ -157,6 +220,7 @@
                         <path fill="currentColor" d="M12.25 13.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1 0-1.5z" />
                     </svg>
                 </span>
+                <!--FILTER FOR NAME-->
                 <div class="search-wrapper">
                     <div class="left">
                         <span><i class="fa-solid fa-magnifying-glass ms-2 me-2"></i></span>
@@ -169,6 +233,8 @@
                         </select>
                     </div>
                 </div>
+
+                <!--FILTER FOR STATUS-->
                 <div class="dropdown ms-3 ">
                     <button class="form-control border border-2  dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         STATUS
@@ -195,8 +261,15 @@
                         </li>
                     </ul>
                 </div>
+
+                <!--FILTER FOR DATE-->
                 <div class="ms-3">
-                    <input type="date" class="form-control border border-2" name="name" value="" />
+                    <input type="date" class="form-control border border-2" id="filter_date" name="name" value="" />
+                </div>
+
+                <!--CLEAR FILTERS-->
+                <div class="clear_text d-none ms-2">
+                    CLEAR
                 </div>
             </div>
         </div>
@@ -219,7 +292,7 @@
                                 <th scope="col">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="table_body">
                             @{
                                 /* status type:
                                     0 = pending
@@ -228,6 +301,12 @@
                                     3 = cancel
                                 */
                                 int i = 1;
+                                if (Model.Count <1)
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center p-5 fw-bold">NO DATA FOUND!</td>
+                                    </tr>
+                                }
                                 foreach (var item in Model)
                                 {
                                     string className = "";
@@ -296,3 +375,9 @@
         </div>
     </div>
 </div>
+<!--
+    
+UPDATE NEEDED ARE SEARCH OF NAME AND HOW ACTION WILL BE USED
+    -click action then modal will popup to put comments then after submit request will be process
+
+-->
