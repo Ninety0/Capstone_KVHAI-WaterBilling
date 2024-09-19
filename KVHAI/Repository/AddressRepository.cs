@@ -242,7 +242,7 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<int> GetCountByLocation(string location = "")
+        public async Task<int> GetCountByLocationWithReading(string location = "")
         {
             int count = 0;
             using (var connection = await _dbConnect.GetOpenConnectionAsync())

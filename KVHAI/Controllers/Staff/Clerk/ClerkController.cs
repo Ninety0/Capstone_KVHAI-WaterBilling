@@ -31,9 +31,14 @@ namespace KVHAI.Controllers.Staff.Clerk
             //};
 
             //await _waterBilling.WaterReadingFunction("1");
-            await _waterBilling.WaterReading(location: "4");
+            await _waterBilling.WaterReading(location: "1");
 
             return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
+        }
+
+        public async Task<IActionResult> Dashboard()
+        {
+            return View("~/Views/Staff/Clerk/ClerkDashboard.cshtml");
         }
 
         [HttpGet]
@@ -49,7 +54,7 @@ namespace KVHAI.Controllers.Staff.Clerk
                 {
                     toDate = _to.ToString("yyyy-MM");
                 }
-                await _waterBilling.WaterReadingFunction(location, fromDate, toDate);
+                await _waterBilling.WaterReading(location, fromDate, toDate);
 
                 return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
             }
@@ -83,22 +88,26 @@ namespace KVHAI.Controllers.Staff.Clerk
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBilling([FromBody] ModelBinding binding)//int id, string amount, string date)
+        public async Task<IActionResult> CreateBilling(List<WaterBilling> waterBilling)//([FromBody] ModelBinding binding)//int id, string amount, string date)
         {
             try
             {
+                if (waterBilling == null || waterBilling.Count < 1)
+                {
+                    return BadRequest("There was an error generating the bill");
+                }
+
                 var ListBilling = new List<WaterBilling>();
-                var dateArgument = binding.Date + DateTime.Now.ToString("-yyyy");
-                var billing = await _waterBillRepository.GetDateBilling(dateArgument);
-                var due = await _waterBillRepository.GetDueDate();
+                var billing = await _waterBillRepository.GetDateBilling();//DATE ISSUE OF BILL
+                var due = await _waterBillRepository.GetDueDate();                    //DUE DATE OF BILL
                 var status = "unpaid";
 
-                foreach (var item in binding.Bill)
+                foreach (var item in waterBilling)
                 {
-                    if (item == null)
-                    {
-                        return BadRequest("There was an error processing the data.");
-                    }
+                    //if (item == null)
+                    //{
+                    //    return BadRequest("There was an error processing the data.");
+                    //}
 
                     var wb = new WaterBilling()
                     {

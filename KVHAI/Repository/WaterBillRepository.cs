@@ -44,6 +44,7 @@ namespace KVHAI.Repository
             }
         }
 
+        //CREATE WATERBILLING
         public async Task<int> CreateWaterBill(List<WaterBilling> waterBilling)
         {
             try
@@ -59,32 +60,24 @@ namespace KVHAI.Repository
                     {
                         try
                         {
-                            int waterbillID;
+                            int waterBillNo = 1;
 
                             // Check if there is already a waterbill_no for the current month
-                            using (var command = new SqlCommand("SELECT TOP 1 bill_no FROM waterbill_cycle_tb WHERE created_at LIKE @currentMonth", connection, transaction))
+                            using (var command = new SqlCommand(@"
+                                SELECT TOP 1 waterbill_no FROM water_billing_tb WHERE date_issue_from LIKE @currentMonth", connection, transaction))
                             {
                                 command.Parameters.AddWithValue("@currentMonth", "%" + currentMonth + "%");
                                 var result = await command.ExecuteScalarAsync();
 
                                 if (result != null)
                                 {
-                                    waterbillID = (int)result;
-                                }
-                                else
-                                {
-                                    // If no waterbill_no exists for the current month, create a new one
-                                    using (var insertCommand = new SqlCommand("INSERT INTO waterbill_cycle_tb (created_at) OUTPUT INSERTED.bill_no VALUES(@dateNow)", connection, transaction))
-                                    {
-                                        insertCommand.Parameters.AddWithValue("@dateNow", dateNow);
-                                        waterbillID = (int)await insertCommand.ExecuteScalarAsync();
-                                    }
+                                    waterBillNo = (int)result;
                                 }
                             }
 
                             foreach (var item in waterBilling)
                             {
-                                using (var command = new SqlCommand("INSERT INTO water_billing_tb (addr_id, amount, date_issue_from, date_issue_to,due_date_from,due_date_to,status,waterbill_no) VALUES(@addr, @amount,@issueFrom,@issueTo,@dueFrom,@dueTo,@status,@bill)", connection, transaction))
+                                using (var command = new SqlCommand("INSERT INTO water_billing_tb (addr_id, amount, date_issue_from, date_issue_to,due_date_from,due_date_to,status,waterbill_no) VALUES(@addr, @amount,@issueFrom,@issueTo,@dueFrom,@dueTo,@status,@billno)", connection, transaction))
                                 {
                                     command.Parameters.AddWithValue("@addr", item.Address_ID);
                                     command.Parameters.AddWithValue("@amount", item.Amount);
@@ -93,7 +86,7 @@ namespace KVHAI.Repository
                                     command.Parameters.AddWithValue("@dueFrom", item.Due_Date_From);
                                     command.Parameters.AddWithValue("@dueTo", item.Due_Date_To);
                                     command.Parameters.AddWithValue("@status", item.Status);
-                                    command.Parameters.AddWithValue("@bill", waterbillID);
+                                    command.Parameters.AddWithValue("@billno", waterBillNo);
 
                                     await command.ExecuteNonQueryAsync();
                                 }
@@ -142,12 +135,13 @@ namespace KVHAI.Repository
 
             using (var connection = await _dbConnect.GetOpenConnectionAsync())
             {
+                //WE ADD CONVERT(VARCHAR, wr.date_reading, 23 ) to able to search the month
                 using (var command = new SqlCommand(@"
                 select * from resident_tb r 
                 JOIN address_tb a ON r.res_id = a.res_id
                 JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
                 JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
-                WHERE wr.date_reading LIKE @date AND a.location LIKE @location 
+                WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND a.location LIKE @location 
                 ORDER BY CAST(block as INT);
                 ", connection))
                 {
@@ -201,7 +195,7 @@ namespace KVHAI.Repository
                     JOIN address_tb a ON r.res_id = a.res_id
                     JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
                     JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
-                    WHERE wr.date_reading LIKE @date AND a.location LIKE @location AND wb.waterbill_no LIKE @num
+                    WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND a.location LIKE location
                     ORDER BY CAST(block as INT);
                 ", connection))
                 {
@@ -428,8 +422,8 @@ namespace KVHAI.Repository
                             ", connection))
                             {
                                 command.Parameters.AddWithValue("@id", id);
-                                command.Parameters.AddWithValue("@from", id);
-                                command.Parameters.AddWithValue("@to", id);
+                                command.Parameters.AddWithValue("@from", dateFrom);
+                                command.Parameters.AddWithValue("@to", dateTo);
 
                                 using (var reader = await command.ExecuteReaderAsync())
                                 {
@@ -486,9 +480,10 @@ namespace KVHAI.Repository
             return wb;
         }
 
-        public async Task<WaterBilling> GetDateBilling(string date)
+        //DATE ISSUE OF WATER BILLING
+        public async Task<WaterBilling> GetDateBilling()
         {
-            string DateFrom = date;
+            //string DateFrom = date;
             //if (DateTime.TryParse(DateFrom, out DateTime result))
             //{
             //    DateFrom = result.ToString("yyyy-MM-dd");

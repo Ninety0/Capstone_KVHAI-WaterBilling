@@ -22,7 +22,7 @@ namespace KVHAI.Controllers.Staff.Clerk
         public async Task<IActionResult> Index()
         {
             //return View("ClerkWaterBilling");
-            await _waterBilling.WaterReadingFunction("1");
+            await _waterBilling.WaterReadingFunction("4");
 
 
 

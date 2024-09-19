@@ -102,8 +102,10 @@ namespace KVHAI.CustomClass
             this.WRPrevMonth = PreviousReading?.Count < 1 ? string.Empty : "-" + ParseMonth(PreviousReading?[0].Date) + "-";
             //END PARSING
 
-            this.CountData = await _addressRepository.GetCountByLocation(location);
-            this.ClassActive = CurrentReading?.Count == CountData ? "active" : "disabled";
+            //this.CountData = await _addressRepository.GetCountByLocationWithReading(location);
+            this.ClassActive = (PreviousReading?.Count > 0 || CurrentReading?.Count > 0) &&
+                                (CurrentReading?.Count == PreviousReading?.Count) ? "active" : "disabled";
+            //(CurrentReading?.Count == PreviousReading?.Count)
 
             this.GenerateButton = await Button(location);
             this.GenerateSelect = await WaterReadingSelect();
@@ -149,9 +151,9 @@ namespace KVHAI.CustomClass
         }
         public async Task WaterReadingFunction(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
         {
-            var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
+            //var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
             //var currentReading = await _waterReadingRepository.GetCurrentReading(location, dateTo);
-            //var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
+            var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
             var currentReading = await _waterBillRepository.GetCurrentReading(location, dateTo, wbnumber);
 
             //this.WaterBillNumbers = await _waterReadingRepository.GetWaterBillNo();
@@ -185,7 +187,7 @@ namespace KVHAI.CustomClass
 
             this.MonthlyBillText = DateTime.Now.AddMonths(-1).ToString("MMM");
 
-            this.CountData = await _addressRepository.GetCountByLocation(location);
+            this.CountData = await _addressRepository.GetCountByLocationWithReading(location);
 
             this.ClassActive = CurrentReading?.Count == CountData ? "active" : "disabled";
 
@@ -289,7 +291,7 @@ namespace KVHAI.CustomClass
                 return new HtmlString("");
             }
 
-            string button = "<button id=\"btnGenerate \" class=\"mt-3 mb-3 p-2 btn btn-primary " + ClassActive + " \"> Generate Bill </button>";
+            string button = "<button id=\"btnGenerate\" class=\"mt-3 mb-3 p-2 btn btn-primary " + ClassActive + " \"> Generate Bill </button>";
 
             return new HtmlString(button);
         }
@@ -303,7 +305,7 @@ namespace KVHAI.CustomClass
             var _outStartDate = "";
             var _outEndDate = "";
             string select = "<select class=\"form-select w-75\" id=\"waterReadingSelect\" aria-label=\"Water Reading Number\">";
-            for (int i = 0; i < ReadingStartDateRange.Count; i++)
+            for (int i = ReadingStartDateRange.Count - 1; i >= 0; i--)
             {
 
                 if (DateTime.TryParse(ReadingStartDateRange[i], out DateTime startDate))
@@ -319,7 +321,7 @@ namespace KVHAI.CustomClass
                 this.WRCoverageDateFrom = _outStartDate;
                 this.WRCoverageDateTo = _outEndDate;
 
-                var selected = i == 0 ? "selected" : "";
+                var selected = i == ReadingStartDateRange.Count - 1 ? "selected" : "";
                 select += $"<option data-dateFrom=\" {ReadingStartDateRange[i]} \" data-dateTo=\" {ReadingEndDateRange[i]} \" value=\"{_outStartDate}-{_outEndDate}\" {selected}>{text}</option>";
             }
             select += "</select>";
