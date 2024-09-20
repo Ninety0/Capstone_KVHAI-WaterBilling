@@ -7,5 +7,8 @@
         public string Address_ID { get; set; } = string.Empty;
         public string Consumption { get; set; } = string.Empty;
         public string Date { get; set; } = string.Empty;
+
+        public string WaterBill_Number { get; set; } = string.Empty;
+
     }
 }

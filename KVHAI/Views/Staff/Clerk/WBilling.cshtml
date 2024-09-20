@@ -394,67 +394,6 @@
                         {
                             for (int i = 0; i < Model.ResidentAddress.Count; i++)
                             {
-                                // Define default values for cases where data might be missing
-                                string previousReading = "N/A";
-                                string currentReading = "N/A";
-                                string cubicMeter = "N/A";
-                                string dateTextList = "N/A";
-                                string billAmount = "N/A";
-                                string waterBillNumber = "N/A";
-                                string prevWaterBill = "";
-                                string prevWaterBillAmount = "N/A";
-                                string total = "N/A";
-                                string dueDate = "";
-
-                                if (i < Model.DueDate.Count)
-                                {
-                                    dueDate = Model.DueDate[i]??"";
-                                }
-
-                                if (i< Model.Total.Count)
-                                {
-                                    total = Model.Total[i].ToString("F2");
-                                }
-
-                                // Fetch the previous reading if available
-                                if (i < Model.PreviousReading.Count)
-                                {
-                                    previousReading = Model.PreviousReading[i]?.Consumption ?? "N/A";
-                                }
-
-                                // Fetch the current reading if available
-                                if (i < Model.CurrentReading.Count)
-                                {
-                                    currentReading = Model.CurrentReading[i]?.Consumption ?? "N/A";
-                                }
-
-                                // Fetch the WBDateTextList if available
-                                if (i < Model.WBDateTextList.Count)
-                                {
-                                    dateTextList = Model.WBDateTextList[i] ?? "N/A";
-                                }
-
-                                // Fetch the calculated cubic meter if available
-                                if (i < Model.CubicMeter.Count)
-                                {
-                                    cubicMeter = Model.CubicMeter[i].ToString();
-                                }
-
-                                // Fetch the calculated bill amount if available
-                                if (i < Model.BillAmount.Count)
-                                {
-                                    billAmount = Model.BillAmount[i].ToString("F2");
-                                }
-
-                                if (i < Model.PreviousBillAmount.Count)
-                                {
-                                    prevWaterBillAmount = Model.PreviousBillAmount[i].ToString("F2");
-                                }
-                                if (i < Model.UnpaidWaterBill.Count)
-                                {
-                                    prevWaterBill = Model.UnpaidWaterBill[i]?.PreviousWaterBill ?? "N/A";
-                                }
-
                             <div class="d-flex tables">
                                 <!--@i BILL-->
                                 <div class="form-check">
@@ -480,7 +419,7 @@
                                         </div>
                                         <div class="d-flex flex-column align-items-center">
                                             <span class="fw-bold">Date</span>
-                                            <span id="itemDate">@dateTextList</span>
+                                            <span id="itemDate">@Model.HTMLValueForWaterBilling[i].DateTextList</span>
                                         </div>
 
                                         @*<div>
@@ -497,11 +436,11 @@
                                                 <div class="row mt-2">
                                                     <div class="col">
                                                         <div class="fw-bold">Previous</div>
-                                                        <div>@previousReading</div>
+                                                        <div>@Model.HTMLValueForWaterBilling[i].PreviousReading</div>
                                                     </div>
                                                     <div class="col">
                                                         <div class="fw-bold">Present</div>
-                                                        <div>@currentReading</div>
+                                                        <div>@Model.HTMLValueForWaterBilling[i].CurrentReading</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -512,7 +451,7 @@
                                                 <div class="row mt-2">
                                                     <div class="col">
                                                         <div class="fw-bold">Volume</div>
-                                                        <div>@cubicMeter</div>
+                                                        <div>@Model.HTMLValueForWaterBilling[i].CubicMeter</div>
                                                     </div>
                                                     <div class="col">
                                                         <div class="fw-bold">Rate per cubic</div>
@@ -532,7 +471,7 @@
                                                         <div class="fw-bold text-uppercase ms-3">Date Issued:</div>
                                                     </div>
                                                     <div class="col ">
-                                                        <div class="text-uppercase text-center">@Model.WaterBill[i].Date_Issue_From - @Model.WaterBill[i].Date_Issue_To</div>
+                                                        <div class="text-uppercase text-center">@Model.HTMLValueForWaterBilling[i].DateIssued</div>
                                                     </div>
                                                 </div>
 
@@ -542,7 +481,7 @@
                                                         <div class="fw-bold text-uppercase ms-3">Due Date:</div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="text-uppercase text-center">@dueDate</div>
+                                                        <div class="text-uppercase text-center">@Model.HTMLValueForWaterBilling[i].DueDate</div>
                                                     </div>
                                                 </div>
 
@@ -552,7 +491,7 @@
                                                         <div class="fw-bold text-uppercase ms-3">Previous waterbill:</div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="text-uppercase text-center">@prevWaterBill</div>
+                                                        <div class="text-uppercase text-center">@Model.HTMLValueForWaterBilling[i].PrevWaterBill</div>
                                                     </div>
                                                 </div>
 
@@ -569,7 +508,7 @@
                                                         <div class="fw-bold text-uppercase ms-3">&#8369</div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="text-uppercase text-center">@billAmount</div>
+                                                        <div class="text-uppercase text-center">@Model.HTMLValueForWaterBilling[i].BillAmount</div>
                                                     </div>
                                                 </div>
 
@@ -579,7 +518,7 @@
                                                         <div class="fw-bold text-uppercase ms-3">&#8369</div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="text-uppercase text-center">@prevWaterBillAmount</div>
+                                                        <div class="text-uppercase text-center">@Model.HTMLValueForWaterBilling[i].PrevWaterBillAmount</div>
                                                     </div>
                                                 </div>
 
@@ -600,7 +539,7 @@
                                                         <div class="fw-bold text-uppercase ms-3">&#8369</div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="text-uppercase text-center">@total</div>
+                                                        <div class="text-uppercase text-center">@Model.HTMLValueForWaterBilling[i].Total</div>
                                                     </div>
                                                 </div>
 

@@ -61,6 +61,8 @@ namespace KVHAI.CustomClass
         public List<string>? DueDateFrom { get; set; }
         public List<string>? DueDateTo { get; set; }
         public List<string>? DueDate { get; set; } = new List<string>();
+        public List<string>? DateIssued { get; set; } = new List<string>();
+        public List<HTMLValueForWaterBilling>? HTMLValueForWaterBilling { get; set; } = new List<HTMLValueForWaterBilling>();
         //END WATER BILLING
 
 
@@ -151,8 +153,6 @@ namespace KVHAI.CustomClass
         }
         public async Task WaterReadingFunction(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
         {
-            //var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
-            //var currentReading = await _waterReadingRepository.GetCurrentReading(location, dateTo);
             var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
             var currentReading = await _waterBillRepository.GetCurrentReading(location, dateTo, wbnumber);
 
@@ -172,7 +172,7 @@ namespace KVHAI.CustomClass
             this.ResidentAddress = model.ResidentAddress;
             this.WaterBill = model.WBilling;
 
-            this.UnpaidWaterBill = await _waterBillRepository.GetUnpaidWaterBill(PreviousReading);//GET ARREARS
+            this.UnpaidWaterBill = await _waterBillRepository.GetUnpaidWaterBill(CurrentReading);//GET ARREARS
 
             // PARSING DATES WATER READING
             this.WRCurrentFirstDate = CurrentReading?.Count < 1 ? string.Empty : ParseStartDate(CurrentReading?[0].Date);
@@ -208,72 +208,8 @@ namespace KVHAI.CustomClass
 
             try
             {
-                for (int i = 0; i < ResidentAddress.Count; i++)
-                {
-                    var cubic = 0.0;
-                    var amount = 0.0;
-                    double previousConsumption = 0;
-                    double currentConsumption = 0;
-                    double previousWaterBillAmount = 0;
-                    double TotalAmount = 0.0;
-                    var dueDateFromDay = "";
-                    var dueDateToDay = "";
-                    var dueDateMonth = "";
-                    var _dueDate = "";
-
-                    if (i < WaterBill?.Count)
-                    {
-                        if (DateTime.TryParse(WaterBill[i].Due_Date_From, out DateTime dueFrom))
-                        {
-                            dueDateFromDay = dueFrom.ToString("dd");
-                        }
-
-                        if (DateTime.TryParse(WaterBill[i].Due_Date_To, out DateTime dueTo))
-                        {
-                            dueDateToDay = dueTo.ToString("dd");
-                            dueDateMonth = dueTo.ToString("MMM");
-                        }
-                        //DUE DATE
-                        _dueDate = $"{dueDateFromDay}-{dueDateMonth}-{dueDateToDay}";
-                        this.DueDate.Add(_dueDate);
-                    }
-
-
-                    // Check if the index is within range for PreviousReading
-                    if (i < UnpaidWaterBill.Count && !double.TryParse(UnpaidWaterBill[i].PreviousWaterBillAmount, out previousWaterBillAmount))
-                    {
-                        previousWaterBillAmount = 0; // Default value if parsing fails
-                    }
-
-                    // Check if the index is within range for PreviousReading
-                    if (i < PreviousReading.Count && !double.TryParse(PreviousReading[i].Consumption, out previousConsumption))
-                    {
-                        previousConsumption = 0; // Default value if parsing fails
-                    }
-
-                    // Check if the index is within range for CurrentReading
-                    if (i < CurrentReading.Count && !double.TryParse(CurrentReading[i].Consumption, out currentConsumption))
-                    {
-                        currentConsumption = 0; // Default value if parsing fails
-                    }
-
-                    // Calculate cubic difference
-                    cubic = (currentConsumption - previousConsumption) < 1 ? 0 : currentConsumption - previousConsumption;
-
-                    // Calculate bill amount
-                    amount = cubic * WaterRate;
-
-                    //Calculate Total Amount
-                    TotalAmount = amount + previousWaterBillAmount;
-
-
-
-                    // Add the computed values to the lists
-                    this.CubicMeter.Add(cubic);
-                    this.BillAmount.Add(amount);
-                    this.PreviousBillAmount.Add(previousWaterBillAmount);
-                    this.Total.Add(TotalAmount);
-                }
+                await BillCalculations();
+                await HTMLViewValues();
             }
             catch (Exception ex)
             {
@@ -282,6 +218,189 @@ namespace KVHAI.CustomClass
             }
 
 
+        }
+
+        private async Task BillCalculations()
+        {
+            for (int i = 0; i < ResidentAddress.Count; i++)
+            {
+                var cubic = 0.0;
+                var amount = 0.0;
+                double previousConsumption = 0;
+                double currentConsumption = 0;
+                double previousWaterBillAmount = 0;
+                double TotalAmount = 0.0;
+
+                // Check ARREARS
+                if (i < UnpaidWaterBill.Count && !double.TryParse(UnpaidWaterBill[i].PreviousWaterBillAmount, out previousWaterBillAmount))
+                {
+                    previousWaterBillAmount = 0; // Default value if parsing fails
+                }
+
+                // Check if the index is within range for PreviousReading
+                if (i < PreviousReading.Count && !double.TryParse(PreviousReading[i].Consumption, out previousConsumption))
+                {
+                    previousConsumption = 0; // Default value if parsing fails
+                }
+
+                // Check if the index is within range for CurrentReading
+                if (i < CurrentReading.Count && !double.TryParse(CurrentReading[i].Consumption, out currentConsumption))
+                {
+                    currentConsumption = 0; // Default value if parsing fails
+                }
+
+                // Calculate cubic difference
+                cubic = (currentConsumption - previousConsumption) < 1 ? 0 : currentConsumption - previousConsumption;
+
+                // Calculate bill amount
+                amount = cubic * WaterRate;
+
+                //Calculate Total Amount
+                TotalAmount = amount + previousWaterBillAmount;
+
+
+
+                // Add the computed values to the lists
+                this.CubicMeter.Add(cubic);
+                this.BillAmount.Add(amount);
+                this.PreviousBillAmount.Add(previousWaterBillAmount);
+                this.Total.Add(TotalAmount);
+            }
+        }
+
+        private async Task HTMLViewValues()
+        {
+            // Define default values for cases where data might be missing
+            for (int i = 0; i < ResidentAddress.Count; i++)
+            {
+                string previousReading = "N/A";
+                string currentReading = "N/A";
+                string cubicMeter = "N/A";
+                string dateTextList = "N/A";
+                string billAmount = "N/A";
+                string waterBillNumber = "N/A";
+                string prevWaterBill = "";
+                string prevWaterBillAmount = "N/A";
+                string total = "N/A";
+                string dueDate = "";
+                string dateIssued = "";
+
+                var _issuedDate = "";
+                var dateIssueFrom = "";
+                var dateIssueTo = "";
+                var dateIssuedMonth = "";
+
+                var _dueDate = "";
+                var dueDateFromDay = "";
+                var dueDateToDay = "";
+                var dueDateMonth = "";
+
+                //DUE DATE
+                if (i < WaterBill?.Count)
+                {
+                    if (DateTime.TryParse(WaterBill[i].Due_Date_From, out DateTime dueFrom))
+                    {
+                        dueDateFromDay = dueFrom.ToString("dd");
+                    }
+
+                    if (DateTime.TryParse(WaterBill[i].Due_Date_To, out DateTime dueTo))
+                    {
+                        dueDateToDay = dueTo.ToString("dd");
+                        dueDateMonth = dueTo.ToString("MMM");
+                    }
+                    //DUE DATE
+                    _dueDate = $"{dueDateFromDay}-{dueDateMonth}-{dueDateToDay}";
+                    this.DueDate.Add(_dueDate);
+                }
+
+                //DATE ISSUE
+                if (i < WaterBill?.Count)
+                {
+                    if (DateTime.TryParse(WaterBill[i].Date_Issue_From, out DateTime issuedFrom))
+                    {
+                        dateIssueFrom = issuedFrom.ToString("dd");
+                    }
+
+                    if (DateTime.TryParse(WaterBill[i].Date_Issue_To, out DateTime issuedTo))
+                    {
+                        dateIssueTo = issuedTo.ToString("dd");
+                        dateIssuedMonth = issuedTo.ToString("MMM");
+                    }
+                    //DUE DATE
+                    _issuedDate = $"{dateIssueFrom}-{dateIssuedMonth}-{dateIssueTo}";
+                    this.DateIssued.Add(_issuedDate);
+                }
+
+                if (i < DueDate.Count)
+                {
+                    dueDate = DueDate[i] ?? "";
+                }
+
+                if (i < DateIssued.Count)
+                {
+                    dateIssued = DateIssued[i] ?? "";
+                }
+
+                if (i < Total.Count)
+                {
+                    total = Total[i].ToString("F2");
+                }
+
+                // Fetch the previous reading if available
+                if (i < PreviousReading.Count)
+                {
+                    previousReading = PreviousReading[i]?.Consumption ?? "N/A";
+                }
+
+                // Fetch the current reading if available
+                if (i < CurrentReading.Count)
+                {
+                    currentReading = CurrentReading[i]?.Consumption ?? "N/A";
+                }
+
+                // Fetch the WBDateTextList if available
+                if (i < WBDateTextList.Count)
+                {
+                    dateTextList = WBDateTextList[i] ?? "N/A";
+                }
+
+                // Fetch the calculated cubic meter if available
+                if (i < CubicMeter.Count)
+                {
+                    cubicMeter = CubicMeter[i].ToString();
+                }
+
+                // Fetch the calculated bill amount if available
+                if (i < BillAmount.Count)
+                {
+                    billAmount = BillAmount[i].ToString("F2");
+                }
+
+                if (i < PreviousBillAmount.Count)
+                {
+                    prevWaterBillAmount = PreviousBillAmount[i].ToString("F2");
+                }
+                if (i < UnpaidWaterBill.Count)
+                {
+                    prevWaterBill = UnpaidWaterBill[i]?.PreviousWaterBill ?? "N/A";
+                }
+
+                HTMLValueForWaterBilling.Add(
+                    new HTMLValueForWaterBilling
+                    {
+                        PreviousReading = previousReading,
+                        CurrentReading = currentReading,
+                        CubicMeter = cubicMeter,
+                        DateTextList = dateTextList,
+                        BillAmount = billAmount,
+                        WaterBillNumber = waterBillNumber,
+                        PrevWaterBill = prevWaterBill,
+                        PrevWaterBillAmount = prevWaterBillAmount,
+                        Total = total,
+                        DueDate = dueDate,
+                        DateIssued = dateIssued
+                    });
+            }
         }
 
         private async Task<HtmlString> Button(string location)
