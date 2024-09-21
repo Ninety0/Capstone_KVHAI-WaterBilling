@@ -306,7 +306,7 @@ namespace KVHAI.Repository
                         JOIN address_tb a ON r.res_id = a.res_id
                         JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
                         JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
-                        WHERE wr.date_reading LIKE @date AND waterbill_id = @id AND wb.waterbill_no = @num
+                        WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND waterbill_id = @id AND wb.waterbill_no = @num
                         ORDER BY CAST(waterbill_id as INT)
                         ", connection))
                     {
@@ -375,7 +375,7 @@ namespace KVHAI.Repository
                         JOIN address_tb a ON r.res_id = a.res_id
                         JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
                         JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
-                        WHERE wr.date_reading LIKE @date AND waterbill_id = @id AND wb.waterbill_no = @num
+                        WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND waterbill_id = @id AND wb.waterbill_no = @num
                         ORDER BY CAST(waterbill_id as INT)
                         ", connection))
                         {

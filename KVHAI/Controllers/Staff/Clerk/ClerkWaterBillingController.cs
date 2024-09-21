@@ -22,7 +22,7 @@ namespace KVHAI.Controllers.Staff.Clerk
         public async Task<IActionResult> Index()
         {
             //return View("ClerkWaterBilling");
-            await _waterBilling.WaterReadingFunction("4");
+            await _waterBilling.WaterBilling("4");
 
 
 
@@ -165,7 +165,7 @@ namespace KVHAI.Controllers.Staff.Clerk
         {
             try
             {
-                await _waterBilling.WaterReadingFunction(location: location, wbnumber: waterBill);
+                await _waterBilling.WaterBilling(location: location, wbnumber: waterBill);
                 string jsonData = JsonConvert.SerializeObject(View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling).ToString());
                 //return Ok(jsonData);
                 //return Ok($"WaterBillingLocation called with location: {location}, waterBill: {waterBill}");
@@ -183,7 +183,7 @@ namespace KVHAI.Controllers.Staff.Clerk
             try
             {
 
-                await _waterBilling.WaterReadingFunction("1");
+                await _waterBilling.WaterBilling("1");
                 return View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling);
             }
             catch (Exception ex)

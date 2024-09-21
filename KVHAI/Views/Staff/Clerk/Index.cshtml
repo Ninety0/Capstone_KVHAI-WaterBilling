@@ -140,12 +140,15 @@
                 var select = $('#waterReadingSelect').find('option:selected');
                 var dateFrom = select.data('datefrom').trim();
                 var dateTo = select.data('dateto').trim();
+                var _location = $('#location').val();
 
                 var data = {
                     fromDate : dateFrom,
-                    toDate : dateTo
+                    toDate: dateTo,
+                    location : _location
                 };
 
+                console.log(data);
                 $.ajax({
                     type: 'GET',
                     url: '/Clerk/WaterReadingByMonth',
@@ -288,10 +291,10 @@
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
-                                    <td class="previous-reading text-center border border-secondary-subtle">@previousReading</td>
-                                    <td class="current-reading text-center border border-secondary-subtle">@currentReading</td>
-                                    <td class="text-center border border-secondary-subtle">@cubicMeter</td>
-                                    <td class="border border-secondary-subtle" data-bill="@billAmount">@billAmount</td>
+                                    <td class="previous-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].PreviousReading</td>
+                                    <td class="current-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].CurrentReading</td>
+                                    <td class="text-center border border-secondary-subtle">@Model.WaterBillingValues[i].CubicMeter</td>
+                                    <td class="border border-secondary-subtle" data-bill="">@Model.WaterBillingValues[i].Total</td>
                                     @*<td>@arrears</td>*@
                                 </tr>
                             }

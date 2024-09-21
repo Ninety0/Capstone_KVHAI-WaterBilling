@@ -65,7 +65,7 @@ namespace KVHAI.Controllers.Staff.Clerk
         }
 
         [HttpGet]
-        public async Task<IActionResult> WaterReadingByMonth(string fromDate, string toDate)
+        public async Task<IActionResult> WaterReadingByMonth(string fromDate, string toDate, string location = "")
         {
             try
             {
@@ -77,7 +77,7 @@ namespace KVHAI.Controllers.Staff.Clerk
                 {
                     toDate = _to.ToString("yyyy-MM");
                 }
-                await _waterBilling.WaterReading("4", fromDate, toDate);
+                await _waterBilling.WaterReading(location, fromDate, toDate);
 
                 return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
             }

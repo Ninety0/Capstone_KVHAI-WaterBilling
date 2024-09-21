@@ -62,7 +62,7 @@ namespace KVHAI.CustomClass
         public List<string>? DueDateTo { get; set; }
         public List<string>? DueDate { get; set; } = new List<string>();
         public List<string>? DateIssued { get; set; } = new List<string>();
-        public List<HTMLValueForWaterBilling>? HTMLValueForWaterBilling { get; set; } = new List<HTMLValueForWaterBilling>();
+        public List<HTMLValueForWaterBilling>? WaterBillingValues { get; set; } = new List<HTMLValueForWaterBilling>();
         //END WATER BILLING
 
 
@@ -90,19 +90,14 @@ namespace KVHAI.CustomClass
             this.MonthlyBillText = DateTime.Now.AddMonths(-1).ToString("MMM");
 
 
-            this.PreviousReading = prevReading.PreviousReading;
-            this.CurrentReading = currentReading.CurrentReading;
-            this.ResidentAddress = prevReading.ResidentAddress;
+            //this.PreviousReading = prevReading.PreviousReading;
+            //this.CurrentReading = currentReading.CurrentReading;
+            //this.ResidentAddress = prevReading.ResidentAddress;
+
+            await MapToModel(prevReading, currentReading);
 
             // PARSING DATES WATER READING
-            this.WRCurrentFirstDate = CurrentReading?.Count < 1 ? string.Empty : ParseStartDate(CurrentReading?[0].Date);
-            this.WRCurrentLastDate = CurrentReading?.Count < 1 ? string.Empty : ParseLastDate(CurrentReading?[GetLastIndex(CurrentReading)].Date);
-            this.WRCurrentMonth = CurrentReading?.Count < 1 ? string.Empty : "-" + ParseMonth(CurrentReading?[0].Date) + "-";
-
-            this.WRPrevFirstDate = PreviousReading?.Count < 1 ? string.Empty : ParseStartDate(PreviousReading?[0].Date);//PreviousReading?[0].Date.ToString() ?? string.Empty;
-            this.WRPrevLastDate = PreviousReading?.Count < 1 ? string.Empty : ParseLastDate(PreviousReading?[GetLastIndex(PreviousReading)].Date);
-            this.WRPrevMonth = PreviousReading?.Count < 1 ? string.Empty : "-" + ParseMonth(PreviousReading?[0].Date) + "-";
-            //END PARSING
+            await ParseWaterReadingDates();
 
             //this.CountData = await _addressRepository.GetCountByLocationWithReading(location);
             this.ClassActive = (PreviousReading?.Count > 0 || CurrentReading?.Count > 0) &&
@@ -114,35 +109,8 @@ namespace KVHAI.CustomClass
 
             try
             {
-                for (int i = 0; i < ResidentAddress.Count; i++)
-                {
-                    var cubic = 0.0;
-                    var amount = 0.0;
-                    double previousConsumption = 0;
-                    double currentConsumption = 0;
-
-                    // Check if the index is within range for PreviousReading
-                    if (i < PreviousReading.Count && !double.TryParse(PreviousReading[i].Consumption, out previousConsumption))
-                    {
-                        previousConsumption = 0; // Default value if parsing fails
-                    }
-
-                    // Check if the index is within range for CurrentReading
-                    if (i < CurrentReading.Count && !double.TryParse(CurrentReading[i].Consumption, out currentConsumption))
-                    {
-                        currentConsumption = 0; // Default value if parsing fails
-                    }
-
-                    // Calculate cubic difference
-                    cubic = (currentConsumption - previousConsumption) < 1 ? 0 : currentConsumption - previousConsumption;
-
-                    // Calculate bill amount
-                    amount = cubic * WaterRate;
-
-                    // Add the computed values to the lists
-                    this.CubicMeter.Add(cubic);
-                    this.BillAmount.Add(amount);
-                }
+                await BillCalculations();
+                await ReturnWaterBillingValues();
             }
             catch (Exception ex)
             {
@@ -151,7 +119,7 @@ namespace KVHAI.CustomClass
             }
 
         }
-        public async Task WaterReadingFunction(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
+        public async Task WaterBilling(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
         {
             var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
             var currentReading = await _waterBillRepository.GetCurrentReading(location, dateTo, wbnumber);
@@ -160,30 +128,12 @@ namespace KVHAI.CustomClass
             (this.ReadingStartDateRange, this.ReadingEndDateRange) = await _waterReadingRepository.WaterReadingList();
             this.WaterBillNumberList = await _waterBillRepository.WaterBillNumberList();
 
-            var model = new ModelBinding
-            {
-                PreviousReading = prevReading.PreviousReading,
-                CurrentReading = currentReading.CurrentReading,
-                ResidentAddress = prevReading.ResidentAddress,
-                WBilling = currentReading.WBilling
-            };
-            this.PreviousReading = model.PreviousReading;
-            this.CurrentReading = model.CurrentReading;
-            this.ResidentAddress = model.ResidentAddress;
-            this.WaterBill = model.WBilling;
-
-            this.UnpaidWaterBill = await _waterBillRepository.GetUnpaidWaterBill(CurrentReading);//GET ARREARS
+            await MapToModel(prevReading, currentReading);
 
             // PARSING DATES WATER READING
-            this.WRCurrentFirstDate = CurrentReading?.Count < 1 ? string.Empty : ParseStartDate(CurrentReading?[0].Date);
-            this.WRCurrentLastDate = CurrentReading?.Count < 1 ? string.Empty : ParseLastDate(CurrentReading?[GetLastIndex(CurrentReading)].Date);
-            this.WRCurrentMonth = CurrentReading?.Count < 1 ? string.Empty : "-" + ParseMonth(CurrentReading?[0].Date) + "-";
+            await ParseWaterReadingDates();
 
-            this.WRPrevFirstDate = PreviousReading?.Count < 1 ? string.Empty : ParseStartDate(PreviousReading?[0].Date);//PreviousReading?[0].Date.ToString() ?? string.Empty;
-            this.WRPrevLastDate = PreviousReading?.Count < 1 ? string.Empty : ParseLastDate(PreviousReading?[GetLastIndex(PreviousReading)].Date);
-            this.WRPrevMonth = PreviousReading?.Count < 1 ? string.Empty : "-" + ParseMonth(PreviousReading?[0].Date) + "-";
-            //END PARSING
-
+            this.UnpaidWaterBill = await _waterBillRepository.GetUnpaidWaterBill(CurrentReading);//GET ARREARS
 
             this.MonthlyBillText = DateTime.Now.AddMonths(-1).ToString("MMM");
 
@@ -196,7 +146,7 @@ namespace KVHAI.CustomClass
             this.Location = location;
 
 
-            foreach (var item in model.PreviousReading)
+            foreach (var item in prevReading.PreviousReading)
             {
                 var date = "";
                 if (DateTime.TryParse(item.Date, out DateTime result))
@@ -209,7 +159,7 @@ namespace KVHAI.CustomClass
             try
             {
                 await BillCalculations();
-                await HTMLViewValues();
+                await ReturnWaterBillingValues();
             }
             catch (Exception ex)
             {
@@ -218,6 +168,33 @@ namespace KVHAI.CustomClass
             }
 
 
+        }
+
+        private async Task MapToModel(ModelBinding prevReading, ModelBinding currentReading)
+        {
+            var model = new ModelBinding
+            {
+                PreviousReading = prevReading.PreviousReading,
+                CurrentReading = currentReading.CurrentReading,
+                ResidentAddress = prevReading.ResidentAddress,
+                WBilling = currentReading.WBilling
+            };
+
+            this.PreviousReading = model.PreviousReading;
+            this.CurrentReading = model.CurrentReading;
+            this.ResidentAddress = model.ResidentAddress;
+            this.WaterBill = model.WBilling;
+        }
+
+        private async Task ParseWaterReadingDates()
+        {
+            this.WRCurrentFirstDate = CurrentReading?.Count < 1 ? string.Empty : ParseStartDate(CurrentReading?[0].Date);
+            this.WRCurrentLastDate = CurrentReading?.Count < 1 ? string.Empty : ParseLastDate(CurrentReading?[GetLastIndex(CurrentReading)].Date);
+            this.WRCurrentMonth = CurrentReading?.Count < 1 ? string.Empty : "-" + ParseMonth(CurrentReading?[0].Date) + "-";
+
+            this.WRPrevFirstDate = PreviousReading?.Count < 1 ? string.Empty : ParseStartDate(PreviousReading?[0].Date);//PreviousReading?[0].Date.ToString() ?? string.Empty;
+            this.WRPrevLastDate = PreviousReading?.Count < 1 ? string.Empty : ParseLastDate(PreviousReading?[GetLastIndex(PreviousReading)].Date);
+            this.WRPrevMonth = PreviousReading?.Count < 1 ? string.Empty : "-" + ParseMonth(PreviousReading?[0].Date) + "-";
         }
 
         private async Task BillCalculations()
@@ -268,11 +245,12 @@ namespace KVHAI.CustomClass
             }
         }
 
-        private async Task HTMLViewValues()
+        private async Task ReturnWaterBillingValues()
         {
             // Define default values for cases where data might be missing
             for (int i = 0; i < ResidentAddress.Count; i++)
             {
+                var listHTML = new List<HTMLValueForWaterBilling>();
                 string previousReading = "N/A";
                 string currentReading = "N/A";
                 string cubicMeter = "N/A";
@@ -385,7 +363,7 @@ namespace KVHAI.CustomClass
                     prevWaterBill = UnpaidWaterBill[i]?.PreviousWaterBill ?? "N/A";
                 }
 
-                HTMLValueForWaterBilling.Add(
+                WaterBillingValues.Add(
                     new HTMLValueForWaterBilling
                     {
                         PreviousReading = previousReading,
@@ -400,6 +378,7 @@ namespace KVHAI.CustomClass
                         DueDate = dueDate,
                         DateIssued = dateIssued
                     });
+
             }
         }
 
@@ -540,7 +519,7 @@ namespace KVHAI.CustomClass
                 {
                     var prevReading = await _waterBillRepository.GetPreviousReadingReport(report);
                     var currentReading = await _waterBillRepository.GetCurrentReadingReport(report);
-                    this.UnpaidWaterBill = await _waterBillRepository.GetUnpaidWaterBill(prevReading.PreviousReading);
+                    this.UnpaidWaterBill = await _waterBillRepository.GetUnpaidWaterBill(currentReading.CurrentReading);
 
                     var model = new ModelBinding
                     {
@@ -550,86 +529,33 @@ namespace KVHAI.CustomClass
                         WBilling = currentReading.WBilling
                     };
 
-                    var cubic = 0.0;
-                    var amount = 0.0;
-                    double previousConsumption = 0;
-                    double currentConsumption = 0;
-                    double previousWaterBillAmount = 0;
-                    double TotalAmount = 0.0;
-                    var date = "";
-                    var dueDateFrom = currentReading.WBilling.FirstOrDefault()?.Due_Date_From;
-                    var dueDateTo = currentReading.WBilling.FirstOrDefault()?.Due_Date_To;
-                    var dueDateFromDay = "";
-                    var dueDateToDay = "";
-                    var dueDateMonth = "";
-                    var DueDate = "";
+                    this.PreviousReading = model.PreviousReading;
+                    this.CurrentReading = model.CurrentReading;
+                    this.ResidentAddress = model.ResidentAddress;
+                    this.WaterBill = model.WBilling;
 
-                    if (DateTime.TryParse(dueDateFrom, out DateTime dueFrom))
-                    {
-                        dueDateFromDay = dueFrom.ToString("dd");
-                    }
-
-                    if (DateTime.TryParse(dueDateTo, out DateTime dueTo))
-                    {
-                        dueDateToDay = dueTo.ToString("dd");
-                        dueDateMonth = dueTo.ToString("MMM");
-                    }
-
-                    if (DateTime.TryParse(prevReading.PreviousReading.FirstOrDefault()?.Date, out DateTime result))
-                    {
-                        date = result.ToString("MMM yyyy");
-                    }
-
-                    // Check if the index is within range for PreviousReading
-                    if (!double.TryParse(UnpaidWaterBill.FirstOrDefault()?.PreviousWaterBillAmount, out previousWaterBillAmount))
-                    {
-                        previousWaterBillAmount = 0; // Default value if parsing fails
-                    }
-
-                    // Check if the index is within range for PreviousReading
-                    if (!double.TryParse(prevReading.PreviousReading?.FirstOrDefault()?.Consumption, out previousConsumption))
-                    {
-
-                        previousConsumption = 0; // Default value if parsing fails
-                    }
-
-                    // Check if the index is within range for CurrentReading
-                    if (!double.TryParse(currentReading.CurrentReading?.FirstOrDefault()?.Consumption, out currentConsumption))
-                    {
-                        currentConsumption = 0; // Default value if parsing fails
-                    }
-
-                    // Calculate cubic difference
-                    cubic = (currentConsumption - previousConsumption) < 1 ? 0 : currentConsumption - previousConsumption;
-
-                    // Calculate bill amount
-                    amount = cubic * WaterRate;
-
-                    //Calculate Total Amount
-                    TotalAmount = amount + previousWaterBillAmount;
-
-                    //DUE DATE
-                    DueDate = $"{dueDateFromDay}-{dueDateMonth}-{dueDateToDay}";
+                    await BillCalculations();
+                    await ReturnWaterBillingValues();
 
 
                     // Sample row creation (replace with your actual data processing logic)
                     DataRow row = dt.NewRow();
-                    row["WaterBill_ID"] = currentReading.WBilling?.FirstOrDefault()?.WaterBill_ID ?? ""; // Replace with actual data
+                    row["WaterBill_ID"] = currentReading.WBilling?.FirstOrDefault()?.WaterBill_ID ?? "";
                     row["WaterBill_No"] = report.WaterBill_Number;
-                    row["Block"] = prevReading.ResidentAddress?.FirstOrDefault()?.Block ?? ""; // Replace with actual data
-                    row["Lot"] = prevReading.ResidentAddress?.FirstOrDefault()?.Lot ?? ""; // Replace with actual data
-                    row["Name"] = prevReading.ResidentAddress?.FirstOrDefault()?.Name ?? ""; // Replace with actual data
-                    row["Previous"] = prevReading.PreviousReading?.FirstOrDefault()?.Consumption ?? "";
-                    row["Current"] = currentReading.CurrentReading?.FirstOrDefault()?.Consumption ?? "";
-                    row["DateBillMonth"] = date ?? ""; // Replace with actual data
-                    row["Consumption"] = cubic; // Replace with actual data
+                    row["Block"] = prevReading.ResidentAddress?.FirstOrDefault()?.Block ?? "";
+                    row["Lot"] = prevReading.ResidentAddress?.FirstOrDefault()?.Lot ?? "";
+                    row["Name"] = prevReading.ResidentAddress?.FirstOrDefault()?.Name ?? "";
+                    row["Previous"] = WaterBillingValues?.FirstOrDefault()?.PreviousReading ?? "";
+                    row["Current"] = WaterBillingValues?.FirstOrDefault()?.CurrentReading ?? "";
+                    row["DateBillMonth"] = report.DateBillMonth ?? "";
+                    row["Consumption"] = WaterBillingValues?.FirstOrDefault()?.CubicMeter;
                     row["Rate"] = this.WaterRate; // Replace with actual data
-                    row["Date_Issue"] = "Sample Date Issue"; // Replace with actual data
-                    row["Due_Date"] = DueDate ?? ""; // DUE DATE
-                    row["Previous_WaterBill"] = UnpaidWaterBill?.FirstOrDefault()?.PreviousWaterBill ?? "N/A"; // Replace with actual data
-                    row["Amount_Due_Now"] = amount.ToString("F2"); // Replace with actual data
-                    row["Amount_Due_Previous"] = previousWaterBillAmount.ToString("F2") ?? "0.00"; // Replace with actual data
-                    row["Total"] = TotalAmount; // Replace with actual data
+                    row["Date_Issue"] = WaterBillingValues?.FirstOrDefault()?.DateIssued;
+                    row["Due_Date"] = WaterBillingValues?.FirstOrDefault()?.DueDate ?? ""; // DUE DATE
+                    row["Previous_WaterBill"] = WaterBillingValues?.FirstOrDefault()?.PrevWaterBill ?? "N/A"; // Replace with actual data
+                    row["Amount_Due_Now"] = WaterBillingValues?.FirstOrDefault()?.BillAmount; // Replace with actual data
+                    row["Amount_Due_Previous"] = WaterBillingValues?.FirstOrDefault()?.PrevWaterBillAmount ?? ""; // Replace with actual data
+                    row["Total"] = WaterBillingValues?.FirstOrDefault()?.Total; // Replace with actual data
 
                     dt.Rows.Add(row);
                 }
@@ -640,6 +566,114 @@ namespace KVHAI.CustomClass
             {
                 // Handle exception (logging, rethrow, etc.)
                 throw new Exception($"Error generating report data: {ex.Message}");
+            }
+        }
+
+        public async Task Trash(List<ReportWaterBilling> reportWaterBilling)
+        {
+            foreach (var report in reportWaterBilling)
+            {
+                var prevReading = await _waterBillRepository.GetPreviousReadingReport(report);
+                var currentReading = await _waterBillRepository.GetCurrentReadingReport(report);
+                this.UnpaidWaterBill = await _waterBillRepository.GetUnpaidWaterBill(prevReading.PreviousReading);
+
+                var model = new ModelBinding
+                {
+                    PreviousReading = prevReading.PreviousReading,
+                    CurrentReading = currentReading.CurrentReading,
+                    ResidentAddress = prevReading.ResidentAddress,
+                    WBilling = currentReading.WBilling
+                };
+
+                this.PreviousReading = model.PreviousReading;
+                this.CurrentReading = model.CurrentReading;
+                this.ResidentAddress = model.ResidentAddress;
+                this.WaterBill = model.WBilling;
+
+                ReturnWaterBillingValues();
+
+                var cubic = 0.0;
+                var amount = 0.0;
+                double previousConsumption = 0;
+                double currentConsumption = 0;
+                double previousWaterBillAmount = 0;
+                double TotalAmount = 0.0;
+                var date = "";
+                var dueDateFrom = currentReading.WBilling.FirstOrDefault()?.Due_Date_From;
+                var dueDateTo = currentReading.WBilling.FirstOrDefault()?.Due_Date_To;
+                var dueDateFromDay = "";
+                var dueDateToDay = "";
+                var dueDateMonth = "";
+                var DueDate = "";
+
+                if (DateTime.TryParse(dueDateFrom, out DateTime dueFrom))
+                {
+                    dueDateFromDay = dueFrom.ToString("dd");
+                }
+
+                if (DateTime.TryParse(dueDateTo, out DateTime dueTo))
+                {
+                    dueDateToDay = dueTo.ToString("dd");
+                    dueDateMonth = dueTo.ToString("MMM");
+                }
+
+                if (DateTime.TryParse(prevReading.PreviousReading.FirstOrDefault()?.Date, out DateTime result))
+                {
+                    date = result.ToString("MMM yyyy");
+                }
+
+                // Check if the index is within range for PreviousReading
+                if (!double.TryParse(UnpaidWaterBill.FirstOrDefault()?.PreviousWaterBillAmount, out previousWaterBillAmount))
+                {
+                    previousWaterBillAmount = 0; // Default value if parsing fails
+                }
+
+                // Check if the index is within range for PreviousReading
+                if (!double.TryParse(prevReading.PreviousReading?.FirstOrDefault()?.Consumption, out previousConsumption))
+                {
+
+                    previousConsumption = 0; // Default value if parsing fails
+                }
+
+                // Check if the index is within range for CurrentReading
+                if (!double.TryParse(currentReading.CurrentReading?.FirstOrDefault()?.Consumption, out currentConsumption))
+                {
+                    currentConsumption = 0; // Default value if parsing fails
+                }
+
+                // Calculate cubic difference
+                cubic = (currentConsumption - previousConsumption) < 1 ? 0 : currentConsumption - previousConsumption;
+
+                // Calculate bill amount
+                amount = cubic * WaterRate;
+
+                //Calculate Total Amount
+                TotalAmount = amount + previousWaterBillAmount;
+
+                //DUE DATE
+                DueDate = $"{dueDateFromDay}-{dueDateMonth}-{dueDateToDay}";
+
+
+                // Sample row creation (replace with your actual data processing logic)
+                //DataRow row = dt.NewRow();
+                //row["WaterBill_ID"] = currentReading.WBilling?.FirstOrDefault()?.WaterBill_ID ?? ""; // Replace with actual data
+                //row["WaterBill_No"] = report.WaterBill_Number;
+                //row["Block"] = prevReading.ResidentAddress?.FirstOrDefault()?.Block ?? ""; // Replace with actual data
+                //row["Lot"] = prevReading.ResidentAddress?.FirstOrDefault()?.Lot ?? ""; // Replace with actual data
+                //row["Name"] = prevReading.ResidentAddress?.FirstOrDefault()?.Name ?? ""; // Replace with actual data
+                //row["Previous"] = prevReading.PreviousReading?.FirstOrDefault()?.Consumption ?? "";
+                //row["Current"] = currentReading.CurrentReading?.FirstOrDefault()?.Consumption ?? "";
+                //row["DateBillMonth"] = date ?? ""; // Replace with actual data
+                //row["Consumption"] = cubic; // Replace with actual data
+                //row["Rate"] = this.WaterRate; // Replace with actual data
+                //row["Date_Issue"] = "Sample Date Issue"; // Replace with actual data
+                //row["Due_Date"] = DueDate ?? ""; // DUE DATE
+                //row["Previous_WaterBill"] = UnpaidWaterBill?.FirstOrDefault()?.PreviousWaterBill ?? "N/A"; // Replace with actual data
+                //row["Amount_Due_Now"] = amount.ToString("F2"); // Replace with actual data
+                //row["Amount_Due_Previous"] = previousWaterBillAmount.ToString("F2") ?? "0.00"; // Replace with actual data
+                //row["Total"] = TotalAmount; // Replace with actual data
+
+                //dt.Rows.Add(row);
             }
         }
 
