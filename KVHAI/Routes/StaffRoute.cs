@@ -52,6 +52,12 @@ namespace KVHAI.Routes
                 pattern: "kvhai/staff/waterwork/",
                 defaults: new { controller = "WaterWorks", action = "Index" }
             );
+
+            endpoint.MapControllerRoute(
+                name: "PostAnnouncement",
+                pattern: "kvhai/staff/announcment/",
+                defaults: new { controller = "PostAnnouncement", action = "Index" }
+            );
         }
     }
 }

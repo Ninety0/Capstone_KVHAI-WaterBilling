@@ -1,0 +1,133 @@
+﻿@{ 
+    ViewBag.Title = "Announcement";
+}
+
+@section head{ 
+    <link href="/lib/datetimepicker/jquery.datetimepicker.min.css" rel="stylesheet" />
+}
+@section scripts{ 
+    <script src="~/lib/datetimepicker/jquery.datetimepicker.full.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#Date_Expire').datetimepicker({
+                // options here
+            });
+
+            $(document).on('click', '#btn_save', function (e) {
+                e.preventDefault();
+
+                if (!validateCurrentTab()) {
+                    toastr.error('Please fill out all required fields correctly.');
+                    return;
+                }
+
+                var formData = new FormData($('#form_announce')[0]);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/PostAnnouncement/Save',
+                    contentType: false,
+                    processData: false,
+                    data: formData,
+                    success: function (response) {
+                        toastr.success(response);
+                        $('#form_announce')[0].reset();
+                            //setTimeout(function () {
+                            //    window.location.href = '/kvhai/resident/verifyaccount/';
+                            //}, 3000);
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            })
+
+            $(document).on('click', '#btn_cancel', function (e) {
+                e.preventDefault();
+                $('#form_announce')[0].reset();
+            })
+
+            $(document).on('input', '#Contents', function () {
+                var maxLength = $(this).attr('maxlength');
+                var currentLength = $(this).val().length;
+
+                $('#charCount').text(currentLength + '/' + maxLength + ' characters');
+            });
+
+            function validateCurrentTab() {
+                const form = $('#form_announce'); // jQuery
+                const inputs = form.find('input, textarea ');
+                let isValid = true;
+                
+                inputs.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    // Handle other inputs
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                });
+
+                return isValid;
+            }
+
+            $('input, textarea').on('input', function () {
+                $(this).removeClass('is-invalid');
+                $(this).closest('form').removeClass('was-validated');
+            });
+        });
+    </script>
+}
+<div class="content-container">
+    <div class="container pt-3 mb-3"><span>Post Announcement</span></div>
+    <hr />
+    <div class="container">
+        <form autocomplete="off" id="form_announce">
+            @Html.AntiForgeryToken()
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-check mb-3 ps-0">
+                        <label for="Title" class="form-label fw-bold fs-6">Title</label>
+                        <input type="text" maxlength="50" class="form-control" id="Title" name="Title" required>
+                        <div class="invalid-feedback">
+                            Required.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="form-check mb-3 ps-0">
+                        <label for="Date_Expire" class="form-label fw-bold fs-6">Date Expiry</label>
+                        <input type="datetime" class="form-control" name="Date_Expire" id="Date_Expire" required>
+                        <div class="invalid-feedback">
+                            Required.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check mb-3 ps-0">
+                        <label for="Contents" class="form-label fw-bold fs-6">Contents</label>
+                        <textarea class="form-control" id="Contents" name="Contents" rows="3" maxlength="1500" required></textarea>
+                        <div class="invalid-feedback">
+                            Required.
+                        </div>
+                        <small id="charCount" class="text-muted">0/1500 characters</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col mb-3">
+                    <button class="btn btn-danger" id="btn_cancel">Cancel</button>
+                    <button class="btn btn-primary" id="btn_save">Save</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
