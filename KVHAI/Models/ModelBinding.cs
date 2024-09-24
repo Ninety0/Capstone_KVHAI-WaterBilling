@@ -25,5 +25,7 @@ namespace KVHAI.Models
         public List<Streets>? ListStreet { get; set; }
         public List<Address>? ListAddress { get; set; }
 
+        public List<WaterBillWithAddress>? WaterBillAddress { get; set; }
+
     }
 }

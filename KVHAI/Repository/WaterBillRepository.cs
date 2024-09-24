@@ -617,6 +617,92 @@ namespace KVHAI.Repository
             return (dateFrom, dateTo);
         }
 
+        public async Task<ModelBinding> UnpaidResidentWaterBilling(string residentID)
+        {
+            try
+            {
+                var model = new ModelBinding();
+                var wbList = new List<WaterBilling>();
+                var addrList = new List<Address>();
+                var wbaList = new List<WaterBillWithAddress>();
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                    select * from water_billing_tb wb
+                    JOIN address_tb a ON wb.addr_id = a.addr_id
+                    JOIN resident_tb r ON a.res_id = r.res_id
+                    JOIN street_tb s ON a.st_id = s.st_id
+                    WHERE  status = 'unpaid' AND r.res_id  = @res_id AND is_verified = 'true'", connection))
+                    {
+                        command.Parameters.AddWithValue("@res_id", residentID);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            double totalAmount = 0.00;
+                            while (await reader.ReadAsync())
+                            {
+                                totalAmount += Convert.ToDouble(reader["amount"].ToString());
+                                var wba = new WaterBillWithAddress
+                                {
+                                    WaterBill_ID = reader["waterbill_id"].ToString() ?? string.Empty,
+                                    Amount = reader["amount"].ToString() ?? string.Empty,
+                                    Date_Issue_From = reader["date_issue_from"].ToString() ?? string.Empty,
+                                    Date_Issue_To = reader["date_issue_to"].ToString() ?? string.Empty,
+                                    Due_Date_From = reader["due_date_from"].ToString() ?? string.Empty,
+                                    Due_Date_To = reader["due_date_to"].ToString() ?? string.Empty,
+                                    Status = reader["status"].ToString() ?? string.Empty,
+                                    WaterBill_No = reader["waterbill_no"].ToString() ?? string.Empty,
+                                    Address_ID = reader["addr_id"].ToString() ?? string.Empty,
+                                    Block = reader["block"].ToString() ?? string.Empty,
+                                    Lot = reader["lot"].ToString() ?? string.Empty,
+                                    Street_ID = Convert.ToInt32(reader["st_id"].ToString() ?? string.Empty),
+                                    Street_Name = reader["st_name"].ToString() ?? string.Empty,
+
+                                    TotalAmount = totalAmount.ToString("F2")
+                                };
+
+                                wbaList.Add(wba);
+
+                                //wbList.Add(
+                                //    new WaterBilling
+                                //    {
+                                //        WaterBill_ID = reader["waterbill_id"].ToString() ?? string.Empty,
+                                //        Amount = reader["amount"].ToString() ?? string.Empty,
+                                //        Date_Issue_From = reader["date_issue_from"].ToString() ?? string.Empty,
+                                //        Date_Issue_To = reader["date_issue_to"].ToString() ?? string.Empty,
+                                //        Due_Date_From = reader["due_date_from"].ToString() ?? string.Empty,
+                                //        Due_Date_To = reader["due_date_to"].ToString() ?? string.Empty,
+                                //        Status = reader["status"].ToString() ?? string.Empty,
+                                //        WaterBill_No = reader["waterbill_no"].ToString() ?? string.Empty
+                                //    }
+                                //);
+
+                                //addrList.Add(
+                                //    new Address
+                                //    {
+                                //        Address_ID = Convert.ToInt32(reader["addr_id"].ToString() ?? string.Empty),
+                                //        Block = reader["block"].ToString() ?? string.Empty,
+                                //        Lot = reader["lot"].ToString() ?? string.Empty,
+                                //        Street_ID = Convert.ToInt32(reader["st_id"].ToString() ?? string.Empty),
+                                //        Street_Name = reader["st_name"].ToString() ?? string.Empty
+                                //    }
+                                //);
+                            }
+                        }
+                    }
+                }
+                model = new ModelBinding
+                {
+                    WaterBillAddress = wbaList
+                };
+
+                return model;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
     }
 }
 

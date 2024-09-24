@@ -65,6 +65,17 @@ namespace KVHAI.CustomClass
         public List<HTMLValueForWaterBilling>? WaterBillingValues { get; set; } = new List<HTMLValueForWaterBilling>();
         //END WATER BILLING
 
+        //FOR UNPAID WATERBILL OF RESIDENT
+        public List<string>? DueDateLong { get; set; } = new List<string>();
+        public List<string>? DueDateShort { get; set; } = new List<string>();
+        public List<string>? DueDateMonthShort { get; set; } = new List<string>();
+        public List<string>? UnpaidMonthsLong { get; set; } = new List<string>();
+        public List<string>? UnpaidMonthShort { get; set; } = new List<string>();
+        public string UnpaidAmount { get; set; } = string.Empty;
+        public List<Address>? UnpaidAddress { get; set; } = new List<Address>();
+
+        //END UNPAID
+
 
 
         //HTML ELEMENT
@@ -81,6 +92,7 @@ namespace KVHAI.CustomClass
             BillAmount = new List<Double>();
         }
 
+        //FOR WATER READING
         public async Task WaterReading(string location = "", string dateFrom = "", string dateTo = "")
         {
             var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
@@ -119,6 +131,8 @@ namespace KVHAI.CustomClass
             }
 
         }
+
+        //FOR WATER BILLING
         public async Task WaterBilling(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
         {
             var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
@@ -167,6 +181,59 @@ namespace KVHAI.CustomClass
                 throw;
             }
 
+
+        }
+
+
+        //FOR WATER BILLING BY RESIDENT
+        public async Task UnpaidWaterBillingByResident(string resident_ID)
+        {
+            var model = await _waterBillRepository.UnpaidResidentWaterBilling("1");
+
+            foreach (var item in model.WaterBillAddress)
+            {
+                string _dueDateLong = "";
+                string _dueDateShort = "";
+                string dueDateFromDay = "";
+                string dueDateToDay = "";
+                string dueDateMonthLong = "";
+                string dueDateMonthShort = "";
+
+                if (DateTime.TryParse(item.Due_Date_From, out DateTime dueFrom))
+                {
+                    dueDateFromDay = dueFrom.ToString("dd");
+                }
+
+                if (DateTime.TryParse(item.Due_Date_To, out DateTime dueTo))
+                {
+                    dueDateToDay = dueTo.ToString("dd");
+                    dueDateMonthLong = dueTo.ToString("MMMM");
+                    dueDateMonthShort = dueTo.ToString("MMM");
+                }
+
+                //DUE DATE
+                _dueDateLong = $"{dueDateFromDay}-{dueDateMonthLong}-{dueDateToDay}";
+                _dueDateShort = $"{dueDateFromDay}-{dueDateMonthShort}-{dueDateToDay}";
+
+                //Computation
+                //amount += Convert.ToDouble(UnpaidWaterBill.FirstOrDefault()?.Amount);
+
+                this.DueDateMonthShort.Add(dueDateMonthShort);
+                this.DueDateLong.Add(_dueDateLong);
+                this.DueDateShort.Add(_dueDateShort);
+                //this.UnpaidAmount = amount.ToString("F2");
+
+                var monthsLong = UnpaidMonthsLong.Any(month => month == _dueDateLong);
+
+                if (monthsLong)//if true
+                {
+                    continue;
+                }
+                else
+                {
+                    UnpaidMonthsLong.Add(_dueDateLong);
+                }
+            }
 
         }
 
