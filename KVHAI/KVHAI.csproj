@@ -33,9 +33,13 @@
     <Folder Include="Controllers\Staff\Cashier1\" />
     <Folder Include="Views\ClerkWaterBilling\" />
     <Folder Include="Views\Resident\LoggedIn\Renter\" />
+    <Folder Include="Views\Resident\Home\" />
     <Folder Include="Views\Staff\Cashier2\" />
     <Folder Include="Views\Staff\Cashier1\" />
+    <Folder Include="wwwroot\css\Admins\" />
+    <Folder Include="wwwroot\css\Resident\" />
     <Folder Include="wwwroot\GeneratedReports\" />
+    <Folder Include="wwwroot\announcement_img\" />
     <Folder Include="wwwroot\proof_img\" />
   </ItemGroup>
 

@@ -13,17 +13,21 @@ namespace KVHAI.Controllers.Homeowner
         private readonly StreetRepository _streetRepository;
         private readonly AddressRepository _addressRepository;
         private readonly IWebHostEnvironment _environment;
+        private readonly AnnouncementRepository _announcementRepository;
 
-        public LoggedInController(StreetRepository streetRepository, AddressRepository addressRepository, IWebHostEnvironment environment)
+        public LoggedInController(StreetRepository streetRepository, AddressRepository addressRepository, IWebHostEnvironment environment, AnnouncementRepository announcementRepository)
         {
             _streetRepository = streetRepository;
             _addressRepository = addressRepository;
             _environment = environment;
+            _announcementRepository = announcementRepository;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var model = await _announcementRepository.ShowAnnouncement();
+
+            return View("~/Views/Resident/LoggedIn/Home.cshtml", model);
         }
 
         [Authorize]

@@ -1,21 +1,26 @@
-﻿
-<html lang="en">
+﻿<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>@ViewBag.Title</title>
-    <link href="/css/header-font.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/css/dashboardLayout.css" />
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+
+    <!-- OTHER LIBRARY -->
     <link href="/css/toastr.min.css" rel="stylesheet" />
     <link href="/lib/editable-select/jquery-editable-select.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <link href="/lib/font-awesome/all.min.css" rel="stylesheet" />
     <link href="/lib/font-awesome/fontawesome.min.css" rel="stylesheet" />
-
-    @*<link href="~/css/main-site.min.css" rel="stylesheet" />*@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/toastr.min.js" asp-append-version="true" defer></script>
+
+    <!-- ORIGINAL -->
+    <link href="/css/header-font.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/dashboardLayout.css" />
+    <link rel="stylesheet" href="/css/resident_nav.css" />
+
+    @*<link href="~/css/main-site.min.css" rel="stylesheet" />*@
     @RenderSection("head", required: false)
     <style>
         .content-container {
@@ -46,8 +51,10 @@
             color: #6b7280;
             font-size: 20px;
         }
+
     </style>
 </head>
+
 <body>
     <div class="wrapper d-flex">
         <!-- SIDEBAR LEFT-->
@@ -118,7 +125,7 @@
                         </button>
                         <div class="collapse navbar-collapse mt-5" id="navbarNav">
                             <div class="d-flex flex-column">
-                                @RenderSection("mobilenav", required: false)
+                                @RenderSection("mobilenav",required:false)
                             </div>
                         </div>
                     </div>

@@ -82,10 +82,10 @@
     </script>
 }
 <div class="content-container">
-    <div class="container pt-3 mb-3"><span>Post Announcement</span></div>
+    <div class="container pt-3 mb-3"><span class="h3">Post Announcement</span></div>
     <hr />
     <div class="container">
-        <form autocomplete="off" id="form_announce">
+        <form autocomplete="off" id="form_announce" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
 
             <div class="row">
@@ -106,6 +106,13 @@
                         <div class="invalid-feedback">
                             Required.
                         </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="form-check mb-3 ps-0">
+                        <label for="Image_URL" class="form-label fw-bold fs-6">Upload Image <small class="fw-medium">(<i>Optional </i>)</small></label>
+                        <input type="file" class="form-control" name="Images" id="Image_URL" multiple>
                     </div>
                 </div>
 

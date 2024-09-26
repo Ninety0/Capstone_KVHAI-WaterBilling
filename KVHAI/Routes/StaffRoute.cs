@@ -58,6 +58,12 @@ namespace KVHAI.Routes
                 pattern: "kvhai/staff/announcment/",
                 defaults: new { controller = "PostAnnouncement", action = "Index" }
             );
+
+            endpoint.MapControllerRoute(
+                name: "ResidentConfirmation",
+                pattern: "kvhai/staff/resident-address/",
+                defaults: new { controller = "ResidentAddress", action = "Index" }
+            );
         }
     }
 }

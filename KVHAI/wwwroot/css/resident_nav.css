@@ -1,0 +1,54 @@
+﻿
+.nav_sidebar {
+    background-color: transparent;
+    width: 100%;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    .nav_sidebar:hover {
+        font-weight: 700;
+        font-size: 1.3rem;
+        background-color: rgba(180, 204, 255,.5);
+        color: #0E2046;
+    }
+
+    .nav_sidebar.active {
+        font-weight: 700;
+        font-size: 1.3rem;
+        background-color: #B4CCFF;
+        padding: 5px;
+        color: #0E2046;
+    }
+
+.nav_icon {
+    font-size: 1.5rem;
+}
+
+
+/*sm*/
+@media (min-width:576px) {
+   
+}
+
+/*md*/
+@media (min-width: 768px) {
+    
+}
+
+/*lg*/
+@media (min-width: 992px) {
+
+}
+
+/*xl*/
+@media (min-width: 1200px) {
+   
+}
+
+/*xxl*/
+@media(min-width:1400px) {
+}

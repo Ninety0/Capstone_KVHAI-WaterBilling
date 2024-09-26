@@ -2,51 +2,6 @@
     ViewData["Title"] = "Home Page";
 }
 
-@section scripts{
-    <script>
-        function pagination_action(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
-            //var _search = document.getElementById('input_search').value;
-            //var date = $('#selectedDateRange').val();
-            //var start_date = moment(date.substring(0, 10));
-            //var end_date = moment(date.substring(13, 23));
-
-            var array = {
-                //search: _search,
-                page_index: i
-                //DateStart: start_date.format('YYYY-MM-DD'),
-                //DateEnd: end_date.format('YYYY-MM-DD')
-            };
-
-            //console.log(start_date.format('YYYY-MM-DD'));
-            //console.log(end_date.format('YYYY-MM-DD'))
-            //console.log(array);
-
-            $.ajax({
-                url: window.location.origin + '/adminaccount/myPagination',
-                type: "POST",
-                data: array,
-                success: function (response) {
-                    var result = $(response).find("#tableData").html();
-                    console.log(result);
-                    $('#tableData').html(result)
-                },
-                error: function (xhr, status, error_m) {
-                    alert(status);
-                }
-            });
-        }
-        //Force to trigger page_load -> ginagamit ko tong codes na ito pag ayaw gumana ng page_load
-        //document.addEventListener('DOMContentLoaded', function () {
-        //    pagination_action();
-        //}, false);
-
-    </script>
-}
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
 @section sidebar{
     <button class="btn-navs active">TEST</button>
 }
@@ -71,19 +26,55 @@
 } 
 
 <div class="container">
-    <p class="h3">EMPLOYEE</p>
-    <nav class="nav flex-column">
-        <a class="nav-link" aria-current="page" href="/kvhai/staff/login">Staff Log</a>
-        <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/dashboard">Admin Dashboard.cshtml</a>
-        <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/accounts">Admin Account.cshtml</a>
-        <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/streets">Admin Streets.cshtml</a>
-        <a class="nav-link" aria-current="page" href="/kvhai/staff/water-reading/">Reading Clerk Index.cshtml</a>
-        <a class="nav-link" aria-current="page" href="/kvhai/staff/water-billing/">Billing Clerk Index.cshtml</a>
-        <a class="nav-link" aria-current="page" href="/kvhai/staff/waterwork/">Waterwork Index.cshtml</a>
-    </nav>
-    <p class="h3 mt-5">RESIDENT</p>
-    <nav class="nav flex-column">
-        <a class="nav-link " aria-current="page" href="/kvhai/resident/login">Resident Log</a>
-        <a class="nav-link " aria-current="page" href="/kvhai/resident/signup">Resident Signup</a>
-    </nav>
+    <div class="row">
+        <div class="col">
+            <p class="h3">EMPLOYEE</p>
+            <nav class="nav flex-column">
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/accounts">Admin Account.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/streets">Admin Streets.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/water-reading/">Reading Clerk Index.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/water-billing/">Billing Clerk Index.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/waterwork/">Waterwork Index.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/resident-address/">Admin resident Address</a>
+            </nav>
+        </div>
+        <div class="col">
+            <p class="h3">RESIDENT</p>
+            <nav class="nav flex-column">
+                <a class="nav-link " aria-current="page" href="/kvhai/resident/login">Resident Log</a>
+                <a class="nav-link " aria-current="page" href="/kvhai/resident/signup">Resident Signup</a>
+                <a class="nav-link " aria-current="page" href="/kvhai/resident/register-address">Resident Register Address</a>
+                <a class="nav-link " aria-current="page" href="/kvhai/resident/my-address">Resident My Address</a>
+            </nav>
+        </div>
+    </div>
+   
+    
 </div>
+
+
+@*<div class="container">
+    <div class="row">
+        <div class="col">
+            <p class="h3">EMPLOYEE</p>
+            <nav class="nav flex-column">
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/login">Staff Log</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/dashboard">Admin Dashboard.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/accounts">Admin Account.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/streets">Admin Streets.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/water-reading/">Reading Clerk Index.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/water-billing/">Billing Clerk Index.cshtml</a>
+                <a class="nav-link" aria-current="page" href="/kvhai/staff/waterwork/">Waterwork Index.cshtml</a>
+            </nav>
+        </div>
+        <div class="col">
+            <p class="h3">RESIDENT</p>
+            <nav class="nav flex-column">
+                <a class="nav-link " aria-current="page" href="/kvhai/resident/login">Resident Log</a>
+                <a class="nav-link " aria-current="page" href="/kvhai/resident/signup">Resident Signup</a>
+            </nav>
+        </div>
+    </div>
+   
+    
+</div>*@

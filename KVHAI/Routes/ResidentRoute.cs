@@ -28,18 +28,34 @@
                defaults: new { controller = "ResLogin", action = "VerifyPage" }
            );
 
+            #region USER LOGGED IN TEMPLATE
             //LOGGEDIN HOME
             endpoint.MapControllerRoute(
                 name: "ResidentLoggedIn",
-                pattern: "kvhai/resident",
+                pattern: "kvhai/resident/home",
+                defaults: new { controller = "LoggedIn", action = "Index" }
+            );
+
+            endpoint.MapControllerRoute(
+                name: "ResidentRegisterAddress",
+                pattern: "kvhai/resident/register-address",
                 defaults: new { controller = "LoggedIn", action = "LoggedIn" }
             );
+
             //MY ADDRESS
             endpoint.MapControllerRoute(
                 name: "ResidentMyAddress",
                 pattern: "kvhai/resident/my-address",
                 defaults: new { controller = "MyAddress", action = "Index" }
             );
+
+            endpoint.MapControllerRoute(
+                name: "ResidentBilling",
+                pattern: "kvhai/resident/billing",
+                defaults: new { controller = "Billing", action = "Index" }
+            );
+
+            #endregion
 
         }
     }

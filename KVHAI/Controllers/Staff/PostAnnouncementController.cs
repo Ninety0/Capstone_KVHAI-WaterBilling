@@ -6,11 +6,13 @@ namespace KVHAI.Controllers.Staff
 {
     public class PostAnnouncementController : Controller
     {
+        private readonly DBConnect _dBConnect;
         private readonly AnnouncementRepository _announcementRepository;
 
-        public PostAnnouncementController(AnnouncementRepository announcementRepository)
+        public PostAnnouncementController(AnnouncementRepository announcementRepository, DBConnect dBConnect)
         {
             _announcementRepository = announcementRepository;
+            _dBConnect = dBConnect;
         }
         public async Task<IActionResult> Index()
         {
@@ -19,16 +21,30 @@ namespace KVHAI.Controllers.Staff
 
         [AutoValidateAntiforgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Save(Announcement announce)
+        public async Task<IActionResult> Save(Announcement announce, List<IFormFile> images)
         {
-            var result = await _announcementRepository.SubmitAnnouncement(announce);
-
-            if (result < 1)
+            if (images != null && images.Count > 0)
             {
-                return BadRequest("There was an error posting the announcement. Please try again later.");
+                var result = await _announcementRepository.Save(announce, images);
+
+                if (result < 1)
+                {
+                    return BadRequest("There was an error posting the announcement. Please try again later.");
+                }
+
+            }
+            else
+            {
+                var result = await _announcementRepository.SubmitAnnouncementNoImage(announce);
+
+                if (result < 1)
+                {
+                    return BadRequest("There was an error posting the announcement. Please try again later.");
+                }
             }
 
-            return Ok("The announcement was posted");
+            return Ok("The announcement was posted successfully.");
         }
+
     }
 }

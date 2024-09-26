@@ -1,7 +1,7 @@
 ﻿
 @{
     ViewData["Title"] = "My Address";
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
 }
 
 @section head{
@@ -17,7 +17,7 @@
             border-radius: 6px;
             font-size: 1rem;
             font-weight: 400;
-            
+
             display: flex;
             justify-content: center;
             align-items: center*/;
@@ -38,6 +38,119 @@
             width: 150px;
         }
     </style>
+}
+
+@section sidebar{
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-house nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Home
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-dot nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Address
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 active">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                My Address
+            </div>
+
+        </div>
+    </a>
+    <a href="#" class="nav_sidebar mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center ">
+                <i class="fa-solid fa-gauge nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Consumption
+            </div>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar  mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-money-bills nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Billing
+            </div>
+        </div>
+    </a>
+
+}
+
+@section mobilenav{
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-house mobile_nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Home
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Address
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/my-address" class="nav_sidebar active mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                My Address
+            </div>
+
+        </div>
+    </a>
+    <a href="#" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Consumption
+            </div>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Billing
+            </div>
+        </div>
+    </a>
 }
 
 
@@ -146,7 +259,7 @@
         }
         $(document).ready(function () {
 
-            
+
 
             //streets.forEach(street => {
             //    formData.append('streets[]', street); // append each street value as an array
@@ -219,7 +332,7 @@
                 var btn = $(this);
 
                 var id = $(this).data('id');
-                
+
                 var formData = {
                     addressID: id
                 };
@@ -278,7 +391,7 @@
                     }
                 });
             });
-            
+
             function validateForm() {
                 var isValid = true;
                 //var inputs = document.querySelectorAll('#myForm input[required], #myForm select[required]');

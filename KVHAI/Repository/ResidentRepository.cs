@@ -479,8 +479,8 @@ namespace KVHAI.Repository
                                             // Clear the password_reset_token and reset_token_expire columns
                                             using (var clearCommand = new SqlCommand("UPDATE resident_tb SET password_reset_token = @token, reset_token_expire = @expire WHERE email = @email", connection))
                                             {
-                                                clearCommand.Parameters.AddWithValue("@token", null);
-                                                clearCommand.Parameters.AddWithValue("@expire", null);
+                                                clearCommand.Parameters.AddWithValue("@token", DBNull.Value);
+                                                clearCommand.Parameters.AddWithValue("@expire", DBNull.Value);
                                                 clearCommand.Parameters.AddWithValue("@email", email);
                                                 await clearCommand.ExecuteNonQueryAsync();
                                                 return 1; // Success

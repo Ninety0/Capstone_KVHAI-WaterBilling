@@ -18,6 +18,11 @@ namespace KVHAI.Controllers
             return View();
         }
 
+        public IActionResult TestDesign1()
+        {
+            return View("~/Views/Home/HomeTest.cshtml");
+        }
+
         public IActionResult Privacy()
         {
             return View();
