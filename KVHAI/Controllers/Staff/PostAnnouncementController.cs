@@ -1,6 +1,8 @@
-﻿using KVHAI.Models;
+﻿using KVHAI.Hubs;
+using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace KVHAI.Controllers.Staff
 {
@@ -8,11 +10,13 @@ namespace KVHAI.Controllers.Staff
     {
         private readonly DBConnect _dBConnect;
         private readonly AnnouncementRepository _announcementRepository;
+        private readonly IHubContext<AnnouncementHub> _hubContext;
 
-        public PostAnnouncementController(AnnouncementRepository announcementRepository, DBConnect dBConnect)
+        public PostAnnouncementController(AnnouncementRepository announcementRepository, DBConnect dBConnect, IHubContext<AnnouncementHub> hubContext)
         {
             _announcementRepository = announcementRepository;
             _dBConnect = dBConnect;
+            _hubContext = hubContext;
         }
         public async Task<IActionResult> Index()
         {
@@ -42,6 +46,10 @@ namespace KVHAI.Controllers.Staff
                     return BadRequest("There was an error posting the announcement. Please try again later.");
                 }
             }
+
+            var model = await _announcementRepository.ShowAnnouncement();
+
+            await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
 
             return Ok("The announcement was posted successfully.");
         }

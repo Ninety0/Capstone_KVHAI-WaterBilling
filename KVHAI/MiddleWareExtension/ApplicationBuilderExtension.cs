@@ -4,18 +4,15 @@ namespace KVHAI.MiddleWareExtension
 {
     public static class ApplicationBuilderExtension
     {
-        public static void UseStreetTableDependency<T>(this IApplicationBuilder applicationBuilder) where T : ISubscribeTableDependency
+        public static void UseSqlTableDependency<T>(this IApplicationBuilder applicationBuilder, string connectionString) where T : ISubscribeTableDependency
         {
-            using (var scope = applicationBuilder.ApplicationServices.CreateScope())
+            var serviceProvider = applicationBuilder.ApplicationServices;
+            using (var scope = serviceProvider.CreateScope()) // Create a scope manually
             {
-                var service = scope.ServiceProvider.GetRequiredService<SubscribeStreetTableDependency>();
-                service.SubscribeTableDependency();
-
-                //var serviceProvider = applicationBuilder.ApplicationServices;
-                //var service = serviceProvider.GetService<SubscribeStreetTableDependency>();
-                //service.SubscribeTableDependency();
+                var service = scope.ServiceProvider.GetRequiredService<T>(); // Resolve scoped service
+                service.SubscribeTableDependency(connectionString);
             }
-
         }
+
     }
 }

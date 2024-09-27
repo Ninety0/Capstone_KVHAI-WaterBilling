@@ -28,12 +28,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 
 // Register DBConnect as a singleton or scoped service
-builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.AddSingleton<DBConnect>();
 builder.Services.AddSingleton<Hashing>();
+builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.AddScoped<SubscribeStreetTableDependency>();
-builder.Services.AddScoped<StreetHub>();
+builder.Services.AddScoped<SubscribeAnnouncementTableDependency>();
 
+builder.Services.AddTransient<StreetHub>();
+builder.Services.AddTransient<AnnouncementHub>();
 builder.Services.AddTransient<LoginRepository>();
 builder.Services.AddTransient<InputSanitize>();
 builder.Services.AddTransient<WaterBillingFunction>();
@@ -78,5 +80,7 @@ app.MapControllerRoute(
 ResidentRoute.RegisterRoute(app);
 StaffRoute.RegisterRoutes(app);
 
-app.UseStreetTableDependency<SubscribeStreetTableDependency>();
+app.UseSqlTableDependency<SubscribeAnnouncementTableDependency>("Data Source=DESKTOP-4UFMKHN\\SQLEXPRESS;Initial Catalog=kvha1;Persist Security Info=True;User ID=kvhai_admin;Password=katarunganvillage;");
+
+app.UseSqlTableDependency<SubscribeStreetTableDependency>("Data Source=DESKTOP-4UFMKHN\\SQLEXPRESS;Initial Catalog=kvha1;Persist Security Info=True;User ID=kvhai_admin;Password=katarunganvillage;");
 app.Run();

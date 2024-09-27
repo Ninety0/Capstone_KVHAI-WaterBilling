@@ -96,22 +96,9 @@
         .badge {
             font-size: 0.8rem;
         }
-
     </style>
 }
 
-@section scripts{
-    <script>
-        $(document).ready(function () {
-            $(document).on('click', '.image-click', function () {
-                // Get the image URL from the clicked image
-                var imageSrc = $(this).data('image');
-                // Set the image inside the modal
-                $('#modalImage').attr('src', imageSrc);
-            });
-        });
-    </script>
-}
 
 @section sidebar{
     <a href="" class="nav_sidebar active mb-3 ">
@@ -226,59 +213,6 @@
     </a>
 }
 
-<div class="content-container">
-    <h3 class=" p-3 pb-0">Announcement</h3>
-    <hr class="border border-black" />
-
-    @foreach (var announcement in Model)
-    {
-        var datePost = "";
-        if (DateTime.TryParse(announcement.Date_Created, out DateTime datepost))
-        {
-            datePost = datepost.ToString("MMMM dd, yyyy");
-        }
-
-        <div class="announcement-card card mb-4 p-4 shadow-sm rounded">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h4 class="text-capitalize">@announcement.Title</h4>
-                    <h5 class="text-muted">@datePost</h5>
-                </div>
-                <div class="col-auto text-end">
-                    <span class="badge bg-primary p-2">New Post</span>
-                    <div class="text-muted small">@announcement.Date_Created</div>
-                </div>
-            </div>
-
-            <div class="row mt-3">
-                <div class="col">
-                    <p class="announcement-content">@announcement.Contents</p>
-                </div>
-            </div>
-
-            @if (announcement.Images.Count > 0)
-            {
-                <div class="row mt-3">
-                    <div class="col d-flex flex-wrap justify-content-center gap-3">
-                        @foreach (var image in announcement.Images)
-                        {
-                            <a class="image-click border rounded overflow-hidden shadow-sm"
-                               style="width: 150px; height: 100px; object-fit: cover;"
-                               data-bs-toggle="modal"
-                               data-bs-target="#imageModal"
-                               data-image="@image">
-                                <img src="@image" alt="@announcement.Title" class="img-fluid post_img" />
-                            </a>
-                        }
-                    </div>
-                </div>
-            }
-
-            <hr class="mt-4" />
-        </div>
-    }
-</div>
-
 
 <!-- Modal -->
 <!-- Modal Structure -->
@@ -292,3 +226,105 @@
     </div>
 </div>
 
+
+<!-- BODY -->
+<div class="content-container">
+    <h3 class=" p-3 pb-0">Announcement</h3>
+    <hr class="border border-black" />
+    <div id="table_announcement">
+        @foreach (var announcement in Model)
+        {
+            var datePost = "";
+            if (DateTime.TryParse(announcement.Date_Created, out DateTime datepost))
+            {
+                datePost = datepost.ToString("MMMM dd, yyyy");
+            }
+
+            <div class="announcement-card card mb-4 p-4 shadow-sm rounded">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="text-capitalize">@announcement.Title</h4>
+                        <h5 class="text-muted">@datePost</h5>
+                    </div>
+                    <div class="col-auto text-end">
+                        <span class="badge bg-primary p-2">New Post</span>
+                        <div class="text-muted small">@announcement.Date_Created</div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col">
+                        <p class="announcement-content">@announcement.Contents</p>
+                    </div>
+                </div>
+
+                @if (announcement.Images.Count > 0)
+                {
+                    <div class="row mt-3">
+                        <div class="col d-flex flex-wrap justify-content-center gap-3">
+                            @foreach (var image in announcement.Images)
+                            {
+                                <a class="image-click border rounded overflow-hidden shadow-sm"
+                                   style="width: 150px; height: 100px; object-fit: cover;"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#imageModal"
+                                   data-image="@image">
+                                    <img src="@image" alt="@announcement.Title" class="img-fluid post_img" />
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <hr class="mt-4" />
+            </div>
+        }
+    </div>
+    
+</div>
+
+@section scripts{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            //CODE FOR SIGNALR
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/resident/home")
+                .build();
+
+            connection.start().then(function () {
+                alert('Connected to home');
+                
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            connection.on("ShowAnnouncement", function () {
+                toastr.info("something new");
+                updateAnnouncement();
+            });
+
+            function updateAnnouncement(){
+                $.ajax({
+                    url: "/LoggedIn/GetAnnouncement", // Your endpoint to fetch the updated list
+                    type: "GET",
+                    success: function (response) {
+                        console.log(response);
+                        var result = $(response).find("#table_announcement").html();
+                        $('#table_announcement').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching updated data:", error);
+                    }
+                });
+            }
+
+            $(document).on('click', '.image-click', function () {
+                // Get the image URL from the clicked image
+                var imageSrc = $(this).data('image');
+                // Set the image inside the modal
+                $('#modalImage').attr('src', imageSrc);
+            });
+        });
+    </script>
+}

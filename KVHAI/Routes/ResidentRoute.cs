@@ -1,4 +1,6 @@
-﻿namespace KVHAI.Routes
+﻿using KVHAI.Hubs;
+
+namespace KVHAI.Routes
 {
     public class ResidentRoute
     {
@@ -54,6 +56,13 @@
                 pattern: "kvhai/resident/billing",
                 defaults: new { controller = "Billing", action = "Index" }
             );
+
+            #endregion
+
+            #region FOR SIGNALR MAPS
+            endpoint.MapHub<AnnouncementHub>("/resident/home");
+
+            endpoint.MapHub<WaterReadingHub>("/kvhai/staff/readinghub");
 
             #endregion
 

@@ -65,15 +65,14 @@ namespace KVHAI.Repository
                 var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
                 using (var command = new SqlCommand(@"
-                    INSERT INTO announcement_tb(emp_id, title, contents, date_created, date_expire) 
+                    INSERT INTO announcement_tb(emp_id, title, contents, date_created) 
                     OUTPUT INSERTED.announcement_id 
-                    VALUES(@emp_id, @title, @content, @created, @expire)", connection, transaction))
+                    VALUES(@emp_id, @title, @content, @created)", connection, transaction))
                 {
                     command.Parameters.AddWithValue("@emp_id", "1");  // Use actual employee ID
                     command.Parameters.AddWithValue("@title", await _sanitize.HTMLSanitizerAsync(announcement.Title));
                     command.Parameters.AddWithValue("@content", await _sanitize.HTMLSanitizerAsync(announcement.Contents));
                     command.Parameters.AddWithValue("@created", date);
-                    command.Parameters.AddWithValue("@expire", await _sanitize.HTMLSanitizerAsync(announcement.Date_Expire));
 
                     return (int)await command.ExecuteScalarAsync();
                 }
@@ -93,15 +92,14 @@ namespace KVHAI.Repository
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                    INSERT INTO announcement_tb(emp_id, title, contents, date_created, date_expire) 
+                    INSERT INTO announcement_tb(emp_id, title, contents, date_created) 
                     OUTPUT INSERTED.announcement_id 
-                    VALUES(@emp_id, @title, @content, @created, @expire)", connection))
+                    VALUES(@emp_id, @title, @content, @created)", connection))
                     {
                         command.Parameters.AddWithValue("@emp_id", "1");  // Use actual employee ID
                         command.Parameters.AddWithValue("@title", await _sanitize.HTMLSanitizerAsync(announcement.Title));
                         command.Parameters.AddWithValue("@content", await _sanitize.HTMLSanitizerAsync(announcement.Contents));
                         command.Parameters.AddWithValue("@created", date);
-                        command.Parameters.AddWithValue("@expire", await _sanitize.HTMLSanitizerAsync(announcement.Date_Expire));
 
                         return (int)await command.ExecuteScalarAsync();
                     }
@@ -119,18 +117,18 @@ namespace KVHAI.Repository
             try
             {
                 var announcementList = new List<Announcement>();
-                var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                var date = DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd HH:mm:ss");
 
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                        SELECT a.announcement_id, a.emp_id, a.title, a.contents, a.date_created, a.date_expire, ai.image_url 
+                        SELECT a.announcement_id, a.emp_id, a.title, a.contents, a.date_created, ai.image_url 
                         FROM announcement_tb a
                         LEFT JOIN announcement_img_tb ai ON a.announcement_id = ai.announcement_id
-                        WHERE a.date_expire >= @date
+                        WHERE a.date_created >= GETDATE() -3
                         ORDER BY date_created DESC", connection))
                     {
-                        command.Parameters.AddWithValue("@date", date);
+                        //command.Parameters.AddWithValue("@date", date);
 
                         using (var reader = await command.ExecuteReaderAsync())
                         {
@@ -151,7 +149,6 @@ namespace KVHAI.Repository
                                         Title = reader.GetString(2),
                                         Contents = reader.GetString(3),
                                         Date_Created = reader.GetDateTime(4).ToString("yyyy-MM-dd HH:mm:ss"),
-                                        Date_Expire = reader.GetDateTime(5).ToString("yyyy-MM-dd HH:mm:ss"),
                                         Images = new List<string>() // Initialize the list to hold the images
                                     };
 
@@ -159,9 +156,9 @@ namespace KVHAI.Repository
                                 }
 
                                 // Check if there is an associated image for this announcement and add it to the list
-                                if (!reader.IsDBNull(6))
+                                if (!reader.IsDBNull(5))
                                 {
-                                    string imageUrl = reader.GetString(6);
+                                    string imageUrl = reader.GetString(5);
                                     announcementsDict[announcementId].Images.Add(imageUrl);
                                 }
                             }

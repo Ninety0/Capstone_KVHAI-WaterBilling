@@ -16,10 +16,9 @@ namespace KVHAI.SubscribeSqlDependency
             _streetHub = streetHub;
         }
 
-        public void SubscribeTableDependency()
+        public void SubscribeTableDependency(string connectionString)
         {
-            var connection = _dBConnect.GetConnection();
-            _tableDependency = new SqlTableDependency<Streets>(connection.ConnectionString);
+            _tableDependency = new SqlTableDependency<Streets>(connectionString);
             _tableDependency.OnChanged += _tableDependency_OnChanged;
             _tableDependency.OnError += _tableDependency_OnError;
             _tableDependency.Start();
@@ -37,7 +36,6 @@ namespace KVHAI.SubscribeSqlDependency
                 _streetHub.GetStreets();
             }
         }
-
 
     }
 }

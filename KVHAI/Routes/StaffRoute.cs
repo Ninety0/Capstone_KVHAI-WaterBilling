@@ -30,7 +30,6 @@ namespace KVHAI.Routes
                 defaults: new { controller = "Street", action = "Index" }
             );
 
-            endpoint.MapHub<StreetHub>("/kvhai/staff/admin/streethub");
 
             endpoint.MapControllerRoute(
                 name: "ReadingClerk",
@@ -44,7 +43,6 @@ namespace KVHAI.Routes
                 defaults: new { controller = "ClerkWaterBilling", action = "Index" }
             );
 
-            endpoint.MapHub<WaterReadingHub>("/kvhai/staff/readinghub");
 
 
             endpoint.MapControllerRoute(
@@ -64,6 +62,14 @@ namespace KVHAI.Routes
                 pattern: "kvhai/staff/resident-address/",
                 defaults: new { controller = "ResidentAddress", action = "Index" }
             );
+
+
+            #region FOR SIGNALR MAPS
+            endpoint.MapHub<StreetHub>("/kvhai/staff/admin/streethub");
+
+            endpoint.MapHub<WaterReadingHub>("/kvhai/staff/readinghub");
+
+            #endregion
         }
     }
 }

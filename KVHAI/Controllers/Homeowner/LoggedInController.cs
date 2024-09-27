@@ -1,8 +1,10 @@
-﻿using KVHAI.Models;
+﻿using KVHAI.Hubs;
+using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using System.Security.Claims;
 
@@ -14,20 +16,31 @@ namespace KVHAI.Controllers.Homeowner
         private readonly AddressRepository _addressRepository;
         private readonly IWebHostEnvironment _environment;
         private readonly AnnouncementRepository _announcementRepository;
+        private readonly IHubContext<AnnouncementHub> _hubContext;
 
-        public LoggedInController(StreetRepository streetRepository, AddressRepository addressRepository, IWebHostEnvironment environment, AnnouncementRepository announcementRepository)
+
+        public LoggedInController(StreetRepository streetRepository, AddressRepository addressRepository, IWebHostEnvironment environment, AnnouncementRepository announcementRepository, IHubContext<AnnouncementHub> hubContext)
         {
             _streetRepository = streetRepository;
             _addressRepository = addressRepository;
             _environment = environment;
             _announcementRepository = announcementRepository;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index()
         {
             var model = await _announcementRepository.ShowAnnouncement();
 
+            await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
+
             return View("~/Views/Resident/LoggedIn/Home.cshtml", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAnnouncement()
+        {
+            return RedirectToAction(nameof(Index));
         }
 
         [Authorize]

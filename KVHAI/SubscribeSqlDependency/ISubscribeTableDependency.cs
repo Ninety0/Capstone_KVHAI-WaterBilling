@@ -2,6 +2,7 @@
 {
     public interface ISubscribeTableDependency
     {
-        void SubscribeTableDependency();
+        //Task SubscribeTableDependency(string connectionString);
+        void SubscribeTableDependency(string connectionString);
     }
 }
