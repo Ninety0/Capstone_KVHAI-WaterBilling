@@ -27,5 +27,8 @@ namespace KVHAI.Models
 
         public List<WaterBillWithAddress>? WaterBillAddress { get; set; }
 
+        public List<WaterReading>? AllWaterConsumptionByResident { get; set; }
+
+
     }
 }

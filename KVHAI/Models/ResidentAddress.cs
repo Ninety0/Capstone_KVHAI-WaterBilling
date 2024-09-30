@@ -9,6 +9,7 @@
         public string Street { get; set; } = string.Empty;
 
         public int Address_ID { get; set; }
+        public int Resident_ID { get; set; }
         public List<string>? ListOfBlock { get; set; }
         public List<string>? ListOfLot { get; set; }
         public List<string>? ListOfStreet { get; set; }

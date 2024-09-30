@@ -57,6 +57,12 @@ namespace KVHAI.Routes
                 defaults: new { controller = "Billing", action = "Index" }
             );
 
+            endpoint.MapControllerRoute(
+                name: "ResidentConsumption",
+                pattern: "kvhai/resident/water-consumption",
+                defaults: new { controller = "WaterConsumption", action = "Index" }
+            );
+
             #endregion
 
             #region FOR SIGNALR MAPS

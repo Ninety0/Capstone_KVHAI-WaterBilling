@@ -86,6 +86,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Views\Resident\Reading\WaterConsumption.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Update="wwwroot\css\employeeRegistration.css">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

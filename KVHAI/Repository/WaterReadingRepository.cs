@@ -107,11 +107,15 @@ namespace KVHAI.Repository
                                 Address_ID = reader["addr_id"].ToString() ?? string.Empty,
                                 Consumption = reader["consumption"].ToString() ?? string.Empty,
 
+                                Resident_ID = reader["res_id"].ToString() ?? string.Empty,
                                 Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd") : string.Empty
                             };
 
                             var address = new ResidentAddress
                             {
+                                Address_ID = Convert.ToInt32(reader["addr_id"].ToString() ?? string.Empty),
+                                Resident_ID = Convert.ToInt32(reader["res_id"].ToString() ?? string.Empty),
+
                                 Name = string.Concat(reader["lname"].ToString(), ", ", reader["fname"].ToString()) ?? string.Empty,
                                 Block = reader["block"].ToString() ?? string.Empty,
                                 Lot = reader["lot"].ToString() ?? string.Empty,
@@ -156,6 +160,9 @@ namespace KVHAI.Repository
                         {
                             var wr = new WaterReading
                             {
+                                Address_ID = reader["addr_id"].ToString() ?? string.Empty,
+                                Resident_ID = reader["res_id"].ToString() ?? string.Empty,
+
                                 Consumption = reader["consumption"].ToString() ?? string.Empty,
 
                                 Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd") : string.Empty
@@ -170,20 +177,84 @@ namespace KVHAI.Repository
             return models;
         }
 
-        public async Task GetReadingConsumption()
+        public async Task<ModelBinding> GetAllReadingByResident(string addressID, string residentID)
         {
-            //await GetPreviousReading();
-            //await GetCurrentReading();
+            var monthNow = DateTime.Now.ToString("yyyy-MM");
+            var waterReading = new List<WaterReading>();
+            var models = new ModelBinding();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(@"
+                    select * from water_reading_tb wr
+                    JOIN address_tb a ON wr.addr_id = a.addr_id
+                    JOIN resident_tb r ON a.res_id = r.res_id
+                    WHERE a.addr_id = @addr_id AND r.res_id = @res_id
+                    ORDER BY date_reading DESC
+                ", connection))
+                {
+                    command.Parameters.AddWithValue("@addr_id", addressID);
+                    command.Parameters.AddWithValue("@res_id", residentID);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var wr = new WaterReading
+                            {
+                                Address_ID = reader["addr_id"].ToString() ?? string.Empty,
+                                Resident_ID = reader["res_id"].ToString() ?? string.Empty,
+
+                                Consumption = reader["consumption"].ToString() ?? string.Empty,
+
+                                Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("MMM yyyy") : string.Empty
+                            };
+                            waterReading.Add(wr);
+                        }
+                    }
+                }
+            }
+            models.AllWaterConsumptionByResident = waterReading;
+
+            return models;
+        }
+
+        public async Task<List<WaterReading>> GerReadingForGraph(string addressID, string year = "")
+        {
+            var monthNow = DateTime.Now.ToString("yyyy-MM");
+            var waterReading = new List<WaterReading>();
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(@"
+                    select * from water_reading_tb WHERE addr_id = @addr_id AND CONVERT(VARCHAR, date_reading, 23 ) LIKE @year
+                ", connection))
+                {
+                    command.Parameters.AddWithValue("@addr_id", addressID);
+                    command.Parameters.AddWithValue("@year", "%" + year + "%");
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var wr = new WaterReading
+                            {
+                                Reading_ID = reader["reading_id"].ToString() ?? string.Empty,
+                                Address_ID = reader["addr_id"].ToString() ?? string.Empty,
+
+                                Consumption = reader["consumption"].ToString() ?? string.Empty,
+
+                                Date = reader["date_reading"] != DBNull.Value ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd HH:mm:ss") : string.Empty
+                            };
+                            waterReading.Add(wr);
+                        }
+                    }
+                }
+            }
+            return waterReading;
         }
 
 
-        ////////////
-        // UPDATE //
-        ////////////
-
-        ////////////
-        // DELETE //
-        ////////////
 
         ///////////////////////
         // CUSTOM FUNCTIONS //
@@ -361,8 +432,6 @@ namespace KVHAI.Repository
                     }
                 }
             }
-            //var dateFrom =
-
         }
     }
 }
