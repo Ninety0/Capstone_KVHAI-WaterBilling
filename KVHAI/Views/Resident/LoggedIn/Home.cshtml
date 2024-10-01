@@ -228,11 +228,15 @@
 
 
 <!-- BODY -->
+<div class="container">
+    <span>@Model.Username</span>
+    <span>@Model.Resident_ID</span>
+</div>
 <div class="content-container">
     <h3 class=" p-3 pb-0">Announcement</h3>
     <hr class="border border-black" />
     <div id="table_announcement">
-        @foreach (var announcement in Model)
+        @foreach (var announcement in Model.AnnouncementList)
         {
             var datePost = "";
             if (DateTime.TryParse(announcement.Date_Created, out DateTime datepost))

@@ -4,9 +4,13 @@ namespace KVHAI.Models
 {
     public class ModelBinding
     {
+        public string Resident_ID { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+
         public IEnumerable<Resident>? Residents { get; set; }
         public IEnumerable<Employee>? Employees { get; set; }
         public List<Resident>? ResidentsAddress { get; set; }
+        public List<Announcement>? AnnouncementList { get; set; }
 
         public Pagination<Employee>? EmployeePagination { get; set; }
         public Pagination<AddressWithResident>? ResidentPagination { get; set; }

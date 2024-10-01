@@ -42,7 +42,10 @@ namespace KVHAI.Repository
                         continue; // Skip this address and continue to the next
                     }
 
-                    using (var command = new SqlCommand("INSERT INTO address_tb (res_id,block,lot,st_id,location, is_verified) OUTPUT INSERTED.addr_id VALUES(@res,@blk,@lot,@st,@location,'false')", connection, transaction))
+                    using (var command = new SqlCommand(@"
+                        INSERT INTO address_tb (res_id,block,lot,st_id,location, is_verified) 
+                        VALUES(@res,@blk,@lot,@st,@location,'false');
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);", connection, transaction))
                     {
                         int _location = 0;
                         int _block;
@@ -446,7 +449,8 @@ namespace KVHAI.Repository
 
                                     // Step 2: Insert new request into request_tb
                                     using (var insertCommand = new SqlCommand(@"
-                                INSERT INTO request_tb(res_id,addr_id, request_type, date_created, status, status_updated) OUTPUT INSERTED.request_id VALUES(@res_id, @addr_id, @type, @date_created, @status, @status_updated)", connection, transaction))
+                                INSERT INTO request_tb(res_id,addr_id, request_type, date_created, status, status_updated)   VALUES(@res_id, @addr_id, @type, @date_created, @status, @status_updated);
+                                SELECT CAST(SCOPE_IDENTITY() AS INT);", connection, transaction))
                                     {
                                         insertCommand.Parameters.AddWithValue("@res_id", residentID);
                                         insertCommand.Parameters.AddWithValue("@addr_id", addresID);
@@ -454,9 +458,8 @@ namespace KVHAI.Repository
                                         insertCommand.Parameters.AddWithValue("@date_created", currentDateTime);
                                         insertCommand.Parameters.AddWithValue("@status", status.ToString());
                                         insertCommand.Parameters.AddWithValue("@status_updated", currentDateTime); // Track when status was set
-
-                                        result = (int)await insertCommand.ExecuteScalarAsync();
-
+                                        int ID = (int)await insertCommand.ExecuteScalarAsync();
+                                        return ID;
                                     }
                                 }
                             }

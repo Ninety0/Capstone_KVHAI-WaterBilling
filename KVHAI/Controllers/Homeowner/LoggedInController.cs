@@ -28,19 +28,30 @@ namespace KVHAI.Controllers.Homeowner
             _hubContext = hubContext;
         }
 
+        [Authorize]
         public async Task<IActionResult> Index()
         {
-            var model = await _announcementRepository.ShowAnnouncement();
+            var username = User.Identity.Name;
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
+            var announcments = await _announcementRepository.ShowAnnouncement();
 
-            return View("~/Views/Resident/LoggedIn/Home.cshtml", model);
+            var viewModel = new ModelBinding
+            {
+                Resident_ID = residentID,
+                Username = username,
+                AnnouncementList = announcments
+            };
+            //await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
+
+            return View("~/Views/Resident/LoggedIn/Home.cshtml", viewModel);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAnnouncement()
         {
-            return RedirectToAction(nameof(Index));
+            var model = await _announcementRepository.ShowAnnouncement();
+            return View("~/Views/Resident/LoggedIn/Home.cshtml", model);
         }
 
         [Authorize]
@@ -57,7 +68,8 @@ namespace KVHAI.Controllers.Homeowner
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync("MyCookieAuth");
-            return RedirectToAction("Index", "ResLogin");
+            //Response.Redirect("/kvhai/resident/login");
+            return Ok("Account will be logged out");
         }
 
         [HttpPost]

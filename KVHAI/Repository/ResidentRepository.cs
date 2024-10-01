@@ -89,24 +89,27 @@ namespace KVHAI.Repository
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand(@"
-                    INSERT INTO resident_tb (lname, fname, mname, phone, email, username, password, occupancy, verification_token) OUTPUT INSERTED.verification_token
-                    VALUES(@lname, @fname, @mname, @phone, @email, @user, @pass, @occupy,@vtoken)", connection))
+                    using (var insertCommand = new SqlCommand(@"
+                        INSERT INTO resident_tb (lname, fname, mname, phone, email, username, password, occupancy, verification_token) 
+                        VALUES(@lname, @fname, @mname, @phone, @email, @user, @pass, @occupy, @vtoken);
+                        SELECT @vtoken;", connection))
                     {
                         //command.Parameters.AddWithValue("@id", res_id);
-                        command.Parameters.AddWithValue("@lname", resident.Lname);
-                        command.Parameters.AddWithValue("@fname", resident.Fname);
-                        command.Parameters.AddWithValue("@mname", resident.Mname);
-                        command.Parameters.AddWithValue("@phone", phone);
-                        command.Parameters.AddWithValue("@email", resident.Email);
-                        command.Parameters.AddWithValue("@user", resident.Username);
-                        command.Parameters.AddWithValue("@pass", pass);
-                        command.Parameters.AddWithValue("@occupy", resident.Occupancy);
-                        command.Parameters.AddWithValue("@vtoken", token);
+                        insertCommand.Parameters.AddWithValue("@lname", resident.Lname);
+                        insertCommand.Parameters.AddWithValue("@fname", resident.Fname);
+                        insertCommand.Parameters.AddWithValue("@mname", resident.Mname);
+                        insertCommand.Parameters.AddWithValue("@phone", phone);
+                        insertCommand.Parameters.AddWithValue("@email", resident.Email);
+                        insertCommand.Parameters.AddWithValue("@user", resident.Username);
+                        insertCommand.Parameters.AddWithValue("@pass", pass);
+                        insertCommand.Parameters.AddWithValue("@occupy", resident.Occupancy);
+                        insertCommand.Parameters.AddWithValue("@vtoken", token);
 
-                        var result = await command.ExecuteScalarAsync();
+                        var result = await insertCommand.ExecuteScalarAsync();
+
                         return result?.ToString() ?? "";
                     }
+
                 }
             }
             catch (Exception)

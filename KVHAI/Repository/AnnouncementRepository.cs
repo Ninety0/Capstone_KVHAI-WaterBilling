@@ -66,15 +66,16 @@ namespace KVHAI.Repository
 
                 using (var command = new SqlCommand(@"
                     INSERT INTO announcement_tb(emp_id, title, contents, date_created) 
-                    OUTPUT INSERTED.announcement_id 
-                    VALUES(@emp_id, @title, @content, @created)", connection, transaction))
+                    VALUES(@emp_id, @title, @content, @created);
+                     SELECT CAST(SCOPE_IDENTITY() AS INT);", connection, transaction))
                 {
                     command.Parameters.AddWithValue("@emp_id", "1");  // Use actual employee ID
                     command.Parameters.AddWithValue("@title", await _sanitize.HTMLSanitizerAsync(announcement.Title));
                     command.Parameters.AddWithValue("@content", await _sanitize.HTMLSanitizerAsync(announcement.Contents));
                     command.Parameters.AddWithValue("@created", date);
 
-                    return (int)await command.ExecuteScalarAsync();
+                    int newAnnouncementId = (int)await command.ExecuteScalarAsync();
+                    return newAnnouncementId;
                 }
             }
             catch (Exception)
@@ -92,16 +93,17 @@ namespace KVHAI.Repository
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                    INSERT INTO announcement_tb(emp_id, title, contents, date_created) 
-                    OUTPUT INSERTED.announcement_id 
-                    VALUES(@emp_id, @title, @content, @created)", connection))
+                        INSERT INTO announcement_tb(emp_id, title, contents, date_created) 
+                        VALUES(@emp_id, @title, @content, @created);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);", connection))
                     {
                         command.Parameters.AddWithValue("@emp_id", "1");  // Use actual employee ID
                         command.Parameters.AddWithValue("@title", await _sanitize.HTMLSanitizerAsync(announcement.Title));
                         command.Parameters.AddWithValue("@content", await _sanitize.HTMLSanitizerAsync(announcement.Contents));
                         command.Parameters.AddWithValue("@created", date);
 
-                        return (int)await command.ExecuteScalarAsync();
+                        int newAnnouncementId = (int)await command.ExecuteScalarAsync();
+                        return newAnnouncementId;
                     }
                 }
             }
@@ -125,9 +127,8 @@ namespace KVHAI.Repository
                         SELECT a.announcement_id, a.emp_id, a.title, a.contents, a.date_created, ai.image_url 
                         FROM announcement_tb a
                         LEFT JOIN announcement_img_tb ai ON a.announcement_id = ai.announcement_id
-                        WHERE a.date_created >= GETDATE() -3
                         ORDER BY date_created DESC", connection))
-                    {
+                    {//WHERE a.date_created >= GETDATE() -3
                         //command.Parameters.AddWithValue("@date", date);
 
                         using (var reader = await command.ExecuteReaderAsync())

@@ -68,7 +68,7 @@ namespace KVHAI.Routes
             #region FOR SIGNALR MAPS
             endpoint.MapHub<AnnouncementHub>("/resident/home");
 
-            endpoint.MapHub<WaterReadingHub>("/kvhai/staff/readinghub");
+            endpoint.MapHub<NotificationHub>("/resident/water-consumption");
 
             #endregion
 

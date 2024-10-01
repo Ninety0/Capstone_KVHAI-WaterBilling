@@ -9,6 +9,7 @@
   <ItemGroup>
     <Content Remove="Views\Home\Print.cshtml" />
     <Content Remove="wwwroot\js\employeeSignup.js" />
+    <Content Remove="wwwroot\js\notification.js" />
     <Content Remove="wwwroot\js\residentAccount.js" />
     <Content Remove="wwwroot\js\residentSignup.js" />
     <Content Remove="wwwroot\js\signalr.min.js" />
@@ -45,6 +46,7 @@
 
   <ItemGroup>
     <None Include="Views\Home\Print.cshtml" />
+    <None Include="wwwroot\js\notification.js" />
     <None Include="wwwroot\js\signalr.min.js" />
     <None Include="wwwroot\js\water-reading.js" />
     <None Include="wwwroot\js\staffAccount.js" />

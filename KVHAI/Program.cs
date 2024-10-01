@@ -25,7 +25,12 @@ builder.WebHost.UseWebRoot("wwwroot");
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15); // Frequency of ping messages
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30); // Time to wait for ping response
+    options.HandshakeTimeout = TimeSpan.FromSeconds(15); // Time for initial connection
+});
 
 // Register DBConnect as a singleton or scoped service
 builder.Services.AddSingleton<DBConnect>();
@@ -33,8 +38,10 @@ builder.Services.AddSingleton<Hashing>();
 builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.AddScoped<SubscribeStreetTableDependency>();
 builder.Services.AddScoped<SubscribeAnnouncementTableDependency>();
+builder.Services.AddScoped<SubscribeNotificationTableDependency>();
 
 builder.Services.AddTransient<StreetHub>();
+builder.Services.AddTransient<NotificationHub>();
 builder.Services.AddTransient<AnnouncementHub>();
 builder.Services.AddTransient<LoginRepository>();
 builder.Services.AddTransient<InputSanitize>();
@@ -52,6 +59,8 @@ builder.Services.AddScoped<WaterBillRepository>();
 builder.Services.AddScoped<RequestDetailsRepository>();
 builder.Services.AddScoped<AnnouncementRepository>();
 builder.Services.AddScoped<AnnouncementImageRepository>();
+builder.Services.AddScoped<HubConnectionRepository>();
+builder.Services.AddScoped<NotificationRepository>();
 
 var app = builder.Build();
 
@@ -83,4 +92,7 @@ StaffRoute.RegisterRoutes(app);
 app.UseSqlTableDependency<SubscribeAnnouncementTableDependency>("Data Source=DESKTOP-4UFMKHN\\SQLEXPRESS;Initial Catalog=kvha1;Persist Security Info=True;User ID=kvhai_admin;Password=katarunganvillage;");
 
 app.UseSqlTableDependency<SubscribeStreetTableDependency>("Data Source=DESKTOP-4UFMKHN\\SQLEXPRESS;Initial Catalog=kvha1;Persist Security Info=True;User ID=kvhai_admin;Password=katarunganvillage;");
+
+app.UseSqlTableDependency<SubscribeNotificationTableDependency>("Data Source=DESKTOP-4UFMKHN\\SQLEXPRESS;Initial Catalog=kvha1;Persist Security Info=True;User ID=kvhai_admin;Password=katarunganvillage;");
+
 app.Run();

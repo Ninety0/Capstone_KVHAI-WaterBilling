@@ -5,25 +5,40 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace KVHAI.Hubs
 {
-    public class WaterReadingHub : Hub
+    public class NotificationHub : Hub
     {
         private readonly HubConnectionRepository _connectionRepository;
 
-        public WaterReadingHub(HubConnectionRepository hubConnectionRepository)
+        public NotificationHub(HubConnectionRepository hubConnectionRepository)
         {
             _connectionRepository = hubConnectionRepository;
         }
 
-        public async Task SaveUserConnection(string username)
+        public async Task SaveUserConnection(string resident_id, string username)
         {
-            var connectionId = Context.ConnectionId;
+            var connectionID = Context.ConnectionId;
             HubConnect hubConnection = new HubConnect
             {
-                Resident_ID = connectionId,
+                Connection_ID = connectionID,
+                Resident_ID = resident_id,
                 Username = username
             };
 
             await _connectionRepository.SaveHubConnection(hubConnection);
+        }
+
+        public async Task SendNotificationToAll(string message)
+        {
+            await Clients.All.SendAsync("ReceivedNotification", message);
+        }
+
+        public async Task SendNotificationToClient(string message, string resident_id)
+        {
+            var hubConnections = await _connectionRepository.SelectHubConnection(resident_id);
+            foreach (var hubConnection in hubConnections)
+            {
+                await Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedPersonalNotification", message, resident_id);
+            }
         }
 
         public override Task OnConnectedAsync()
