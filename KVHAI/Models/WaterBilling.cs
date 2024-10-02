@@ -4,6 +4,7 @@
     {
         public string WaterBill_ID { get; set; } = string.Empty;
         public string Address_ID { get; set; } = string.Empty;
+        public string Cubic_Meter { get; set; } = string.Empty;
         public string Amount { get; set; } = string.Empty;
         public string Date_Issue_From { get; set; } = string.Empty;
         public string Date_Issue_To { get; set; } = string.Empty;

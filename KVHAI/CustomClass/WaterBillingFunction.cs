@@ -188,10 +188,19 @@ namespace KVHAI.CustomClass
             this.GraphData = graphData;
         }
 
+        public async Task<List<string>> GetWaterBillNumberList()
+        {
+            this.WaterBillNumberList = await _waterBillRepository.WaterBillNumberList();
+            var list = new List<string>();
+            list = WaterBillNumberList;
+
+            return list;
+        }
+
         //FOR WATER BILLING
         public async Task WaterBilling(string location = "", string dateFrom = "", string dateTo = "", string wbnumber = "")
         {
-            var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom);
+            var prevReading = await _waterBillRepository.GetPreviousReading(location, dateFrom, wbnumber);
             var currentReading = await _waterBillRepository.GetCurrentReading(location, dateTo, wbnumber);
 
             //this.WaterBillNumbers = await _waterReadingRepository.GetWaterBillNo();

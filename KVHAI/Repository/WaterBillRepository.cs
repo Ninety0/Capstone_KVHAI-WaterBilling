@@ -77,9 +77,10 @@ namespace KVHAI.Repository
 
                             foreach (var item in waterBilling)
                             {
-                                using (var command = new SqlCommand("INSERT INTO water_billing_tb (addr_id, amount, date_issue_from, date_issue_to,due_date_from,due_date_to,status,waterbill_no) VALUES(@addr, @amount,@issueFrom,@issueTo,@dueFrom,@dueTo,@status,@billno)", connection, transaction))
+                                using (var command = new SqlCommand("INSERT INTO water_billing_tb (addr_id,cubic_meter, amount, date_issue_from, date_issue_to,due_date_from,due_date_to,status,waterbill_no) VALUES(@addr, @cubic, @amount,@issueFrom,@issueTo,@dueFrom,@dueTo,@status,@billno)", connection, transaction))
                                 {
                                     command.Parameters.AddWithValue("@addr", item.Address_ID);
+                                    command.Parameters.AddWithValue("@cubic", item.Cubic_Meter);
                                     command.Parameters.AddWithValue("@amount", item.Amount);
                                     command.Parameters.AddWithValue("@issueFrom", item.Date_Issue_From);
                                     command.Parameters.AddWithValue("@issueTo", item.Date_Issue_To);
@@ -131,7 +132,7 @@ namespace KVHAI.Repository
         {
             try
             {
-                var date = DateTime.Now.ToString("yyyy-MM");
+                var _date = DateTime.Now.ToString("yyyy-MM");
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
@@ -141,7 +142,7 @@ namespace KVHAI.Repository
                         WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @month
                     ", connection))
                     {
-                        command.Parameters.AddWithValue("@month", "%" + date + "%");
+                        command.Parameters.AddWithValue("@month", "%" + _date + "%");
                         var result = await command.ExecuteScalarAsync();
 
                         return result.ToString();
@@ -220,8 +221,8 @@ namespace KVHAI.Repository
 
         public async Task<ModelBinding> GetCurrentReading(string location, string date = "", string wbNumber = "")
         {
-            var WBNumber = string.IsNullOrEmpty(wbNumber) ? await GetWaterBillNumber() : wbNumber;
             var prevDate = string.IsNullOrEmpty(date) ? DateTime.Now.ToString("yyyy-MM") : date;
+            var WBNumber = string.IsNullOrEmpty(wbNumber) ? await GetWaterBillNumber() : wbNumber;
             var waterReading = new List<WaterReading>();
             var waterBilling = new List<WaterBilling>();
             var models = new ModelBinding();
@@ -233,7 +234,7 @@ namespace KVHAI.Repository
                     JOIN address_tb a ON r.res_id = a.res_id
                     JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
                     JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
-                    WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND a.location LIKE location AND CAST(wb.waterbill_no AS varchar) LIKE @num
+                    WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND a.location LIKE @location AND CAST(wb.waterbill_no AS varchar) LIKE @num
                     ORDER BY CAST(block as INT);
                 ", connection))
                 {
@@ -258,6 +259,7 @@ namespace KVHAI.Repository
                             var wb = new WaterBilling
                             {
                                 WaterBill_ID = reader["waterbill_id"].ToString() ?? string.Empty,
+                                Cubic_Meter = reader["cubic_meter"].ToString() ?? string.Empty,
                                 Date_Issue_From = reader["date_issue_from"].ToString() ?? string.Empty,
                                 Date_Issue_To = reader["date_issue_to"].ToString() ?? string.Empty,
                                 Due_Date_From = reader["due_date_from"].ToString() ?? string.Empty,
@@ -589,7 +591,7 @@ namespace KVHAI.Repository
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("SELECT DISTINCT CAST(waterbill_no as INT)as bill_no FROM water_billing_tb", connection))
+                    using (var command = new SqlCommand("SELECT DISTINCT CAST(waterbill_no as INT)as bill_no FROM water_billing_tb ORDER BY bill_no DESC", connection))
                     {
                         using (var reader = await command.ExecuteReaderAsync())
                         {

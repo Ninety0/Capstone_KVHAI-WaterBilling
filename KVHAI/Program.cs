@@ -49,6 +49,7 @@ builder.Services.AddTransient<WaterBillingFunction>();
 builder.Services.AddTransient(typeof(Pagination<>));
 
 // Register EmployeeRepository as a scoped service
+builder.Services.AddScoped<KVHAI.CustomClass.Forecasting>();
 builder.Services.AddScoped<EmployeeRepository>();
 builder.Services.AddScoped<ResidentRepository>();
 builder.Services.AddScoped<ImageUploadRepository>();

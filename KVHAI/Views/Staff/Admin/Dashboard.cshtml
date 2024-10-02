@@ -7,6 +7,19 @@
     <link href="/lib/evo-calendar/css/evo-calendar.css" rel="stylesheet" />
     <link href="/lib/evo-calendar/css/evo-calendar.midnight-blue.min.css" rel="stylesheet" />
     <link href="/lib/evo-calendar/css/evo-calendar.royal-navy.min.css" rel="stylesheet" />
+    <style>
+        #insightContainer{
+            display:none;
+        }
+        .chartjs-tooltip {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+            color: #ffffff !important;
+            border-radius: 5px !important;
+            padding: 10px !important;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5) !important;
+            font-size: 12px !important;
+        }
+    </style>
 }
 
 @section Scripts{
@@ -59,25 +72,132 @@
 
     <!--CHART JS SCRIPTS-->
     <script>
-        const ctx = document.getElementById('myChart');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.1,
-                    borderColor: '#052771'
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+        $(document).ready(function () {
+            var myChart;
+            GetGraphData();
+            function GetGraphData() {
+                $.ajax({
+                    url: '@Url.Action("GraphWaterConsumption", "AdminDashboard")',
+                    type: 'GET',
+                    success: function (data) {
+                        var actual_data = data.actual_Data || []; // Access the actual_Data array
+                        var forecast_data = data.moving_Average || []; // Access the moving_Average array
+                        var insight = data.insights || []; // Access the moving_Average array
+
+                        console.log(actual_data);
+                        console.log(forecast_data);
+                        console.log(insight);
+
+                        //data.forEach(function (item) {
+                        //    actual_data.push(item.actual_data);
+                        //    forecast_data.push(item.forecast_data);
+                        //});
+                        //console.log(actual_data);
+                        //console.log(forecast_data);
+
+                        //// Set the chart
+                        SetChartJs(actual_data, forecast_data, insight);
+
+                        DisplayInsights(insight);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
                     }
+                });
+            }
+
+            function SetChartJs(actualData, forecastData, insights) {
+                const ctx = $('#myChart');
+
+                // Destroy the old chart if it exists
+                if (myChart) {
+                    myChart.destroy();
+                }
+
+                window.myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'March', 'April', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'Cubic Consumption',
+                            data: actualData,
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.1,
+                            borderColor: '#052771'
+                        },
+                        {
+                            label: 'Forecast Data',
+                            data: forecastData,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            fill: true,
+                            borderDash: [5, 5]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Cubic Meter Consumption'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Months'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark background for tooltip
+                                titleFont: { size: 14, weight: 'bold' }, // Font size for title
+                                bodyFont: { size: 12 }, // Font size for body
+                                bodyColor: '#ffffff', // Text color for the body
+                                titleColor: '#ffffff', // Text color for the title
+                                borderColor: '#ffffff', // Tooltip border color
+                                borderWidth: 1, // Tooltip border width
+                                callbacks: {
+                                    // Show insights as part of the tooltip
+                                    afterLabel: function (tooltipItem) {
+                                        var index = tooltipItem.dataIndex;
+                                        var insight = insights[index] || '';
+                                        return insight ? insight : 'No insights for this month';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Function to display insights
+            function DisplayInsights(insights) {
+                var insightContainer = $('#insightContainer');
+                insightContainer.empty(); // Clear any previous insights
+
+                if (insights.length > 0) {
+                    var insightText = "<h4>Insights:</h4><ul>";
+                    insights.forEach(function (insight) {
+                        insightText += "<li>" + insight + "</li>";
+                    });
+                    insightText += "</ul>";
+                    insightContainer.html(insightText); // Add the insights to the container
+                } else {
+                    insightContainer.html("<p>No insights available for this data.</p>");
                 }
             }
         });
@@ -103,7 +223,10 @@
         </div>
         <div class="header-border"></div>
         <div class="container">
-            <canvas id="myChart"></canvas>
+            <div id="chartContainer">
+                <canvas id="myChart"></canvas>
+                <div id="insightContainer"></div> <!-- This div will display the insights -->
+            </div>
         </div>
     </div>
     <div class="col-xl-4 content-container">

@@ -110,9 +110,11 @@
                 rowData.each(function () {
                     var addressID= parseInt($(this).find('[data-reading]').data("reading"),10);
                     var _amount = $(this).find('[data-bill]').data("bill");
+                    var _cubic = $(this).find('[data-cubic]').data("cubic");
 
                     billingData.push({
                         Address_ID: addressID,
+                        Cubic_Meter: _cubic,
                         Amount: _amount
                         //date: _date
                     });
@@ -293,8 +295,8 @@
                                     <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
                                     <td class="previous-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].PreviousReading</td>
                                     <td class="current-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].CurrentReading</td>
-                                    <td class="text-center border border-secondary-subtle">@Model.WaterBillingValues[i].CubicMeter</td>
-                                    <td class="border border-secondary-subtle" data-bill="">@Model.WaterBillingValues[i].Total</td>
+                                    <td class="text-center border border-secondary-subtle" data-cubic="@Model.WaterBillingValues[i].CubicMeter">@Model.WaterBillingValues[i].CubicMeter</td>
+                                    <td class="border border-secondary-subtle" data-bill="@Model.WaterBillingValues[i].Total">@Model.WaterBillingValues[i].Total</td>
                                     @*<td>@arrears</td>*@
                                 </tr>
                             }

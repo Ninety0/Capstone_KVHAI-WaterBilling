@@ -22,12 +22,18 @@ namespace KVHAI.Controllers.Staff.Clerk
         public async Task<IActionResult> Index()
         {
             //return View("ClerkWaterBilling");
-            await _waterBilling.WaterBilling("4");
+            var billNumList = await _waterBilling.GetWaterBillNumberList();
 
-
-
+            await _waterBilling.WaterBilling(location: "1", wbnumber: billNumList.FirstOrDefault());
             return View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling);
             //return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetWaterBills(string location, string bill_num)
+        {
+            await _waterBilling.WaterBilling(location: location, wbnumber: bill_num);
+            return View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling);
         }
 
         [HttpPost]
