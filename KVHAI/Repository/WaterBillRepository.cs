@@ -7,10 +7,14 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         //private readonly WaterBillingFunction _waterBillingFunction;
+        private readonly AddressRepository _addressRepository;
+        private readonly NotificationRepository _notificationRepository;
 
-        public WaterBillRepository(DBConnect dBConnect)//, WaterBillingFunction waterBillingFunction)
+        public WaterBillRepository(DBConnect dBConnect, AddressRepository addressRepository, NotificationRepository notificationRepository)//, WaterBillingFunction waterBillingFunction)
         {
             _dbConnect = dBConnect;
+            _addressRepository = addressRepository;
+            _notificationRepository = notificationRepository;
             //_waterBillingFunction = waterBillingFunction;
         }
 
@@ -47,82 +51,126 @@ namespace KVHAI.Repository
         //CREATE WATERBILLING
         public async Task<int> CreateWaterBill(List<WaterBilling> waterBilling)
         {
+            var dateBilling = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            var dueDate = GetDueDate();
+            var currentMonth = DateTime.Now.ToString("yyyy-MM");
+            int resident_id = 0;
             try
             {
-                var dateBilling = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                var dueDate = GetDueDate();
-                var dateNow = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                var currentMonth = DateTime.Now.ToString("yyyy-MM");
-
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var transaction = connection.BeginTransaction())
                     {
+                        int waterBillNo = 1;
+
                         try
                         {
-                            int waterBillNo = 1;
-
                             // Check if there is already a waterbill_no for the current month
-                            using (var command = new SqlCommand(@"
-                                SELECT TOP 1 waterbill_no FROM water_billing_tb WHERE date_issue_from LIKE @currentMonth", connection, transaction))
+                            var query = @"
+                        SELECT TOP 1 waterbill_no 
+                        FROM water_billing_tb 
+                        WHERE date_issue_from LIKE @currentMonth 
+                        ORDER BY waterbill_no DESC";
+
+                            using (var command = new SqlCommand(query, connection, transaction))
                             {
-                                command.Parameters.AddWithValue("@currentMonth", "%" + currentMonth + "%");
+                                command.Parameters.AddWithValue("@currentMonth", currentMonth + "%");
                                 var result = await command.ExecuteScalarAsync();
 
+                                // If a bill number exists for the current month, use it; otherwise, get the latest one and increment
                                 if (result != null)
                                 {
                                     waterBillNo = (int)result;
                                 }
-                            }
-
-                            foreach (var item in waterBilling)
-                            {
-                                using (var command = new SqlCommand("INSERT INTO water_billing_tb (addr_id,cubic_meter, amount, date_issue_from, date_issue_to,due_date_from,due_date_to,status,waterbill_no) VALUES(@addr, @cubic, @amount,@issueFrom,@issueTo,@dueFrom,@dueTo,@status,@billno)", connection, transaction))
+                                else
                                 {
-                                    command.Parameters.AddWithValue("@addr", item.Address_ID);
-                                    command.Parameters.AddWithValue("@cubic", item.Cubic_Meter);
-                                    command.Parameters.AddWithValue("@amount", item.Amount);
-                                    command.Parameters.AddWithValue("@issueFrom", item.Date_Issue_From);
-                                    command.Parameters.AddWithValue("@issueTo", item.Date_Issue_To);
-                                    command.Parameters.AddWithValue("@dueFrom", item.Due_Date_From);
-                                    command.Parameters.AddWithValue("@dueTo", item.Due_Date_To);
-                                    command.Parameters.AddWithValue("@status", item.Status);
-                                    command.Parameters.AddWithValue("@billno", waterBillNo);
+                                    // If no bill number exists for the current month, find the latest waterbill_no from the table
+                                    var latestBillQuery = @"
+                                SELECT TOP 1 waterbill_no 
+                                FROM water_billing_tb 
+                                ORDER BY waterbill_no DESC";
 
-                                    await command.ExecuteNonQueryAsync();
+                                    using (var latestBillCommand = new SqlCommand(latestBillQuery, connection, transaction))
+                                    {
+                                        var latestBillResult = await latestBillCommand.ExecuteScalarAsync();
+                                        if (latestBillResult != null)
+                                        {
+                                            waterBillNo = (int)latestBillResult + 1;
+                                        }
+                                        else
+                                        {
+                                            waterBillNo = 1;
+                                        }
+                                    }
                                 }
                             }
 
+                            // Loop through each WaterBilling object and insert into the database
+                            foreach (var item in waterBilling)
+                            {
+                                using (var insertCommand = new SqlCommand(@"
+                            INSERT INTO water_billing_tb 
+                            (addr_id, cubic_meter, amount, date_issue_from, date_issue_to, due_date_from, due_date_to, status, waterbill_no)
+                            VALUES (@addr, @cubic, @amount, @issueFrom, @issueTo, @dueFrom, @dueTo, @status, @billno)", connection, transaction))
+                                {
+                                    insertCommand.Parameters.AddWithValue("@addr", item.Address_ID);
+                                    insertCommand.Parameters.AddWithValue("@cubic", item.Cubic_Meter);
+                                    insertCommand.Parameters.AddWithValue("@amount", item.Amount);
+                                    insertCommand.Parameters.AddWithValue("@issueFrom", item.Date_Issue_From);
+                                    insertCommand.Parameters.AddWithValue("@issueTo", item.Date_Issue_To);
+                                    insertCommand.Parameters.AddWithValue("@dueFrom", item.Due_Date_From);
+                                    insertCommand.Parameters.AddWithValue("@dueTo", item.Due_Date_To);
+                                    insertCommand.Parameters.AddWithValue("@status", item.Status);
+                                    insertCommand.Parameters.AddWithValue("@billno", waterBillNo);
+
+                                    await insertCommand.ExecuteNonQueryAsync();
+
+                                    //Will fetch resident id
+                                    resident_id = await _addressRepository.GetResidentIdByAddressId(item.Address_ID);
+
+                                    // Create notification for the resident
+                                    var notif = new Notification
+                                    {
+                                        Resident_ID = resident_id.ToString(),
+                                        Title = "Water Billing",
+                                        Message = "You have a new bill",
+                                        Url = "/kvhai/resident/billing",
+                                        Message_Type = "Personal"
+                                    };
+
+                                    await _notificationRepository.InsertNotificationPersonal(notif);
+                                }
+                            }
+
+                            // Commit the transaction if everything is successful
                             transaction.Commit();
                             return 1;
                         }
                         catch (Exception ex)
                         {
+                            // Rollback transaction if any error occurs
                             try
                             {
                                 transaction.Rollback();
                             }
                             catch (Exception rollbackEx)
                             {
-                                // Log rollback exception
                                 Console.WriteLine("Rollback Exception: " + rollbackEx.Message);
                             }
 
-                            // Log the original exception
                             Console.WriteLine("Transaction Exception: " + ex.Message);
                             return 0;
                         }
-
                     }
-
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Connection Exception: " + ex.Message);
                 return 0;
             }
         }
+
 
         ///////////
         // READ ///
@@ -619,7 +667,7 @@ namespace KVHAI.Repository
             return (dateFrom, dateTo);
         }
 
-        public async Task<ModelBinding> UnpaidResidentWaterBilling(string residentID)
+        public async Task<List<WaterBillWithAddress>> UnpaidResidentWaterBilling(string residentID)
         {
             try
             {
@@ -693,12 +741,8 @@ namespace KVHAI.Repository
                         }
                     }
                 }
-                model = new ModelBinding
-                {
-                    WaterBillAddress = wbaList
-                };
 
-                return model;
+                return wbaList;
             }
             catch (Exception ex)
             {

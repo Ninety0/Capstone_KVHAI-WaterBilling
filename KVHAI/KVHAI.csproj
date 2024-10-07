@@ -13,6 +13,7 @@
     <Content Remove="wwwroot\js\residentAccount.js" />
     <Content Remove="wwwroot\js\residentSignup.js" />
     <Content Remove="wwwroot\js\signalr.min.js" />
+    <Content Remove="wwwroot\js\signalrSetupConnection.js" />
     <Content Remove="wwwroot\js\staffAccount.js" />
     <Content Remove="wwwroot\js\streetCRUD.js" />
     <Content Remove="wwwroot\js\water-reading.js" />
@@ -48,6 +49,7 @@
     <None Include="Views\Home\Print.cshtml" />
     <None Include="wwwroot\js\notification.js" />
     <None Include="wwwroot\js\signalr.min.js" />
+    <None Include="wwwroot\js\signalrSetupConnection.js" />
     <None Include="wwwroot\js\water-reading.js" />
     <None Include="wwwroot\js\staffAccount.js" />
     <None Include="wwwroot\js\employeeSignup.js" />

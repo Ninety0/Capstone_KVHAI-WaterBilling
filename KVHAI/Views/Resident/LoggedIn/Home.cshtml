@@ -288,23 +288,14 @@
 </div>
 
 @section scripts{
-    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
     <script>
         $(document).ready(function () {
             //CODE FOR SIGNALR
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/resident/home")
-                .build();
+            
+            const homeConnection = setupSignalRConnection("/resident/home", "Home Hub");
 
-            connection.start().then(function () {
-                alert('Connected to home');
-                
-            }).catch(function (err) {
-                return console.error(err.toString());
-            });
-
-            connection.on("ShowAnnouncement", function () {
-                toastr.info("something new");
+            homeConnection.on("ShowAnnouncement", function () {
+                toastr.info("Theres is an update in the announcement");
                 updateAnnouncement();
             });
 
@@ -318,6 +309,7 @@
                         $('#table_announcement').html(result);
                     },
                     error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
                         console.error("Error fetching updated data:", error);
                     }
                 });

@@ -3,7 +3,6 @@
     ViewData["Title"] = "Register Address";
     Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
 }
-@model List<Streets>;
 
 @section head{
     <style>
@@ -196,7 +195,7 @@
 
                             <select id="select-street1" class="form-select" aria-label="Default select example" required>
                                 @{
-                                    foreach (var item in Model)
+                                    foreach (var item in Model.ListStreet)
                                     {
                                         <option value="@item.Street_ID">@item.Street_Name</option>
                                     }
@@ -251,6 +250,11 @@
         $('#select-street1').editableSelect();
 
         $(document).ready(function () {
+            const registerConnection = setupSignalRConnection("/resident/register-address", "Register Address Hub");
+
+            registerConnection.on("ReceivedAddressNotification", function (message, resident_id) {
+                toastr.info(message);
+            });
 
             //streets.forEach(street => {
             //    formData.append('streets[]', street); // append each street value as an array
@@ -391,7 +395,7 @@
 
                             <select id="${id}" class="form-select" aria-label="Default select example" required>
                                 @{
-                                    foreach (var item in Model)
+                                    foreach (var item in Model.ListStreet)
                                     {
                                         <option value="@item.Street_ID">@item.Street_Name</option>
                                     }

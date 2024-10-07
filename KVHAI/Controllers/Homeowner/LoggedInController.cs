@@ -17,15 +17,18 @@ namespace KVHAI.Controllers.Homeowner
         private readonly IWebHostEnvironment _environment;
         private readonly AnnouncementRepository _announcementRepository;
         private readonly IHubContext<AnnouncementHub> _hubContext;
+        private readonly NotificationRepository _notification;
 
 
-        public LoggedInController(StreetRepository streetRepository, AddressRepository addressRepository, IWebHostEnvironment environment, AnnouncementRepository announcementRepository, IHubContext<AnnouncementHub> hubContext)
+
+        public LoggedInController(StreetRepository streetRepository, AddressRepository addressRepository, IWebHostEnvironment environment, AnnouncementRepository announcementRepository, IHubContext<AnnouncementHub> hubContext, NotificationRepository notification)
         {
             _streetRepository = streetRepository;
             _addressRepository = addressRepository;
             _environment = environment;
             _announcementRepository = announcementRepository;
             _hubContext = hubContext;
+            _notification = notification;
         }
 
         [Authorize]
@@ -35,12 +38,15 @@ namespace KVHAI.Controllers.Homeowner
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             var announcments = await _announcementRepository.ShowAnnouncement();
+            var notifList = await _notification.GetNotificationByResident(residentID);
+
 
             var viewModel = new ModelBinding
             {
                 Resident_ID = residentID,
                 Username = username,
-                AnnouncementList = announcments
+                AnnouncementList = announcments,
+                NotificationResident = notifList
             };
             //await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
 
@@ -51,7 +57,36 @@ namespace KVHAI.Controllers.Homeowner
         public async Task<IActionResult> GetAnnouncement()
         {
             var model = await _announcementRepository.ShowAnnouncement();
-            return View("~/Views/Resident/LoggedIn/Home.cshtml", model);
+
+            var viewModel = new ModelBinding
+            {
+                AnnouncementList = model
+            };
+
+            return View("~/Views/Resident/LoggedIn/Home.cshtml", viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetNewNotification(string resident_id)
+        {
+            var model = await _announcementRepository.ShowAnnouncement();
+            var notifList = await _notification.GetNotificationByResident(resident_id);
+
+
+            var viewModel = new ModelBinding
+            {
+                NotificationResident = notifList,
+                AnnouncementList = model
+            };
+
+            return View("~/Views/Resident/LoggedIn/Home.cshtml", viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateNotificationRead(string notification_id)
+        {
+            int result = await _notification.UpdateReadNotification(notification_id);
+            return Ok();
         }
 
         [Authorize]
@@ -59,9 +94,15 @@ namespace KVHAI.Controllers.Homeowner
         {
             var username = User.Identity.Name;
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+            var notifList = await _notification.GetNotificationByResident(residentID);
             var listStreet = await _streetRepository.GetAllStreets();
-            return View("~/Views/Resident/LoggedIn/Owner/RegisterAddress.cshtml", listStreet);
+
+            var viewModel = new ModelBinding
+            {
+                NotificationResident = notifList,
+                ListStreet = listStreet
+            };
+            return View("~/Views/Resident/LoggedIn/Owner/RegisterAddress.cshtml", viewModel);
         }
 
         [HttpPost]

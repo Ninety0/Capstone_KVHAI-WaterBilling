@@ -10,11 +10,13 @@ namespace KVHAI.Controllers.Homeowner
     {
         private readonly StreetRepository _streetRepository;
         private readonly AddressRepository _addressRepository;
+        private readonly NotificationRepository _notification;
 
-        public MyAddressController(StreetRepository streetRepository, AddressRepository addressRepository)
+        public MyAddressController(StreetRepository streetRepository, AddressRepository addressRepository, NotificationRepository notification)
         {
             _streetRepository = streetRepository;
             _addressRepository = addressRepository;
+            _notification = notification;
         }
 
         [Authorize]
@@ -25,12 +27,28 @@ namespace KVHAI.Controllers.Homeowner
 
             var listStreet = await _streetRepository.GetAllStreets();
             var address = await _addressRepository.GetAddressById(residentID);
+            var notifList = await _notification.GetNotificationByResident(residentID);
 
             var model = new ModelBinding
             {
                 ListStreet = listStreet,
-                ListAddress = address
+                ListAddress = address,
+                NotificationResident = notifList
             };
+            return View("~/Views/Resident/LoggedIn/Owner/MyAddress.cshtml", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAddress(string resident_id)
+        {
+            var listStreet = await _streetRepository.GetAllStreets();
+            var address = await _addressRepository.GetAddressById(resident_id);
+            var model = new ModelBinding
+            {
+                ListStreet = listStreet,
+                ListAddress = address,
+            };
+
             return View("~/Views/Resident/LoggedIn/Owner/MyAddress.cshtml", model);
         }
 

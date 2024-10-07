@@ -1,5 +1,11 @@
 ﻿.notification_container {
     position: relative;
+    background-color: #e2e8f0;
+    border-radius: 5px;
+    margin: 5px;
+    background-color: #0284c7;
+    color:white;
+    cursor:pointer;
 }
 
 #btn_notification {
@@ -7,7 +13,7 @@
 }
 
     #btn_notification:hover {
-        color: rgba(128, 128, 128,.5);
+        color: rgba(8, 47, 73,.5);
     }
 
 .notification_body {
@@ -15,7 +21,7 @@
     position: absolute;
     width: 300px;
     border: 1px solid gray;
-    top: 30px;
+    top: 50px;
     right: 0;
     border-radius: 10px;
     box-shadow: 3px 4px 5px;
@@ -27,4 +33,64 @@
 .notif_line {
     border-top: 1px solid black;
     width: 100%;
+}
+
+
+.notification-card {
+    width: 300px; /* Adjust as needed */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: none;
+}
+
+.card-header {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #ddd;
+}
+
+.card-title {
+    font-size: 16px;
+    color: #333;
+}
+
+.notification-content {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+.notification-content:hover {
+    transform: scale(1.02);
+}
+
+.notification-title {
+    font-size: 1rem;
+    color: #333;
+    margin: 0;
+}
+
+.notification-message {
+    font-size: .9rem;
+    color: #666;
+    margin: 0;
+}
+
+.notification-date {
+    font-size: 10px;
+    color: #334155;
+    align-self: flex-start;
+    margin-left: auto;
+}
+.notification-bell-container{
+   position:absolute;
+   bottom:0;
+   font-size:.9rem;
+   color:white;
+   padding:3px;
+}
+
+.notification_count{
+    font-size:.9rem;
 }

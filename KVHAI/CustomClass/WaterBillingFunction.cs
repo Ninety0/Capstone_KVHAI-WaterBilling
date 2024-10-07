@@ -14,6 +14,9 @@ namespace KVHAI.CustomClass
         //FOR BOTH READINg AND BILLING
         public double WaterRate { get; set; } = 18.0;
 
+        public List<Notification>? NotificationResident { get; set; } = new List<Notification>();
+        public int CountNotificationResident { get; set; }
+
         public List<WaterBilling>? UnpaidWaterBill { get; set; } = new List<WaterBilling>();
         public List<WaterReading>? PreviousReading { get; set; } = new List<WaterReading>();
         public List<WaterReading>? CurrentReading { get; set; } = new List<WaterReading>();
@@ -255,7 +258,7 @@ namespace KVHAI.CustomClass
         {
             var model = await _waterBillRepository.UnpaidResidentWaterBilling("1");
 
-            foreach (var item in model.WaterBillAddress)
+            foreach (var item in model)
             {
                 string _dueDateLong = "";
                 string _dueDateShort = "";

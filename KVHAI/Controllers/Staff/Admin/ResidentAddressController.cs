@@ -35,6 +35,21 @@ namespace KVHAI.Controllers.Staff.Admin
             return View("~/Views/Staff/Admin/ResidentAddress.cshtml", pagination2);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetRequestAddress()
+        {
+            //RESIDENT
+            var pagination2 = new Pagination<AddressWithResident>
+            {
+                ModelList = await _residentRepository.GetAllResidentAsync(0, 10, "false"),
+                NumberOfData = await _residentRepository.CountResidentData("false"),
+                ScriptName = "respagination"
+            };
+            pagination2.set(10, 5, 1);
+
+            return View("~/Views/Staff/Admin/ResidentAddress.cshtml", pagination2);
+        }
+
         [HttpPost]
         public async Task<IActionResult> UpdateStatus(int addrID, string status)
         {
@@ -45,6 +60,7 @@ namespace KVHAI.Controllers.Staff.Admin
                 {
                     return BadRequest("There was an error approving the status");
                 }
+
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

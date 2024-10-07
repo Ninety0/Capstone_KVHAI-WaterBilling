@@ -6,10 +6,41 @@
     
 }
 @section scripts{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
     <script src="~/js/water-reading.js" defer></script>
     <script defer>
         //$('#select-block').editableSelect();
         //$('#select-lot').editableSelect();
+    </script>
+    <script>
+        //$(document).ready(function () {
+        //    const connection = new signalR.HubConnectionBuilder()
+        //        .withUrl("/resident/water-consumption")
+        //        .withAutomaticReconnect([0, 2000, 10000, 30000]) // Retry after 0s, 2s, 10s, and 30s
+        //        .build();
+
+        //    connection.start().then(function () {
+        //        toastr.info("Connected to water-consumption hub");
+        //    }).catch(function (err) {
+        //        return console.error(err.toString());
+        //    });
+
+        //    // Optional: Log reconnection attempts
+        //    connection.onreconnecting((error) => {
+        //        toastr.warning('Reconnecting to water-consumption hub...');
+        //        console.log('Reconnecting...', error);
+        //    });
+
+        //    connection.onreconnected(() => {
+        //        toastr.success('Reconnected to water-consumption hub');
+        //    });
+
+        //    connection.onclose((error) => {
+        //        toastr.error('Disconnected from water-consumption hub. Will retry connection...');
+        //        console.log('Connection closed', error);
+        //    });
+
+        //});
     </script>
 
 }

@@ -10,15 +10,19 @@ namespace KVHAI.SubscribeSqlDependency
     {
         SqlTableDependency<Notification> tableDependency;
         NotificationHub notificationHub;
-        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHubContext<NotificationHub> _hubContextNotification;
+        private readonly IHubContext<WaterBillingHub> _hubContextBilling;
+        private readonly IHubContext<WaterReadingHub> _hubContextReading;
         private readonly HubConnectionRepository _connectionRepository;
 
 
-        public SubscribeNotificationTableDependency(NotificationHub notificationHub, IHubContext<NotificationHub> hubContext, HubConnectionRepository hubConnectionRepository)
+        public SubscribeNotificationTableDependency(NotificationHub notificationHub, IHubContext<NotificationHub> hubContext, HubConnectionRepository hubConnectionRepository, IHubContext<WaterBillingHub> hubContextBilling, IHubContext<WaterReadingHub> hubContextReading)
         {
             this.notificationHub = notificationHub;
-            _hubContext = hubContext;
+            _hubContextNotification = hubContext;
             _connectionRepository = hubConnectionRepository;
+            _hubContextBilling = hubContextBilling;
+            _hubContextReading = hubContextReading;
         }
 
         public void SubscribeTableDependency(string connectionString)
@@ -39,25 +43,42 @@ namespace KVHAI.SubscribeSqlDependency
             if (e.ChangeType != TableDependency.SqlClient.Base.Enums.ChangeType.None)
             {
                 var notification = e.Entity;
-                if (notification.Message_Type == "All")
+                if (!notification.Is_Read)
                 {
-                    //await notificationHub.SendNotificationToAll(notification.Message);
-                    await _hubContext.Clients.All.SendAsync("ReceivedNotification", notification.Message);
-                }
-                else if (notification.Message_Type == "Personal")
-                {
-                    var hubConnections = await _connectionRepository.SelectHubConnection(notification.Resident_ID);
-
-                    if (hubConnections != null && hubConnections.Count > 0)
+                    if (notification.Message_Type == "All")
                     {
-                        foreach (var hubConnection in hubConnections)
-                        {
-                            int res_id = Convert.ToInt32(notification.Resident_ID);
+                        //await notificationHub.SendNotificationToAll(notification.Message);
+                        await _hubContextNotification.Clients.All.SendAsync("ReceivedNotification", notification.Message);
+                    }
+                    else if (notification.Message_Type == "Personal")
+                    {
+                        var hubConnections = await _connectionRepository.SelectHubConnection(notification.Resident_ID);
 
-                            await _hubContext.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedNotification", notification.Message, res_id);
+                        if (hubConnections != null && hubConnections.Count > 0)
+                        {
+                            foreach (var hubConnection in hubConnections)
+                            {
+                                int res_id = Convert.ToInt32(notification.Resident_ID);
+
+                                if (notification.Title.Contains("Water Reading"))
+                                {
+                                    await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedReadingNotification", notification.Title, res_id);
+                                }
+                                else if (notification.Title.Contains("Water Billing"))
+                                {
+                                    await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedBillingNotification", notification.Title, res_id);
+                                }
+                                else if (notification.Title.Contains("Register Address"))
+                                {
+                                    await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedAddressNotification", notification.Message, res_id);
+                                }
+
+                                await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedPersonalNotification", notification.Title, res_id);
+                            }
                         }
                     }
                 }
+
             }
         }
 

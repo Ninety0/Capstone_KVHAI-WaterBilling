@@ -11,6 +11,9 @@ namespace KVHAI.Models
         public IEnumerable<Employee>? Employees { get; set; }
         public List<Resident>? ResidentsAddress { get; set; }
         public List<Announcement>? AnnouncementList { get; set; }
+        public List<Notification>? NotificationResident { get; set; }
+        public int CountNotificationResident { get; set; }
+        public List<WaterBillWithAddress>? UnpaidResidentWaterBilling { get; set; }
 
         public Pagination<Employee>? EmployeePagination { get; set; }
         public Pagination<AddressWithResident>? ResidentPagination { get; set; }

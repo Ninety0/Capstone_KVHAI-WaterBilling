@@ -1,4 +1,25 @@
 ﻿$(document).ready(function () {
+    const registerConnection = setupSignalRConnection("/resident/register-address", "Register Address Hub");
+
+    registerConnection.on("ReceivedAddressNotificationToAdmin", function (message, resident_id) {
+        alert("may request");
+        GetRequestAddress();
+    });
+
+    function GetRequestAddress() {
+        $.ajax({
+            type: "GET",
+            url: "/ResidentAddress/GetRequestAddress",
+            success: function (response) {
+                var result = $(response).find('#res-tableData').html();
+                $('#res-tableData').html(result);
+            },
+            error: function (xhr) {
+                toastr.error(xhr.responseText);
+                console.log(xhr.responseText);
+            }
+        });
+    };
 
     //event listerner
     $(document).on('change', '#toggleSwitch', function () {

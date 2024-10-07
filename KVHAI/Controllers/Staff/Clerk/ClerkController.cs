@@ -10,11 +10,13 @@ namespace KVHAI.Controllers.Staff.Clerk
         private readonly WaterReadingRepository _waterReadingRepository;
         private readonly WaterBillingFunction _waterBilling;
         private readonly WaterBillRepository _waterBillRepository;
+        private readonly NotificationRepository _notificationRepository;
 
-        public ClerkController(WaterBillingFunction waterBilling, WaterBillRepository waterBillRepository)//WaterReadingRepository waterReadingRepository
+        public ClerkController(WaterBillingFunction waterBilling, WaterBillRepository waterBillRepository, NotificationRepository notificationRepository)//WaterReadingRepository waterReadingRepository
         {
             _waterBilling = waterBilling;
             _waterBillRepository = waterBillRepository;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -140,6 +142,7 @@ namespace KVHAI.Controllers.Staff.Clerk
                 {
                     return BadRequest("There was an error processing the data.");
                 }
+
 
                 return Ok("Generate bill successfully. Proceed to Billing.");
 

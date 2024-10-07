@@ -1,5 +1,10 @@
 ﻿$(document).ready(function () {
-    $(document).on('click', '#btn_notification', function () {
+    $(document).on('click', '#btn_notification', function (e) {
+        $('.notification_body').fadeToggle();
+        e.stopPropagation(); // Prevent this click from being detected by the document
+    }); 
+
+    $(document).on('click', '.notification_container', function (e) {
         $('.notification_body').fadeToggle();
         e.stopPropagation(); // Prevent this click from being detected by the document
     });

@@ -14,14 +14,16 @@ namespace KVHAI.Controllers.Homeowner
     {
         private readonly WaterBillingFunction _waterBillingFunction;
         private readonly AddressRepository _addressRepository;
+        private readonly NotificationRepository _notification;
         private readonly ICompositeViewEngine _viewEngine;
 
 
-        public WaterConsumptionController(WaterBillingFunction waterBillingFunction, AddressRepository addressRepository, ICompositeViewEngine viewEngine)
+        public WaterConsumptionController(WaterBillingFunction waterBillingFunction, AddressRepository addressRepository, ICompositeViewEngine viewEngine, NotificationRepository notification)
         {
             _waterBillingFunction = waterBillingFunction;
             _addressRepository = addressRepository;
             _viewEngine = viewEngine;
+            _notification = notification;
         }
 
         [Authorize]
@@ -31,8 +33,10 @@ namespace KVHAI.Controllers.Homeowner
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var address = await _addressRepository.GetAddressById(residentID);
 
-            await _waterBillingFunction.GetGraphData("12");
-            await GetWaterConsumptionByAddress("12", "1");
+            await _waterBillingFunction.GetGraphData(address.FirstOrDefault().Address_ID.ToString());
+            await GetWaterConsumptionByAddress(address.FirstOrDefault().Address_ID.ToString(), residentID);
+            _waterBillingFunction.NotificationResident = await _notification.GetNotificationByResident(residentID);
+
             return View("~/Views/Resident/Reading/WaterConsumption.cshtml", _waterBillingFunction);
         }
 

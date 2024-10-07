@@ -14,5 +14,9 @@ namespace KVHAI.Models
         public string Url { get; set; } = string.Empty;
         public string Created_At { get; set; } = string.Empty;
         public string Message_Type { get; set; } = string.Empty;
+        public Boolean Is_Read { get; set; }
+
+        public string Hours { get; set; }
+
     }
 }

@@ -243,7 +243,7 @@
 
     <div id="tableData">
         <!-- Add the table and water history -->
-        @if (Model.GraphData != null && Model.GraphData.Count > 0)
+        @if (Model.NotificationResident != null && Model.NotificationResident.Count > 0)
         {
             <div>cite WORKS</div>
         }
@@ -361,74 +361,44 @@
 
 @section scripts{
     <script src="~/lib/chartjs/chart.umd.min.js"></script>
-    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/resident/water-consumption")
-                .withAutomaticReconnect([0, 2000, 10000, 30000]) // Retry after 0s, 2s, 10s, and 30s
-                .build();
-
-            connection.start().then(function () {
-                toastr.info("Connected to water-consumption hub");
-            }).catch(function (err) {
-                return console.error(err.toString());
-            });
-
-            // Optional: Log reconnection attempts
-            connection.onreconnecting((error) => {
-                toastr.warning('Reconnecting to water-consumption hub...');
-                console.log('Reconnecting...', error);
-            });
-
-            connection.onreconnected(() => {
-                toastr.success('Reconnected to water-consumption hub');
-            });
-
-            connection.onclose((error) => {
-                toastr.error('Disconnected from water-consumption hub. Will retry connection...');
-                console.log('Connection closed', error);
-            });
-
-            connection.on("OnConnected", function () {
-                onConnected();
-            })
-
-            connection.on("ReceivedNotification", function (message) {
-                toastr.success(message);
-            })
-            connection.on("ReceivedPersonalNotification", function (message, resident_id) {
-                toastr.success(message + " - " + resident_id);
-            })
-
-            function onConnected() {
-                var res_id = $('#cookie_id').val();
-                var username = $('#cookie_name').val();
-                connection.invoke("SaveUserConnection", res_id, username).catch(function (err) {
-                    return console.error(err.toString())
-                });
-            }
-        });
-    </script>
+    
     <script>
         $(document).ready(function () {
             var myChart;
 
             GetGraphData();
 
+            const waterConsumptionConnection = setupSignalRConnection("/resident/water-consumption", "Water Consumption Hub");
+
+            waterConsumptionConnection.on("ReceivedNotification", function (message) {
+                toastr.success(message);
+                alert("dito guana");
+            })
+            waterConsumptionConnection.on("ReceivedReadingNotification", function (message, resident_id) {
+                var addr_id = $('#select_address').val();
+                var _year = $('#select_year').val();
+                alert(`Address: ${addr_id}, Year: ${_year}`);
+                GetDataAndGraph(addr_id, _year);
+            })
+
+
             $(document).on('change', '#select_address', function () {
                 var addr_id = $('#select_address').val();
                 var _year = $('#select_year').val();
 
+                GetDataAndGraph(addr_id, _year);
+            });
+
+            function GetDataAndGraph(address_id, _year) {
                 $.ajax({
                     type: "POST",
                     url: "/WaterConsumption/WaterReadingByAddress",
-                    data: { addressID: addr_id, year: _year },
+                    data: { addressID: address_id, year: _year },
                     success: function (response) {
                         // Update HTML with the new data
                         var html = response.html;
-                        console.log(response);
-                        console.log(response.graphData);
+                        //console.log(response);
+                        //console.log(response.graphData);
 
                         var htmlResult = $(html).find('#tableData').html()
                         $('#tableData').html(htmlResult);
@@ -438,6 +408,8 @@
                         var labels = chartData.map(item => item.dateMonth);
                         var data = chartData.map(item => parseInt(item.cubicConsumption));
 
+                        console.log(`labels: ${labels}`);
+                        console.log(`data: ${data}`);
                         ////// Update the chart with new data
                         SetChartJs(labels, data);
                     },
@@ -445,7 +417,7 @@
                         toastr.error(xhr.responseText);
                     }
                 });
-            });
+            }
 
             function GetGraphData() {
                 var addr_id = $('#select_address').val();

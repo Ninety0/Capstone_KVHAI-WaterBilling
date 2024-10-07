@@ -1,5 +1,4 @@
-﻿using KVHAI.Models;
-using KVHAI.Repository;
+﻿using KVHAI.Repository;
 using Microsoft.AspNetCore.SignalR;
 
 namespace KVHAI.Hubs
@@ -19,9 +18,5 @@ namespace KVHAI.Hubs
             await Clients.All.SendAsync("ShowAnnouncement");
         }
 
-        public async Task NotifyAnnouncement1(Announcement announcement)
-        {
-            await Clients.All.SendAsync("ShowAnnouncement", announcement);
-        }
     }
 }

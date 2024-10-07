@@ -2,6 +2,7 @@
 
     //GLOBAL VARIABLE
     let address_id = 0;
+    let resident_id = 0;
 
     //CALL FUNCTION
     InputKeyPress();
@@ -36,8 +37,9 @@
                 data: formData,
                 success: function (response) {
                     var result = response[0];
+                    resident_id = result.resident_ID;
                     address_id = result.address_ID;
-                    alert(address_id);
+                    //alert(address_id);
                     $('#input-name').val(result.name);
                 },
                 error: function (xhr, status, err_m) {
@@ -89,6 +91,7 @@
             }
             var formData = {
                 Address_ID: address_id,
+                Resident_ID: resident_id,
                 Consumption: $('#input-reading').val()
             };
 

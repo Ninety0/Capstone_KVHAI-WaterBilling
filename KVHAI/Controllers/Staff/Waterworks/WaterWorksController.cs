@@ -11,13 +11,15 @@ namespace KVHAI.Controllers.Staff.Waterworks
         private readonly AddressRepository _addressRepository;
         private readonly WaterReadingRepository _waterReadingRepository;
         private readonly StreetRepository _streetRepository;
-        private readonly IHubContext<WaterReadingHub> _hubContext;
+        private readonly NotificationRepository _notificationRepository;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository, StreetRepository streetRepository, IHubContext<WaterReadingHub> hubContext)
+        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository, StreetRepository streetRepository, NotificationRepository notificationRepository, IHubContext<NotificationHub> hubContext)
         {
             _addressRepository = addressRepository;
             _waterReadingRepository = waterReadingRepository;
             _streetRepository = streetRepository;
+            _notificationRepository = notificationRepository;
             _hubContext = hubContext;
         }
         public async Task<IActionResult> Index()
@@ -50,7 +52,16 @@ namespace KVHAI.Controllers.Staff.Waterworks
                     return BadRequest("There was an error processing the reading consumption");
                 }
 
-                await _hubContext.Clients.All.SendAsync("ReceiveReading");
+                var notif = new Notification
+                {
+                    Resident_ID = waterReading.Resident_ID,
+                    Title = "Water Reading",
+                    Message = "You have new water reading",
+                    Url = "/kvhai/resident/water-consumption",
+                    Message_Type = "Personal"
+                };
+                var notificationResult = await _notificationRepository.InsertNotificationPersonal(notif);
+
                 return Ok("Submit successfully");
                 //ViewData["Message"] = "Reading submit successfully!";
                 //return RedirectToAction(nameof(Index));

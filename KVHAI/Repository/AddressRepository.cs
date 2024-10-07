@@ -12,17 +12,19 @@ namespace KVHAI.Repository
         private readonly StreetRepository _streetRepository;
         private readonly ImageUploadRepository _uploadRepository;
         private readonly RequestDetailsRepository _requestDetailsRepository;
+        private readonly NotificationRepository _notificationRepository;
 
         private bool DataExist = false;
         private int CounterDataExistence = 0;
 
-        public AddressRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, ImageUploadRepository uploadRepository, RequestDetailsRepository requestDetailsRepository)
+        public AddressRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, ImageUploadRepository uploadRepository, RequestDetailsRepository requestDetailsRepository, NotificationRepository notificationRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
             _streetRepository = streetRepository;
             _uploadRepository = uploadRepository;
             _requestDetailsRepository = requestDetailsRepository;
+            _notificationRepository = notificationRepository;
         }
         //CREATE
         public async Task<List<Address>> CreateAddress(string res_id, List<Address> addressess, SqlTransaction transaction, SqlConnection connection)
@@ -126,6 +128,30 @@ namespace KVHAI.Repository
             }
         }
 
+        public async Task<int> GetResidentIdByAddressId(string address_id)
+        {
+            int id = 0;
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT res_id FROM address_tb WHERE addr_id = @addr_id", connection))
+                    {
+                        command.Parameters.AddWithValue("@addr_id", address_id);
+
+                        var result = await command.ExecuteScalarAsync();
+                        id = Convert.ToInt32(result);
+                    }
+                }
+                return id;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+
+        }
+
 
         public async Task<List<ResidentAddress>> GetResidentAddressList()
         {
@@ -226,6 +252,7 @@ namespace KVHAI.Repository
                                 {
                                     ID = Convert.ToInt32(reader["res_id"].ToString()),
                                     Address_ID = Convert.ToInt32(reader["addr_id"].ToString()),
+                                    Resident_ID = Convert.ToInt32(reader["res_id"].ToString()),
                                     Name = name
                                 };
 
@@ -323,7 +350,18 @@ namespace KVHAI.Repository
 
 
                         //int location = residentValues["Location"];
+                        // Create notification for the resident
+                        var notif = new Notification
+                        {
+                            Resident_ID = residentID,
+                            Title = "Register Address",
+                            Message = "New address need to verify",
+                            Url = "/kvhai/resident/my-address",
+                            Message_Type = "Personal"
+                        };
 
+                        await _notificationRepository.SendNotificationToAdmin(notif);
+                        //await _hubContext.Clients.All.SendAsync("ReceivedAddressNotificationToAdmin", notification.Title, notification.Resident_ID);
 
                         transaction.Commit();
                         return 1;
@@ -350,6 +388,17 @@ namespace KVHAI.Repository
                         command.Parameters.AddWithValue("@id", addresID);
                         command.Parameters.AddWithValue("@status", status);
 
+                        int residentID = await GetResidentIdByAddressId(addresID.ToString());
+                        var notif = new Notification
+                        {
+                            Resident_ID = residentID.ToString(),
+                            Title = "Register Address",
+                            Message = "Your address was verified!",
+                            Url = "/kvhai/resident/my-address",
+                            Message_Type = "Personal"
+                        };
+
+                        await _notificationRepository.InsertNotificationPersonal(notif);
                         return await command.ExecuteNonQueryAsync();
                     }
                 }

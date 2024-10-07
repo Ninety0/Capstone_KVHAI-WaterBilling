@@ -1,6 +1,8 @@
-﻿namespace KVHAI.Hubs
+﻿using Microsoft.AspNetCore.SignalR;
+
+namespace KVHAI.Hubs
 {
-    public class WaterBillingHub
+    public class WaterBillingHub : Hub
     {
 
     }

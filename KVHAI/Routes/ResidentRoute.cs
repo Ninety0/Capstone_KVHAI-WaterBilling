@@ -69,7 +69,11 @@ namespace KVHAI.Routes
             endpoint.MapHub<AnnouncementHub>("/resident/home");
 
             endpoint.MapHub<NotificationHub>("/resident/water-consumption");
+            endpoint.MapHub<NotificationHub>("/resident/water-bill");
+            endpoint.MapHub<NotificationHub>("/resident/register-address");
+            endpoint.MapHub<NotificationHub>("/resident/my-address");
 
+            endpoint.MapHub<NotificationHub>("/resident/notification");
             #endregion
 
         }
