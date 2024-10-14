@@ -2,6 +2,7 @@
 using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Client;
 using TableDependency.SqlClient;
 
 namespace KVHAI.SubscribeSqlDependency
@@ -72,10 +73,48 @@ namespace KVHAI.SubscribeSqlDependency
                                 {
                                     await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedAddressNotification", notification.Message, res_id);
                                 }
+                                else if (notification.Title.Contains("My Address"))
+                                {
+                                    await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedMyAddressNotification", notification.Message, res_id);
+                                }
+                                else if (notification.Title.Contains("Request Action"))
+                                {
+                                    await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedAddressNotification", notification.Message, res_id);
+                                }
 
+                                //await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedRequestPageNotificationToMyAddress", notification.Title, res_id);
                                 await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedPersonalNotification", notification.Title, res_id);
                             }
                         }
+                    }
+                    else if (notification.Message_Type == "Admin")
+                    {
+                        if (notification.Title.Contains("Water Reading"))
+                        {
+                        }
+                        else if (notification.Title.Contains("Water Billing"))
+                        {
+                        }
+                        else if (notification.Title.Contains("Register Address"))
+                        {
+                            await _hubContextNotification.Clients.All.SendAsync("ReceivedAddressNotificationToAdmin", notification.Title, notification.Resident_ID);
+                        }
+                        else if (notification.Title.Contains("Request Action"))
+                        {
+                            await _hubContextNotification.Clients.All.SendAsync("ReceivedRequestPageNotificationToAdmin", notification.Title, notification.Resident_ID);
+
+                        }
+
+                        //var hubConnections = await _connectionRepository.SelectHubConnection(notification.Resident_ID);
+
+                        //if (hubConnections != null && hubConnections.Count > 0)
+                        //{
+                        //    foreach (var hubConnection in hubConnections)
+                        //    {
+                        //        //await _hubContextNotification.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedAddressNotificationToAdmin", notification.Message, res_id);
+
+                        //    }
+                        //}
                     }
                 }
 

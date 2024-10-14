@@ -58,7 +58,7 @@
                 <i class="fa-solid fa-location-dot nav_icon"></i>
             </div>
             <div class="col  d-flex justify-content-start">
-                Address
+                Register
             </div>
 
         </div>
@@ -98,154 +98,145 @@
 }
 
 @section mobilenav{
-    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-house mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-house mobile_nav_icon"></i>
+            <span class="ms-3">
                 Home
-            </div>
+            </span>
+        </div>
+
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            <span class="ms-3">
+                Register Address
+            </span>
 
         </div>
     </a>
-    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                Address
-            </div>
-
-        </div>
-    </a>
-    <a href="/kvhai/resident/my-address" class="nav_sidebar active mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 active ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+            <span class="ms-3">
                 My Address
-            </div>
-
+            </span>
         </div>
     </a>
-    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-gauge mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            <span class="ms-3">
                 Consumption
-            </div>
+            </span>
         </div>
     </a>
-    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            <span class="ms-3">
                 Billing
-            </div>
+            </span>
         </div>
     </a>
 }
 
-
-<div class="content-container p-3">
-    <div class="row">
-        <div class="col">
-            <div class="d-flex flex-column align-items-start">
-                <span class="title">Registered Address </span>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row">
+            <div class="col">
+                <div class="d-flex flex-column align-items-start">
+                    <h5 class="fw-bold text-muted">Registered Address</h5>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="container border mb-3" id="tableView">
-        @{
-            for (int i = 0; i < Model.ListAddress.Count; i++)
-            {
-                string btn_remove = "";
-                string btn_cancel = "";
-                string elementIDName = $"select-street{i + 1}";
 
-                if (string.IsNullOrEmpty(Model.ListAddress[i].Remove_Request_Token))
+        <div class="container border mb-3" id="tableView">
+            @{
+                for (int i = 0; i < Model.ListAddress.Count; i++)
                 {
-                    btn_cancel = "disabled";
-                }
-                else
-                {
-                    btn_remove = "disabled";
-                }
+                    string btn_remove = "";
+                    string btn_cancel = "";
+                    string elementIDName = $"select-street{i + 1}";
 
-                <div class="container">
-                    @* ADDRESS *@
-                    <div id="add_item">
-                        <div class="row row_address">
-                            <!-- BLOCK-->
-                            <div class="col-md-3">
-                                <div class="form-check mb-3">
-                                    <label for="Block" class="form-label fw-bold fs-6">Block</label>
-                                    <input type="text" min="1" class="form-control " value="@Model.ListAddress[i].Block" id="Block" name="Block" disabled required>
-                                    <div class="invalid-feedback">
-                                        Required.
+                    if (string.IsNullOrEmpty(Model.ListAddress[i].Remove_Request_Token))
+                    {
+                        btn_cancel = "disabled";
+                    }
+                    else
+                    {
+                        btn_remove = "disabled";
+                    }
+
+                    <div class="container">
+                        @* ADDRESS *@
+                        <div id="add_item">
+                            <div class="row row_address">
+                                <!-- BLOCK-->
+                                <div class="col-md-3">
+                                    <div class="form-check mb-3">
+                                        <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                                        <input type="text" min="1" class="form-control " value="@Model.ListAddress[i].Block" id="Block" name="Block" disabled required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- LOT-->
-                            <div class="col-md-3">
-                                <div class="form-check mb-3">
-                                    <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
-                                    <input type="text" min="1" class="form-control " value="@Model.ListAddress[i].Lot" id="Lot" name="Lot" disabled required>
-                                    <div class="invalid-feedback">
-                                        Required.
+                                <!-- LOT-->
+                                <div class="col-md-3">
+                                    <div class="form-check mb-3">
+                                        <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                                        <input type="text" min="1" class="form-control " value="@Model.ListAddress[i].Lot" id="Lot" name="Lot" disabled required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!--STREET-->
-                            <div class="col-md-4">
-                                <div class="form-check mb-3">
-                                    <label for="fname" class="form-label fw-bold fs-6">Street</label>
+                                <!--STREET-->
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Street</label>
 
-                                    <select id="@elementIDName" class="form-select" aria-label="Default select example" required>
-                                        @{
-                                            foreach (var item in Model.ListStreet)
-                                            {
-                                                <option value="@item.Street_ID">@item.Street_Name</option>
+                                        <select id="@elementIDName" class="form-select" aria-label="Default select example" required>
+                                            @{
+                                                foreach (var item in Model.ListStreet)
+                                                {
+                                                    <option value="@item.Street_ID">@item.Street_Name</option>
+                                                }
                                             }
-                                        }
-                                    </select>
-                                    <div class="invalid-feedback">
-                                        Required.
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="col-md-2 mt-3 d-flex justify-content-evenly">
-                                <button class="btn btn-danger btn-sm me-2 btn_remove @btn_remove" data-id="@Model.ListAddress[i].Address_ID" data-request-id="@Model.ListAddress[i].Request_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                                <button class="btn btn-secondary btn-sm btn_cancel @btn_cancel" data-id="@Model.ListAddress[i].Address_ID" data-request-id="@Model.ListAddress[i].Request_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
-                                    <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
-                                    <i class="fa-solid fa-ban"></i>
-                                </button>
+                                <div class="col-md-2 mb-3 mb-md-0 mt-3 d-flex justify-content-evenly">
+                                    <button class="btn btn-danger btn-sm me-2 btn_remove @btn_remove" data-id="@Model.ListAddress[i].Address_ID" data-request-id="@Model.ListAddress[i].Request_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm btn_cancel @btn_cancel" data-id="@Model.ListAddress[i].Address_ID" data-request-id="@Model.ListAddress[i].Request_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                        <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                </div>
+                                <hr class="d-block" />
+
                             </div>
 
                         </div>
+                        @*END ADDRESS *@
 
                     </div>
-                    @*END ADDRESS *@
 
-                </div>
-
+                }
             }
-        }
-    </div>
-    
+        </div>
 
+    </div>
 </div>
 
 @section scripts{
@@ -260,10 +251,15 @@
             </text>
         }
         $(document).ready(function () {
-            const registerConnection = setupSignalRConnection("/resident/register-address", "Register Address Hub");
+            const registerConnection = setupSignalRConnection("/resident/my-address", "My Address Hub");
 
-            registerConnection.on("ReceivedAddressNotification", function (message, resident_id) {
+            registerConnection.on("ReceivedMyAddressNotification", function (message, resident_id) {
                 alert("Verify");
+                GetAddress();
+            });
+
+            registerConnection.on("ReceivedRequestPageNotificationToMyAddress", function (message, resident_id) {
+                alert("Action Approve/Reject");
                 GetAddress();
             });
 
@@ -274,6 +270,7 @@
                     url: "/MyAddress/GetAddress",
                     data: { resident_id: res_id },
                     success: function (response) {
+                        console.log(response);
                         var result = $(response).find('#tableView').html();
                         $('#tableView').html(result);
                     },

@@ -142,12 +142,12 @@
                 var select = $('#waterReadingSelect').find('option:selected');
                 var dateFrom = select.data('datefrom').trim();
                 var dateTo = select.data('dateto').trim();
-                var _location = $('#location').val();
+                //var _location = $('#location').val();
 
                 var data = {
                     fromDate : dateFrom,
                     toDate: dateTo,
-                    location : _location
+                    //location : _location
                 };
 
                 console.log(data);
@@ -177,139 +177,149 @@
     </script>
 }
 
-<div class="content-container p-3" id="waterReadingView">
-    <div class="row">
-        <div class="col">
-            <div class="d-flex flex-column align-items-start">
-                <span class="title">KVHAI WATERWORKS </span>
-                <span class="title" id="dateCoverage">PERIOD COVER DATE </span>
-            </div>
-        </div>
-        <div class="col d-flex justify-content-end ">
-            @{
-                @Model.GenerateSelect
-            }
-        </div>
-    </div>
-    <div class="container border" id="tableView">
+<div class="card shadow-sm">
+    <div class="card-body" id="waterReadingView">
         <div class="row">
             <div class="col">
-                <select id="location" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
-                    <option selected value="1">Phase 2 (Blk 51 to  143)</option>
-                    <option value="2">Phase 1 (Blk 41 to  48)</option>
-                    <option value="3">Blk 24 to 40</option>
-                    <option value="4">Blk 7 to 23</option>
-                    <option value="">All</option>
-                </select>
+                <div class="d-flex flex-column align-items-start">
+                    <h5 class="fw-bold text-muted">KVHAI WATERWORKS</h5>
+                    <h5 class="fw-bold text-muted">PERIOD COVER DATE</h5>
+                </div>
             </div>
-            <div class="col d-flex justify-content-end" id="btngenerate_container">
+            <div class="col d-flex justify-content-end ">
                 @{
-                    if (Model.GenerateButton != null)
-                    {
-                        @Model.GenerateButton
-                    }
+                    @Model.GenerateSelect
                 }
-
             </div>
         </div>
-
-        <div class="table-responsive ">
-            <table class="table" id="tableData">
-                <thead>
-                    <tr>
-                        <th scope="col">Reference No.</th>
-                        <th scope="col">Blk</th>
-                        <th scope="col">Lot</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">
-                            <div id="lblDate" class="text-center" data-date="@Model.MonthlyBillText-@Model.WRPrevFirstDate">@Model.WRPrevFirstDate @Model.WRPrevMonth @Model.WRPrevLastDate</div>
-                            <div>Previous Reading</div>
-                        </th>
-                        <th scope="col">
-                            <div class="text-center">@Model.WRCurrentFirstDate @Model.WRCurrentMonth @Model.WRCurrentLastDate</div>
-                            <div>Current Reading</div>
-                        </th>
-                        <th scope="col">
-                            <div>Cubic Meter</div>
-                            <div class="text-center">M3</div>
-                        </th>
-                        <th scope="col">
-                            <div class="text-center">@Model.MonthlyBillText @Model.WRPrevLastDate</div>
-                            <div>Amount</div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="table-group-divider">
+        <div class="container border shadow-lg rounded" id="tableView">
+            <div class="row">
+                <div class="col-12 col-lg-6 d-flex">
+                    <select id="location" class="form-select w-75 mt-3 mb-lg-3 flex-grow-1 flex-lg-grow-0" aria-label="Default select example">
+                        <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                        <option value="2">Phase 1 (Blk 41 to  48)</option>
+                        <option value="3">Blk 24 to 40</option>
+                        <option value="4">Blk 7 to 23</option>
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="col-12 col-lg-6 d-flex justify-content-end" id="btngenerate_container">
                     @{
-                        try
+                        if (Model.GenerateButton != null)
                         {
-                            if (Model.ResidentAddress.Count <1)
+                            @Model.GenerateButton
+                        }
+                    }
+
+                </div>
+            </div>
+
+            <div class="table-responsive ">
+                <table class="table" id="tableData">
+                    <thead>
+                        <tr>
+                            <th scope="col">Reference No.</th>
+                            <th scope="col">Blk</th>
+                            <th scope="col">Lot</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">
+                                <div id="lblDate" class="text-center" data-date="@Model.MonthlyBillText-@Model.WRPrevFirstDate">@Model.WRPrevFirstDate @Model.WRPrevMonth @Model.WRPrevLastDate</div>
+                                <div>Previous Reading</div>
+                            </th>
+                            <th scope="col">
+                                <div class="text-center">@Model.WRCurrentFirstDate @Model.WRCurrentMonth @Model.WRCurrentLastDate</div>
+                                <div>Current Reading</div>
+                            </th>
+                            <th scope="col">
+                                <div>Cubic Meter</div>
+                                <div class="text-center">M3</div>
+                            </th>
+                            <th scope="col">
+                                <div class="text-center">@Model.MonthlyBillText @Model.WRPrevLastDate</div>
+                                <div>Amount</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @{
+                            try
+                            {
+                                if (Model.ResidentAddress.Count < 1)
+                                {
+                                    <tr>
+                                        <td colspan="8" class="p-5 text-center fw-bold">NO DATA FOUND</td>
+                                    </tr>
+                                }
+                                for (int i = 0; i < Model.ResidentAddress.Count; i++)
+                                {
+                                    if (i < Model.PreviousReading.Count && i < Model.CurrentReading.Count)
+                                    {
+                                        // Define default values for cases where data might be missing
+                                        string previousReading = "N/A";
+                                        string currentReading = "N/A";
+                                        string cubicMeter = "N/A";
+                                        string billAmount = "N/A";
+                                        string arrears = "N/A";
+
+                                        // Fetch the previous reading if available
+                                        if (i < Model.PreviousReading.Count)
+                                        {
+                                            previousReading = Model.PreviousReading[i]?.Consumption ?? "N/A";
+                                        }
+
+                                        // Fetch the current reading if available
+                                        if (i < Model.CurrentReading.Count)
+                                        {
+                                            currentReading = Model.CurrentReading[i]?.Consumption ?? "N/A";
+                                        }
+
+                                        // Fetch the calculated cubic meter if available
+                                        if (i < Model.CubicMeter.Count)
+                                        {
+                                            cubicMeter = Model.CubicMeter[i].ToString();
+                                        }
+
+                                        // Fetch the calculated bill amount if available
+                                        if (i < Model.BillAmount.Count)
+                                        {
+                                            billAmount = Model.BillAmount[i].ToString("F2");
+                                        }
+
+                                        // Fetch the arrears if available
+                                        //if (i < Model.Arrears.Count)
+                                        //{
+                                        //    arrears = Model.Arrears[i].ToString("F2");
+                                        //}
+
+                                        <tr class="rowData">
+                                            <td class="border border-secondary-subtle readingID" data-reading="@Model.PreviousReading[i].Address_ID">@(i + 1) @Model.PreviousReading[i].Address_ID</td>
+                                            <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
+                                            <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
+                                            <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
+                                            <td class="previous-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].PreviousReading</td>
+                                            <td class="current-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].CurrentReading</td>
+                                            <td class="text-center border border-secondary-subtle" data-cubic="@Model.WaterBillingValues[i].CubicMeter">@Model.WaterBillingValues[i].CubicMeter</td>
+                                            <td class="border border-secondary-subtle" data-bill="@Model.WaterBillingValues[i].Total">@Model.WaterBillingValues[i].Total</td>
+                                            @*<td>@arrears</td>*@
+                                        </tr>
+                                    }
+
+                                }
+                            }
+                            catch (Exception ex)
                             {
                                 <tr>
-                                    <td colspan="8" class="p-5 text-center fw-bold">NO DATA FOUND</td>
-                                </tr>
-                            }
-                            for (int i = 0; i < Model.ResidentAddress.Count; i++)
-                            {
-                                // Define default values for cases where data might be missing
-                                string previousReading = "N/A";
-                                string currentReading = "N/A";
-                                string cubicMeter = "N/A";
-                                string billAmount = "N/A";
-                                string arrears = "N/A";
-
-                                // Fetch the previous reading if available
-                                if (i < Model.PreviousReading.Count)
-                                {
-                                    previousReading = Model.PreviousReading[i]?.Consumption ?? "N/A";
-                                }
-
-                                // Fetch the current reading if available
-                                if (i < Model.CurrentReading.Count)
-                                {
-                                    currentReading = Model.CurrentReading[i]?.Consumption ?? "N/A";
-                                }
-
-                                // Fetch the calculated cubic meter if available
-                                if (i < Model.CubicMeter.Count)
-                                {
-                                    cubicMeter = Model.CubicMeter[i].ToString();
-                                }
-
-                                // Fetch the calculated bill amount if available
-                                if (i < Model.BillAmount.Count)
-                                {
-                                    billAmount = Model.BillAmount[i].ToString("F2");
-                                }
-
-                                // Fetch the arrears if available
-                                //if (i < Model.Arrears.Count)
-                                //{
-                                //    arrears = Model.Arrears[i].ToString("F2");
-                                //}
-
-                                <tr class="rowData">
-                                                        <td class="border border-secondary-subtle readingID" data-reading="@Model.PreviousReading[i].Address_ID">@(i + 1) @Model.PreviousReading[i].Address_ID</td>
-                                    <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
-                                    <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
-                                    <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
-                                    <td class="previous-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].PreviousReading</td>
-                                    <td class="current-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].CurrentReading</td>
-                                    <td class="text-center border border-secondary-subtle" data-cubic="@Model.WaterBillingValues[i].CubicMeter">@Model.WaterBillingValues[i].CubicMeter</td>
-                                    <td class="border border-secondary-subtle" data-bill="@Model.WaterBillingValues[i].Total">@Model.WaterBillingValues[i].Total</td>
-                                    @*<td>@arrears</td>*@
+                                    <td colspan="9">@ex.Message</td>
                                 </tr>
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            <tr>
-                                <td colspan="9">@ex.Message</td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
+
     </div>
+</div>
+<div class="content-container p-3" >
 </div>

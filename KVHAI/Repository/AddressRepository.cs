@@ -353,11 +353,10 @@ namespace KVHAI.Repository
                         // Create notification for the resident
                         var notif = new Notification
                         {
-                            Resident_ID = residentID,
                             Title = "Register Address",
                             Message = "New address need to verify",
-                            Url = "/kvhai/resident/my-address",
-                            Message_Type = "Personal"
+                            Url = "/kvhai/staff/resident-address/",
+                            Message_Type = "Admin"
                         };
 
                         await _notificationRepository.SendNotificationToAdmin(notif);
@@ -392,7 +391,7 @@ namespace KVHAI.Repository
                         var notif = new Notification
                         {
                             Resident_ID = residentID.ToString(),
-                            Title = "Register Address",
+                            Title = "My Address",
                             Message = "Your address was verified!",
                             Url = "/kvhai/resident/my-address",
                             Message_Type = "Personal"
@@ -507,8 +506,7 @@ namespace KVHAI.Repository
                                         insertCommand.Parameters.AddWithValue("@date_created", currentDateTime);
                                         insertCommand.Parameters.AddWithValue("@status", status.ToString());
                                         insertCommand.Parameters.AddWithValue("@status_updated", currentDateTime); // Track when status was set
-                                        int ID = (int)await insertCommand.ExecuteScalarAsync();
-                                        return ID;
+                                        result = (int)await insertCommand.ExecuteScalarAsync();
                                     }
                                 }
                             }
@@ -533,7 +531,7 @@ namespace KVHAI.Repository
         }
 
 
-        public async Task<int> CancelRequestRemoveTokenUpdate(string addresID, string residentID, string request_id)
+        public async Task<int> CancelRequestRemoveTokenUpdate(string addresID, string residentID, string request_id = "")
         {
             try
             {
@@ -730,7 +728,6 @@ namespace KVHAI.Repository
                 return 0;
             }
         }
-
 
         //GET NAME BY ID
         public async Task<string> GetNameByID(string id)

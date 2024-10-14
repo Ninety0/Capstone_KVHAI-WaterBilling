@@ -50,26 +50,49 @@ namespace KVHAI.CustomClass
         public async Task<Models.Forecasting> GetPercentChange()
         {
             var forecast = new KVHAI.Models.Forecasting();
-            var actualDataList = new List<double>
+            var years = new[] { 2024, 2025 }; //we can have get year
+
+            foreach (var year in years)
             {
-                1000, 1200, 1300, 1400, 1600, 1800, 1500, 1700, 1400, 2800, 3100, 3500
-            };
+                var actualData = GetActualDataForYear(year);
+                var movingAverage = CalculateMovingAverage(actualData, 5);
+                var percentChange = new List<double?>();
+                var insights = new List<string>();
 
-            var movingAverage = CalculateMovingAverage(actualDataList, 5);
+                ProcessYearData(actualData, movingAverage, percentChange, insights);
 
-            var insights = new List<string>();
-            var percentChange = new List<double?>();
+                forecast.YearlyData[year] = new YearData
+                {
+                    ActualData = actualData,
+                    MovingAverage = movingAverage,
+                    PercentChange = percentChange,
+                    Insights = insights
+                };
+            }
 
-            for (int i = 0; i < actualDataList.Count; i++)
+            return forecast;
+        }
+
+        //here we will create a logic to get the data per year
+        private List<double> GetActualDataForYear(int year)
+        {
+            // This method would return the actual data for the given year
+            // For now, we'll use dummy data
+            return year == 2024
+                ? new List<double> { 1000, 1200, 1300, 1400, 1600, 1800, 1500, 1700, 1400, 2800, 3100, 3500 }
+                : new List<double> { 3600, 3800, 4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400, 5600, 5800 };
+        }
+
+        private void ProcessYearData(List<double> actualData, List<double?> movingAverage, List<double?> percentChange, List<string> insights)
+        {
+            for (int i = 0; i < actualData.Count; i++)
             {
-                double actual = actualDataList[i];
-
-                if (movingAverage[i].HasValue) // Check if moving average exists for this index
+                double actual = actualData[i];
+                if (movingAverage[i].HasValue)
                 {
                     double moveAvg = movingAverage[i].Value;
                     double percent = PercentChangeFormula(actual, moveAvg);
                     string message = GenerateForecastInsights(percent);
-
                     percentChange.Add(percent);
                     insights.Add(message);
                 }
@@ -79,16 +102,6 @@ namespace KVHAI.CustomClass
                     insights.Add(null);
                 }
             }
-
-            forecast = new Models.Forecasting
-            {
-                Actual_Data = actualDataList,
-                Moving_Average = movingAverage,
-                Percent_Change = percentChange,
-                Insights = insights
-            };
-
-            return forecast;
         }
 
         // Calculate percentage change

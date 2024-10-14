@@ -68,17 +68,98 @@
 }
 
 @section scripts{
-    @*<script src="~/js/signalr.min.js"></script>*@
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/signalrSetupConnection.js"></script>
     <script>
         $('#filter_name').editableSelect();
         $(document).ready(function () {
+
+            //SIGNAL R SETUP
+            const pageRequestConnection = setupSignalRConnection("/resident/my-address", "Page Request Hub");
+
+            pageRequestConnection.on("ReceivedRequestPageNotificationToAdmin", function (message, resident_id) {
+                alert("May Pumasok na request");
+                GetNewAddress();
+            });
+
+            function GetNewAddress() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/RequestPage/GetNewRequest',
+                    success: function (response) {
+                        var result = $(response).find('#table_body').html();
+                        $('#table_body').html(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+            //END SIGNAL R SETUP
+
             //GLOBAL VARIABLES
             let statusCode = '';
 
             // Event listeners
             clearFilters();
             GetDate();
+
+            $(document).on('click', '#btnrequest_approve', function () {
+                var addr_ID = $(this).data('id');
+                var request_id = $(this).data('request-id');
+                var res_id = $(this).closest('tr').find('td[data-resid]').data('resid');
+                var _request = $(this).closest('tr').find('td[data-request]').data('request');
+                //alert("approve: " + request_id);
+
+                var formData = {
+                    Request_ID : request_id,
+                    Resident_ID : res_id,
+                    Address_ID : addr_ID,
+                    RequestType : _request,
+                    Status : "1",
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/RequestPage/ApprovePending',
+                    data: formData,
+                    success: function (response) {
+                        var result = $(response).find('#table_body').html();
+                        $('#table_body').html(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            })
+            $(document).on('click', '#btnrequest_reject', function () {
+                var addr_ID = $(this).data('id');
+                var request_id = $(this).data('request-id');
+                var res_id = $(this).closest('tr').find('td[data-resid]').data('resid');
+                var _request = $(this).closest('tr').find('td[data-request]').data('request');
+                //alert("address: " + addr_ID + " res_id: " + res_id);
+
+                var formData = {
+                    Request_ID: request_id,
+                    Resident_ID: res_id,
+                    Address_ID: addr_ID,
+                    RequestType: _request,
+                    Status: "2",
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/RequestPage/ApprovePending',
+                    data: formData,
+                    success: function (response) {
+                        var result = $(response).find('#table_body').html();
+                        $('#table_body').html(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            })
 
             $(document).on('click', '#btn_pending', function () {
                 updateStatus('Pending', 'pending');
@@ -209,172 +290,189 @@
         });
     </script>
 }
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="container border border-2">
+            <!-- FILTER -->
+            <div class="container">
+                <div class="row mt-3 mb-3">
 
-<div class="content-container p-4">
-    <div class="container border border-2">
-        <!-- FILTER -->
-        <div class="row mt-3 mb-3">
-            <div class="col d-flex">
-                <span class="me-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20">
-                        <path fill="currentColor" d="M12.25 13.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1 0-1.5z" />
-                    </svg>
-                </span>
-                <!--FILTER FOR NAME-->
-                <div class="search-wrapper">
-                    <div class="left">
-                        <span><i class="fa-solid fa-magnifying-glass ms-2 me-2"></i></span>
-                        <input type="search" class="search-input" id="filter_search" placeholder="Search...">
+                    <!--FILTER FOR NAME-->
+                    <div class="col-12 col-lg-5 mb-3">
+                        <div class="d-flex">
+                            <span class="me-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20">
+                                    <path fill="currentColor" d="M12.25 13.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5zm2-4.25a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1 0-1.5z" />
+                                </svg>
+                            </span>
+                            <div class="search-wrapper flex-grow-1">
+                                <div class="left">
+                                    <span><i class="fa-solid fa-magnifying-glass ms-2 me-2"></i></span>
+                                    <input type="search" class="search-input" id="filter_search" placeholder="Search...">
+                                </div>
+                                <div class="vertical-divider"></div>
+                                <div class="right">
+                                    <select class="justselect" id="category">
+                                        <option selected value="lname">Name</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="vertical-divider"></div>
-                    <div class="right">
-                        <select class="justselect" id="category">
-                            <option selected value="lname">Name</option>
-                        </select>
+
+                    <!--FILTER FOR STATUS-->
+                    <div class="col-12 col-md-6 col-lg-3 mb-3">
+                        <div class="dropdown">
+                            <button class="form-control border border-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                STATUS
+                                <span class="status_text"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li class="d-flex align-items-center">
+                                    <div class="container mb-2"><a class="dropdown-item status pending" data-status="0" id="btn_pending">Pending</a></div>
+                                </li>
+                                <li>
+                                    <div class="container mb-2">
+                                        <a class="dropdown-item status approve" id="btn_approve" data-status="1">Approved</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="container mb-2">
+                                        <a class="dropdown-item status reject" id="btn_reject" data-status="2">Reject</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="container mb-2">
+                                        <a class="dropdown-item status cancel" id="btn_cancel" data-status="3">Canceled</a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!--FILTER FOR DATE-->
+                    <div class="col-12 col-md-6 col-lg-4 mb-3">
+                        <div class="d-flex">
+                            <div class="flex-grow-1">
+                                <input type="date" class="form-control border border-2" id="filter_date" name="name" value="" />
+                            </div>
+                            <div class="clear_text d-none ms-2 align-self-center">
+                                CLEAR
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!--FILTER FOR STATUS-->
-                <div class="dropdown ms-3 ">
-                    <button class="form-control border border-2  dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        STATUS
-                        <span class="status_text "></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li class="d-flex align-items-center">
-                            <div class="container mb-2"><a class="dropdown-item status pending"  data-status="0" id="btn_pending">Pending</a></div>
-                        </li>
-                        <li>
-                            <div class="container mb-2">
-                                <a class="dropdown-item status approve" id="btn_approve" data-status="1">Approved</a>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="container mb-2">
-                                <a class="dropdown-item status reject" id="btn_reject" data-status="2">Reject</a>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="container mb-2">
-                                <a class="dropdown-item status cancel" id="btn_cancel" data-status="3">Canceled</a>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
 
-                <!--FILTER FOR DATE-->
-                <div class="ms-3">
-                    <input type="date" class="form-control border border-2" id="filter_date" name="name" value="" />
-                </div>
+            <!--MAIN BODY-->
+            <div class="row">
+                <div class="col-12 ">
+                    <div class="table-responsive-lg">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Address</th>
+                                    <th scope="col">Request</th>
+                                    <th scope="col">Date Created</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Comments</th>
+                                    <th scope="col">Status Updated</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table_body">
+                                @{
+                                    /* status type:
+                                        0 = pending
+                                        1 = approve
+                                        2 = reject
+                                        3 = cancel
+                                    */
+                                    int i = 1;
+                                    if (Model.Count < 1)
+                                    {
+                                        <tr>
+                                            <td colspan="8" class="text-center p-5 fw-bold">NO DATA FOUND!</td>
+                                        </tr>
+                                    }
+                                    foreach (var item in Model)
+                                    {
+                                        string className = "";
+                                        string statusName = "";
+                                        string disableButton = "";
+                                        if (item.Status == 0)//pending
+                                        {
+                                            className = "pending";
+                                            statusName = "Pending";
 
-                <!--CLEAR FILTERS-->
-                <div class="clear_text d-none ms-2">
-                    CLEAR
+                                        }
+                                        else if (item.Status == 1)//approve
+                                        {
+                                            className = "approve";
+                                            statusName = "Approved";
+                                            disableButton = "disabled";
+                                        }
+                                        else if (item.Status == 2)//reject
+                                        {
+                                            className = "reject";
+                                            statusName = "Reject";
+                                            disableButton = "disabled";
+
+                                        }
+                                        else if (item.Status == 3)//cancel
+                                        {
+                                            className = "cancel";
+                                            statusName = "Canceled";
+                                        }
+                                        else
+                                        {
+                                            className = "";
+                                            statusName = "";
+                                        }
+                                        <tr>
+                                            <td data-resid="@item.Resident_ID">@item.Resident_Name</td>
+                                            <td>@item.Address_Name</td>
+                                            <td data-request="@item.RequestType">@item.RequestType</td>
+                                            <td>@item.DateCreated</td>
+                                            <td><div class="status @className">@statusName</div></td>
+                                            <td>@item.Comments</td>
+                                            <td>@item.StatusUpdated</td>
+                                            <td>
+
+                                                <div class="dropdown">
+                                                    <button class="form-control border border-2 @disableButton" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="fa-solid fa-ellipsis"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <div class="container mb-2">
+                                                                <a class="dropdown-item status approve" data-request-id="@item.Request_ID" data-id="@item.Address_ID" id="btnrequest_approve">Approved</a>
+                                                            </div>
+                                                        </li>
+                                                        <li>
+                                                            <div class="container mb-2">
+                                                                <a class="dropdown-item status reject" data-request-id="@item.Request_ID" data-id="@item.Address_ID" id="btnrequest_reject">Reject</a>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-
-        <!--MAIN BODY-->
-        <div class="row">
-            <div class="col-12 ">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Name</th>
-                                <th scope="col">Address</th>
-                                <th scope="col">Request</th>
-                                <th scope="col">Date Created</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Comments</th>
-                                <th scope="col">Status Updated</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table_body">
-                            @{
-                                /* status type:
-                                    0 = pending
-                                    1 = approve
-                                    2 = reject
-                                    3 = cancel
-                                */
-                                int i = 1;
-                                if (Model.Count <1)
-                                {
-                                    <tr>
-                                        <td colspan="8" class="text-center p-5 fw-bold">NO DATA FOUND!</td>
-                                    </tr>
-                                }
-                                foreach (var item in Model)
-                                {
-                                    string className = "";
-                                    string statusName = "";
-                                    if (item.Status == 0)//pending
-                                    {
-                                        className = "pending";
-                                        statusName = "Pending";
-
-                                    }
-                                    else if (item.Status == 1)//approve
-                                    {
-                                        className = "approve";
-                                        statusName = "Approved";
-                                    }
-                                    else if (item.Status == 2)//reject
-                                    {
-                                        className = "reject";
-                                        statusName = "Reject";
-                                    }
-                                    else if (item.Status == 3)//cancel
-                                    {
-                                        className = "cancel";
-                                        statusName = "Canceled";
-                                    }
-                                    else
-                                    {
-                                        className = "";
-                                        statusName = "";
-                                    }
-                                    <tr>
-                                        <td>@item.Resident_Name</td>
-                                        <td>@item.Address_Name</td>
-                                        <td>@item.RequestType</td>
-                                        <td>@item.DateCreated</td>
-                                        <td><div class="status @className">@statusName</div></td>
-                                        <td>@item.Comments</td>
-                                        <td>@item.StatusUpdated</td>
-                                        <td>
-                                            <div class="dropdown">
-                                                <button class="form-control border border-2 " type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa-solid fa-ellipsis"></i>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <div class="container mb-2">
-                                                            <a class="dropdown-item status approve" href="#">Approved</a>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="container mb-2">
-                                                            <a class="dropdown-item status reject" href="#">Reject</a>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    i++;
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
+
 <!--
     
 UPDATE NEEDED ARE SEARCH OF NAME AND HOW ACTION WILL BE USED

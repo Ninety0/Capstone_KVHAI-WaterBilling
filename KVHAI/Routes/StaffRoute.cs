@@ -63,6 +63,12 @@ namespace KVHAI.Routes
                 defaults: new { controller = "ResidentAddress", action = "Index" }
             );
 
+            endpoint.MapControllerRoute(
+                name: "PageRequest",
+                pattern: "kvhai/staff/request-page/",
+                defaults: new { controller = "RequestPage", action = "Index" }
+            );
+
 
             #region FOR SIGNALR MAPS
             endpoint.MapHub<StreetHub>("/kvhai/staff/admin/streethub");

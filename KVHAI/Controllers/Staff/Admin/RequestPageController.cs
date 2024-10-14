@@ -1,4 +1,5 @@
-﻿using KVHAI.Repository;
+﻿using KVHAI.Models;
+using KVHAI.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KVHAI.Controllers.Staff.Admin
@@ -20,6 +21,14 @@ namespace KVHAI.Controllers.Staff.Admin
             return View("~/Views/Staff/Admin/PageRequest.cshtml", model);//UPDATE TOMMOROW
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetNewRequest()
+        {
+            var model = await _requestDetailsRepository.GetPendingRemovalRequests();
+
+            return View("~/Views/Staff/Admin/PageRequest.cshtml", model);//UPDATE TOMMOROW
+        }
+
         public async Task<IActionResult> StatusFilter(string status = "", string date = "")
         {
             var model = await _requestDetailsRepository.GetPendingRemovalRequests(status, date);
@@ -33,10 +42,16 @@ namespace KVHAI.Controllers.Staff.Admin
         }
 
         [HttpPost]
-        public async Task<IActionResult> ApprovePending(string addressID, string name)
+        public async Task<IActionResult> ApprovePending(RequestDetails request)
         {
+            var result = await _requestDetailsRepository.UpdateRequestStatus(request);
 
-            return Ok("Request approved");
+            if (result < 1)
+            {
+                return BadRequest("There was an error processing the request!");
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿$(document).ready(function () {
+
+    //SIGNALR SETUP
     const registerConnection = setupSignalRConnection("/resident/register-address", "Register Address Hub");
 
     registerConnection.on("ReceivedAddressNotificationToAdmin", function (message, resident_id) {
@@ -20,6 +22,10 @@
             }
         });
     };
+    //END SIGNAL R SETUP
+
+    //ON LOAD CALL
+    GetCurrentSwitch();
 
     //event listerner
     $(document).on('change', '#toggleSwitch', function () {
@@ -35,7 +41,14 @@
             lblSwitch.css('background-color', '#ef4444');
         }
 
+        localStorage.setItem('toggleState', toggle);
+
         respagination();
+    });
+
+    $(document).on('click', '.tableContents', function () {
+        var btn = $(this).find('.details-section');
+        btn.fadeToggle("fast");
     });
 
     $(document).on('click', '.btn-res-edit', function () {
@@ -107,21 +120,6 @@
         respagination(respage);
     });
 
-    function hidePreloader() {
-        const loader = $('#loader');
-        setTimeout(function () {
-            $('#loader').addClass('d-none');
-        }, 2000);
-
-    }
-    function showPreloader() {
-        const loader = $('#loader');
-        loader.removeClass('d-none');
-        setTimeout(function () {
-            $('#loader').addClass('d-none');
-        }, 2000);
-    }
-
     /*IMAGE GET METHOD*/
     $(document).on('click', '.load-image', function () {
         //var addressID = $(this).siblings('#res_id').val();
@@ -177,6 +175,44 @@
         $('#modalImage').attr('src', '').hide();
         $('#imagePreloader').show();
     });
+
+    //DEFINE FUNCTIONS
+    function GetCurrentSwitch() {
+        var savedToggleState = localStorage.getItem('toggleState');
+
+        if (savedToggleState !== null) {
+            var isChecked = savedToggleState === 'true';
+            $('#toggleSwitch').prop('checked', isChecked);
+
+            // Update label and color based on saved state
+            var lblSwitch = $('#lblSwitch');
+            if (isChecked) {
+                lblSwitch.html('<b>VERIFIED</b>');
+                lblSwitch.css('background-color', '#22c55e');
+            } else {
+                lblSwitch.html('<b>NOT VERIFIED</b>');
+                lblSwitch.css('background-color', '#ef4444');
+            }
+        }
+
+        respagination();
+    }
+
+    function hidePreloader() {
+        const loader = $('#loader');
+        setTimeout(function () {
+            $('#loader').addClass('d-none');
+        }, 2000);
+
+    }
+
+    function showPreloader() {
+        const loader = $('#loader');
+        loader.removeClass('d-none');
+        setTimeout(function () {
+            $('#loader').addClass('d-none');
+        }, 2000);
+    }
 
     function respagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
         var _search = $('#res-search').val();

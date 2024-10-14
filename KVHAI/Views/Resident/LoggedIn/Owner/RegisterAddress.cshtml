@@ -11,24 +11,8 @@
         }
 
         .btn_add, .btn_remove {
-            background-color: #16a34a;
-            color: white;
-            padding: 1rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 400;
-            height: 38px;
-            width: 150px;
-            position: absolute;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            top: 31px;
         }
 
-        .btn_remove {
-            background-color: #dc2626;
-        }
 
         #btn_Register {
             height: 38px;
@@ -56,7 +40,7 @@
                 <i class="fa-solid fa-location-dot nav_icon"></i>
             </div>
             <div class="col  d-flex justify-content-start">
-                Address
+                Register
             </div>
 
         </div>
@@ -96,134 +80,113 @@
 }
 
 @section mobilenav{
-    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-house mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-house mobile_nav_icon"></i>
+            <span class="ms-3">
                 Home
-            </div>
+            </span>
+        </div>
+
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 active ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            <span class="ms-3">
+                Register Address
+            </span>
 
         </div>
     </a>
-    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 active">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                Address
-            </div>
-
-        </div>
-    </a>
-    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+            <span class="ms-3">
                 My Address
-            </div>
-
+            </span>
         </div>
     </a>
-    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-gauge mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            <span class="ms-3">
                 Consumption
-            </div>
+            </span>
         </div>
     </a>
-    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            <span class="ms-3">
                 Billing
-            </div>
+            </span>
         </div>
     </a>
 }
-
-<div class="content-container p-3">
-    <div class="row">
-        <div class="col">
-            <div class="d-flex flex-column align-items-start">
-                <span class="title">Add Address </span>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row">
+            <div class="col">
+                <div class="d-flex flex-column align-items-start">
+                    <h5 class="fw-bold text-muted">Add Address</h5>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="container border mb-3" id="tableView"></div>
-    <div class="container" id="tableView">
-        <form id="myForm" autocomplete="off" class="needs-validation" enctype="multipart/form-data" novalidate>
-            @Html.AntiForgeryToken()
-            @* ADDRESS *@
-            <div id="add_item">
-                <div class="row row_address">
-                    <!-- BLOCK-->
-                    <div class="col-md-3">
-                        <div class="form-check mb-3">
-                            <label for="Block" class="form-label fw-bold fs-6">Block</label>
-                            <input type="text" min="1" class="form-control" id="Block" name="Block" required>
-                            <div class="invalid-feedback">
-                                Required.
+        <div class="container" id="tableView">
+            <form id="myForm" autocomplete="off" class="needs-validation" enctype="multipart/form-data" novalidate>
+                @Html.AntiForgeryToken()
+                @* ADDRESS *@
+                <div id="add_item">
+                    <div class="row row_address p-3 rounded">
+                        <!-- BLOCK-->
+                        <div class="col-md-3">
+                            <div class="form-check mb-3">
+                                <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                                <input type="text" min="1" class="form-control" id="Block" name="Block" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- LOT-->
-                    <div class="col-md-3">
-                        <div class="form-check mb-3">
-                            <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
-                            <input type="text" min="1" class="form-control" id="Lot" name="Lot" required>
-                            <div class="invalid-feedback">
-                                Required.
+                        <!-- LOT-->
+                        <div class="col-md-3">
+                            <div class="form-check mb-3">
+                                <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                                <input type="text" min="1" class="form-control" id="Lot" name="Lot" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!--STREET-->
-                    <div class="col-md-4">
-                        <div class="form-check mb-3">
-                            <label for="fname" class="form-label fw-bold fs-6">Street</label>
+                        <!--STREET-->
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="fname" class="form-label fw-bold fs-6">Street</label>
 
-                            <select id="select-street1" class="form-select" aria-label="Default select example" required>
-                                @{
-                                    foreach (var item in Model.ListStreet)
-                                    {
-                                        <option value="@item.Street_ID">@item.Street_Name</option>
+                                <select id="select-street1" class="form-select" aria-label="Default select example" required>
+                                    @{
+                                        foreach (var item in Model.ListStreet)
+                                        {
+                                            <option value="@item.Street_ID">@item.Street_Name</option>
+                                        }
                                     }
-                                }
-                            </select>
-                            <div class="invalid-feedback">
-                                Required.
+                                </select>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-2">
-                        <button class="btn_add">ADD</button>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-check mb-3">
-                            <label for="formFile" class="form-label fw-bold fs-6">Upload Proof</label>
-                            <input class="form-control file_upload" type="file" id="formFile">
-                            <div class="invalid-feedback">
-                                Required.
+                        <div class="col-md-2">
+                            <div class="form-check">
+                                <label class="form-label fw-bold fs-6">Action</label>
+                                <button class="btn_add btn btn-outline-success w-100" id="">ADD</button>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                @*<div class="row">
-                        <div class="col">
+                        <div class="col-12">
                             <div class="form-check mb-3">
                                 <label for="formFile" class="form-label fw-bold fs-6">Upload Proof</label>
                                 <input class="form-control file_upload" type="file" id="formFile">
@@ -232,17 +195,35 @@
                                 </div>
                             </div>
                         </div>
-                    </div>*@
-            </div>
-            @*END ADDRESS *@
-            <div class="container border mt-3 mb-3" id="tableView"></div>
+                    </div>
 
-            <div class=" d-flex justify-content-end ">
-                <button class="btn btn-primary" id="btn_Register">Register</button>
-            </div>
-        </form>
+                    @*<div class="row">
+                            <div class="col">
+                                <div class="form-check mb-3">
+                                    <label for="formFile" class="form-label fw-bold fs-6">Upload Proof</label>
+                                    <input class="form-control file_upload" type="file" id="formFile">
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>*@
+                </div>
+                @*END ADDRESS *@
+                <div class="container border mt-3 mb-3" id="tableView"></div>
+
+                <div class=" d-flex justify-content-end ">
+                    <button class="btn btn-primary" id="btn_Register">Register</button>
+                </div>
+            </form>
+
+        </div>
+
 
     </div>
+</div>
+<div class="content-container p-3">
+    <div class="container border mb-3" id="tableView"></div>
 </div>
 
 @section scripts{
@@ -308,9 +289,12 @@
                             //}
                             //else {}
                             toastr.info(response);
-                            setTimeout(function () {
-                                location.reload();
-                            }, 5000);
+                            if (response.includes("Successful")) {
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 5000);
+                            }
+
                         },
                         error: function (xhr, status, error) {
                             //console.log(xhr.responseText);
@@ -365,7 +349,7 @@
 
                 console.log(countIdStreet);
 
-                $('#add_item').append(`<div class="row row_address">
+                $('#add_item').append(`<div class="row row_address p-3 rounded">
                     <!-- BLOCK-->
                     <div class="col-md-3">
                         <div class="form-check mb-3">
@@ -408,7 +392,10 @@
                     </div>
 
                     <div class="col-md-2">
-                        <button class="btn_remove">REMOVE</button>
+                        <div class="form-check">
+                            <label class="form-label fw-bold fs-6">Action</label>
+                            <button class="btn_remove btn btn-outline-danger w-100" id="">REMOVE</button>
+                        </div>
                     </div>
 
                     <div class="col-12">
@@ -437,8 +424,9 @@
         //REMOVE ADDRESS ADDED
         $(document).on('click', '.btn_remove', function (e) {
             e.preventDefault();
-            var rowItem = $(this).parent().parent();
+            var rowItem = $(this).parent().parent().parent();
             //var rowUpload = $(this).parent().parent().next();
+            //$(rowItem).css({ "color": "red", "border": "2px solid red" });
             $(rowItem).remove();
             //countIdStreet--;
             //code to check parent parent

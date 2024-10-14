@@ -1,0 +1,173 @@
+﻿*{
+    padding:0;
+    margin:0;
+}
+
+body {
+    background-color: #f8fafc;
+    font-weight: 300;
+    font-style: normal;
+    font-size: 1rem;
+    max-height: 100vh;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.content-wrapper {
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    background-color: #E3E7E9;
+}
+
+/* Image Styles */
+.kvhai-img {
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    border-radius: 100%;
+    padding: 3px;
+    transition: transform 0.5s ease, box-shadow 0.3s ease;
+}
+
+.kvhai-img:hover {
+    transform: rotate(180deg);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Hamburger Menu Styles */
+.hamburger {
+    background-color: transparent;
+    position: relative;
+    width: 30px;
+    height: 20px;
+    padding: 0;
+}
+
+    .hamburger:hover {
+        transform: scale(1.1);
+    }
+
+.hamburger-line {
+    display: block;
+    border: 1px solid white;
+    height: 1px;
+    width: 100%;
+    padding: 1px;
+    border-radius: 6px;
+}
+
+.hamburger-line::before, .hamburger-line::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    display: block;
+    border: 1px solid white;
+    height: 1px;
+    width: 100%;
+    padding: 1px;
+    border-radius: 6px;
+}
+
+.hamburger-line::before {
+    top: 0;
+}
+
+.hamburger-line::after {
+    bottom: 0;
+}
+
+
+/* Sidebar Styles */
+.sidebar {
+    height: 100vh;
+    box-shadow: 3px 0px 10px 4px rgba(0, 0, 0, 0.25);
+    width: 19rem;
+    position: relative;
+    /*transition: all 0.3s ease;*/
+}
+
+/* Mobile NAv Styles */
+#navbarNav{
+    display:none;
+}
+.mobile_nav_container {
+    width: 100%;
+    color: white;
+}
+
+.navbar_header {
+    display:none;
+}
+
+.topbar_nav {
+    display:none;
+    width: 19rem;
+    position: relative;
+    /*transition: all 0.3s ease;*/
+}
+
+/* Navigation Link Styles */
+.admin_navlinks {
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    align-items: center;
+    width:100%;
+}
+.admin_navlinks a {
+    width: 100%;
+}
+
+.admin_navlinks a:hover {
+    color: #64B51A;
+    background-color:#1a1a1a;
+}
+
+.admin_navlinks .active {
+    background-color: #1a1a1a;
+    color: white;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-left: 5px solid #64B51A; /* Highlight with a border on the left */
+    font-weight: 700;
+
+}
+
+
+/* Medium Devices */
+@media (min-width: 768px) {
+    body {
+        font-size: 1.2rem;
+    }
+
+    .navbar_header {
+        display:block;
+        font-size: 1.5rem;
+        text-decoration: none;
+        font-weight: 800;
+        color: white;
+        letter-spacing: .3em;
+    }
+}
+
+/* Large Devices */
+@media (min-width: 992px) {
+    .kvhai-img {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+/* Extra Large Devices */
+@media (min-width: 1200px) {
+    body {
+        font-size: 1.5rem;
+    }
+}
+
+/* Extra Extra Large Devices */
+@media(min-width:1400px) {
+    /* Further customizations for very large screens */
+}

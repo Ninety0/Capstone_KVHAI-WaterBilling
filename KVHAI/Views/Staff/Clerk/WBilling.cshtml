@@ -25,9 +25,15 @@
             background-color: #e2e8f0;
             box-shadow: 0 4px 4px rgba(71, 85, 105, 0.1);
             padding: 3px;
-            margin-bottom: 8px;
             /*border-color: #334155;*/
             border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .tableContents:hover {
+            border: 1px solid blue;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .details-section {
@@ -60,9 +66,7 @@
         .contentView {
             cursor: pointer;
         }
-        .tableContents:hover {
-            border: 1px solid blue;
-        }
+        
 
         .txtSelect {
             font-size: 1rem;
@@ -338,264 +342,290 @@
     </script>
 }
 
-<div class="content-container p-3" id="waterReadingView">
-    <div class="row  position-relative">
-        <div class="col">
-            <div class="d-flex flex-column align-items-start">
-                <span class="title">KVHAI WATERWORKS </span>
-                <span class="title" id="wbText">Water Bill No. ??</span>
-                <span class="title">PERIOD COVER DATE</span>
-            </div>
-        </div>
-        <div class="col d-flex justify-content-end ">
-            @{
-                if (Model.WaterBillNumberList.Count > 0)
-                {
-                    <select id="wbNumber" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
-                        @for (int i = 0; i < Model.WaterBillNumberList.Count; i++)
-                        {
-                            var selected = (i == 0) ? "selected" : "";
-                            <option selected value="@Model.WaterBillNumberList[i]">WaterBill No. @Model.WaterBillNumberList[i]</option>
-
-                        }
-
-                    </select>
-                }
-                else
-                {
-                    <div class="alert alert-warning container-fluid alert_warning" role="alert">
-                        <i class="fa-solid fa-triangle-exclamation txtWarning"></i>
-                        <span class="txtWarning fw-medium text-center">Complete water reading Consumption first before proceeding here! You will be directed to Water Reading in a second...</span>
+<div class="card">
+    <div class="card-body">
+        <div id="waterReadingView">
+            <div class="row  position-relative">
+                <div class="col">
+                    <div class="d-flex flex-column align-items-start">
+                        <h5 class="fw-bold text-muted">KVHAI WATERWORKS</h5>
+                        <h5 class="fw-bold text-muted" id="wbText">Water Bill No. ??</h5>
+                        <h5 class="fw-bold text-muted">PERIOD COVER DATE</h5>
                     </div>
-                }
-            }
-
-        </div>
-    </div>
-    <div class="container border" id="tableView">
-        <div class="row">
-            <div class="col">
-                <select id="location" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
-                    <option selected value="1">Phase 2 (Blk 51 to  143)</option>
-                    <option value="2">Phase 1 (Blk 41 to  48)</option>
-                    <option value="3">Blk 24 to 40</option>
-                    <option value="4">Blk 7 to 23</option>
-                    <option value="">All</option>
-                </select>
-            </div>
-            <div class="col d-flex justify-content-end">
-                <a id="btnPrint" class="btn btn-secondary me-2">PRINT</a>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        Save as
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" data-fileType="pdf" id="btnPdf" href="#">PDF</a></li>
-                        <li><a class="dropdown-item" data-fileType="excel" id="btnExcel" href="#">EXCEL</a></li>
-                        <li><a class="dropdown-item" data-fileType="doc" id="btnDocument" href="#">DOCUMENT</a></li>
-                    </ul>
                 </div>
-            </div>
-        </div>
-        <div class="tableData mb-2">
-            <div class="header-section bg-secondary p-2">
-                <div class="d-flex justify-content-between">
-                    <span class="text-white fw-bold">WATERBILL NO.</span>
-                    <span class="text-white">PERIOD COVERED:</span>
-                </div>
-            </div>
-
-            <!-- MAIN CONTENT -->
-            <div class="tableRow p-2" id="table-Data">
-                <div class="form-check mb-2" id="selectAll">
-                    <input id="chkAll" type="checkbox" name="chkbox" value="" class="form-check-input border-2" />
-                    <span class="txtSelect">Select All</span>
-                </div>
-                @{
-                    try
-                    {
-                        if (Model.ResidentAddress.Count < 1)//Model.CurrentReading?.Count < Model.PreviousReading?.Count
+                <div class="col d-flex justify-content-end ">
+                    @{
+                        if (Model.WaterBillNumberList.Count > 0)
                         {
-                                <div class="tableContents flex-grow-1">
-                                    <div class="d-flex justify-content-center align-items-center border-bottom border-secondary pb-2 contentView">
-                                        <span class="fw-bold p-3 text-center">NO DATA FOUND!</span>
-                                    </div>
-                                </div>
+                            <select id="wbNumber" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
+                                @for (int i = 0; i < Model.WaterBillNumberList.Count; i++)
+                                {
+                                    var selected = (i == 0) ? "selected" : "";
+                                    <option selected value="@Model.WaterBillNumberList[i]">WaterBill No. @Model.WaterBillNumberList[i]</option>
+
+                                }
+
+                            </select>
                         }
                         else
                         {
-                            for (int i = 0; i < Model.ResidentAddress.Count; i++)
-                            {
-                                <div class="d-flex tables">
-                                    <!--@i BILL-->
-                                    <div class="form-check">
-                                        <input type="checkbox" name="chkbox_@i" value="" class="form-check-input border-2 chkItem" />
-                                    </div>
-                                    <div class="tableContents flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-2 contentView">
-                                            <div class="d-flex flex-column align-items-center">
-                                                <span class="fw-bold">#</span>
-                                                <span id="itemID" data-id="@Model.WaterBill[i].WaterBill_ID">@(i+1)</span>
-                                            </div>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <span class="fw-bold">Name</span>
-                                                <p>@Model.ResidentAddress[i].Name</p>
-                                            </div>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <span class="fw-bold">Block</span>
-                                                <span>@Model.ResidentAddress[i].Block</span>
-                                            </div>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <span class="fw-bold">Lot</span>
-                                                <span>@Model.ResidentAddress[i].Lot</span>
-                                            </div>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <span class="fw-bold">Date</span>
-                                                <span id="itemDate">@Model.WaterBillingValues[i].DateTextList</span>
-                                            </div>
-
-                                            @*<div>
-                                        <a class="toggle-details fw-bold">SHOW</a>
-                                    </div>*@
-                                        </div>
-
-                                        <div class="details-section mt-3">
-                                            <div class="row pb-1">
-
-                                                <!-- METER READING -->
-                                                <div class="col border border-secondary text-center">
-                                                    <div class="fw-bold text-uppercase ">Meter Readings</div>
-                                                    <div class="row mt-2">
-                                                        <div class="col">
-                                                            <div class="fw-bold">Previous</div>
-                                                            <div>@Model.WaterBillingValues[i].PreviousReading</div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="fw-bold">Present</div>
-                                                            <div>@Model.WaterBillingValues[i].CurrentReading</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- CONSUMPTION -->
-                                                <div class="col border border-secondary text-center">
-                                                    <div class="fw-bold text-uppercase ">Consumption</div>
-                                                    <div class="row mt-2">
-                                                        <div class="col">
-                                                            <div class="fw-bold">Volume</div>
-                                                            <div>@Model.WaterBillingValues[i].CubicMeter</div>
-                                                            @*<div>@Model.WaterBill[i].CubicMeter</div>*@
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="fw-bold">Rate per cubic</div>
-                                                            <div>@Model.WaterRate</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row pb-1">
-
-                                                <div class="col border border-secondary">
-
-                                                    <!-- DATE ISSUED -->
-                                                    <div class="row mt-2">
-                                                        <div class="col">
-                                                            <div class="fw-bold text-uppercase ms-3">Date Issued:</div>
-                                                        </div>
-                                                        <div class="col ">
-                                                            <div class="text-uppercase text-center">@Model.WaterBillingValues[i].DateIssued</div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- DUE DATE-->
-                                                    <div class="row mt-2">
-                                                        <div class="col">
-                                                            <div class="fw-bold text-uppercase ms-3">Due Date:</div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="text-uppercase text-center">@Model.WaterBillingValues[i].DueDate</div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- PREVIOUS WATERBILL-->
-                                                    <div class="row mt-2">
-                                                        <div class="col">
-                                                            <div class="fw-bold text-uppercase ms-3">Previous waterbill:</div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="text-uppercase text-center">@Model.WaterBillingValues[i].PrevWaterBill</div>
-                                                        </div>
-                                                    </div>
-
-
-                                                </div>
-
-                                                <!-- AMOUNT DUE -->
-                                                <div class="col border border-secondary text-center">
-                                                    <div class="fw-bold text-uppercase">amount due - water</div>
-
-                                                    <!--CURRENT DUE-->
-                                                    <div class="row mt-2">
-                                                        <div class="col d-flex justify-content-end">
-                                                            <div class="fw-bold text-uppercase ms-3">&#8369</div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="text-uppercase text-center">@Model.WaterBillingValues[i].BillAmount</div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!--ARREARS-->
-                                                    <div class="row mt-2">
-                                                        <div class="col d-flex justify-content-end">
-                                                            <div class="fw-bold text-uppercase ms-3">&#8369</div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="text-uppercase text-center">@Model.WaterBillingValues[i].PrevWaterBillAmount</div>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-
-                                            <div class="row pb-1">
-
-                                                <div class="col border border-secondary d-flex align-content-center">
-                                                    <!-- TOTAL -->
-                                                    <div class="fw-bold text-uppercase ms-3">TOTAL</div>
-                                                </div>
-
-                                                <div class="col border border-secondary ">
-                                                    <!--TOTAL DUE-->
-                                                    <div class="row mt-2 ">
-                                                        <div class="col d-flex justify-content-end">
-                                                            <div class="fw-bold text-uppercase ms-3">&#8369</div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="text-uppercase text-center">@Model.WaterBillingValues[i].Total</div>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!--END @i BILL-->
-                            }
+                            <div class="alert alert-warning container-fluid alert_warning" role="alert">
+                                <i class="fa-solid fa-triangle-exclamation txtWarning"></i>
+                                <span class="txtWarning fw-medium text-center">Complete water reading Consumption first before proceeding here! You will be directed to Water Reading in a second...</span>
+                            </div>
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        <div class="container">
-                            @ex.Message
-                        </div>
-                    }
-                }
 
+                </div>
             </div>
+            <div class="container border rounded" id="tableView">
+                <div class="row">
+                    <div class="col">
+                        <select id="location" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
+                            <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                            <option value="2">Phase 1 (Blk 41 to  48)</option>
+                            <option value="3">Blk 24 to 40</option>
+                            <option value="4">Blk 7 to 23</option>
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div class="col d-flex justify-content-end">
+                        <a id="btnPrint" class="btn btn-secondary me-2">PRINT</a>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Save as
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" data-fileType="pdf" id="btnPdf" href="#">PDF</a></li>
+                                <li><a class="dropdown-item" data-fileType="excel" id="btnExcel" href="#">EXCEL</a></li>
+                                <li><a class="dropdown-item" data-fileType="doc" id="btnDocument" href="#">DOCUMENT</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="tableData mb-2">
+                    <div class="header-section bg-secondary p-2">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-white fw-bold">WATERBILL NO.</span>
+                            <span class="text-white">PERIOD COVERED:</span>
+                        </div>
+                    </div>
 
+                    <!-- MAIN CONTENT -->
+                    <div class="tableRow p-2 shadow-lg" id="table-Data">
+                        <div class="form-check mb-2" id="selectAll">
+                            <input id="chkAll" type="checkbox" name="chkbox" value="" class="form-check-input border-2" />
+                            <span class="txtSelect">Select All</span>
+                        </div>
+                        @{
+                            try
+                            {
+                                if (Model.ResidentAddress.Count < 1)//Model.CurrentReading?.Count < Model.PreviousReading?.Count
+                                {
+                                    <div class="tableContents flex-grow-1">
+                                        <div class="d-flex justify-content-center align-items-center border-bottom border-secondary pb-2 contentView">
+                                            <span class="fw-bold p-3 text-center">NO DATA FOUND!</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    for (int i = 0; i < Model.ResidentAddress.Count; i++)
+                                    {
+                                        if (i < Model.PreviousReading.Count && i < Model.CurrentReading.Count)
+                                        {
+                                            //var a = Model.WaterBill[i].WaterBill_ID;
+                                            //var b = Model.ResidentAddress[i].Name;
+                                            //var c = Model.ResidentAddress[i].Block;
+                                            //var d = Model.ResidentAddress[i].Lot;
+                                            //var e = Model.WaterBillingValues[i].DateTextList;
+                                            //var f = Model.WaterBillingValues[i].PreviousReading;
+                                            //var g = Model.WaterBillingValues[i].CurrentReading;
+                                            //var h = Model.WaterBillingValues[i].CubicMeter;
+                                            //var i = Model.WaterBillingValues[i].DateIssued;
+                                            //var j = Model.WaterBillingValues[i].DueDate;
+                                            //var k = Model.WaterBillingValues[i].PrevWaterBill;
+                                            //var l = Model.WaterBillingValues[i].BillAmount;
+                                            //var m = Model.WaterBillingValues[i].PrevWaterBillAmount;
+                                            //var n = Model.WaterBillingValues[i].Total;
+
+                                            <div class="d-flex tables">
+                                                <!--@i BILL-->
+                                                <div class="form-check">
+                                                    <input type="checkbox" name="chkbox_@i" value="" class="form-check-input border-2 chkItem" />
+                                                </div>
+                                                <div class="tableContents mb-4 flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-center pb-2 contentView text-muted">
+                                                        <div class="d-flex flex-column align-items-center">
+                                                            <span class="fw-bold">#</span>
+                                                            <span id="itemID" data-id="@Model.WaterBill[i].WaterBill_ID">@(i+1)</span>
+                                                        </div>
+                                                        <div class="d-flex flex-column align-items-center">
+                                                            <span class="fw-bold">Name</span>
+                                                            <p>@Model.ResidentAddress[i].Name</p>
+                                                        </div>
+                                                        <div class="d-flex flex-column align-items-center">
+                                                            <span class="fw-bold">Block</span>
+                                                            <span>@Model.ResidentAddress[i].Block</span>
+                                                        </div>
+                                                        <div class="d-flex flex-column align-items-center">
+                                                            <span class="fw-bold">Lot</span>
+                                                            <span>@Model.ResidentAddress[i].Lot</span>
+                                                        </div>
+                                                        <div class="d-flex flex-column align-items-center">
+                                                            <span class="fw-bold">Date</span>
+                                                            <span id="itemDate">@Model.WaterBillingValues[i].DateTextList</span>
+                                                        </div>
+
+                                                        @*<div>
+                                                        <a class="toggle-details fw-bold">SHOW</a>
+                                                    </div>*@
+                                                    </div>
+
+                                                    <div class="details-section m-3  bg-light rounded text-muted">
+                                                        <div class="row pb-1 ">
+
+                                                            <!-- METER READING -->
+                                                            <div class="col border border-secondary text-center">
+                                                                <div class="fw-bold text-uppercase ">Meter Readings</div>
+                                                                <div class="row mt-2">
+                                                                    <div class="col">
+                                                                        <div class="fw-bold">Previous</div>
+                                                                        <div>@Model.WaterBillingValues[i].PreviousReading</div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="fw-bold">Present</div>
+                                                                        <div>@Model.WaterBillingValues[i].CurrentReading</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- CONSUMPTION -->
+                                                            <div class="col border border-secondary text-center">
+                                                                <div class="fw-bold text-uppercase ">Consumption</div>
+                                                                <div class="row mt-2">
+                                                                    <div class="col">
+                                                                        <div class="fw-bold">Volume</div>
+                                                                        <div>@Model.WaterBillingValues[i].CubicMeter</div>
+                                                                        @*<div>@Model.WaterBill[i].CubicMeter</div>*@
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="fw-bold">Rate per cubic</div>
+                                                                        <div>@Model.WaterRate</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row pb-1">
+
+                                                            <div class="col border border-secondary">
+
+                                                                <!-- DATE ISSUED -->
+                                                                <div class="row mt-2">
+                                                                    <div class="col">
+                                                                        <div class="fw-bold text-uppercase ms-3">Date Issued:</div>
+                                                                    </div>
+                                                                    <div class="col ">
+                                                                        <div class="text-uppercase text-center">@Model.WaterBillingValues[i].DateIssued</div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- DUE DATE-->
+                                                                <div class="row mt-2">
+                                                                    <div class="col">
+                                                                        <div class="fw-bold text-uppercase ms-3">Due Date:</div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="text-uppercase text-center">@Model.WaterBillingValues[i].DueDate</div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- PREVIOUS WATERBILL-->
+                                                                <div class="row mt-2">
+                                                                    <div class="col">
+                                                                        <div class="fw-bold text-uppercase ms-3">Previous waterbill:</div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="text-uppercase text-center">@Model.WaterBillingValues[i].PrevWaterBill</div>
+                                                                    </div>
+                                                                </div>
+
+
+                                                            </div>
+
+                                                            <!-- AMOUNT DUE -->
+                                                            <div class="col border border-secondary text-center">
+                                                                <div class="fw-bold text-uppercase">amount due - water</div>
+
+                                                                <!--CURRENT DUE-->
+                                                                <div class="row mt-2">
+                                                                    <div class="col d-flex justify-content-end">
+                                                                        <div class="fw-bold text-uppercase ms-3">&#8369</div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="text-uppercase text-center">@Model.WaterBillingValues[i].BillAmount</div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!--ARREARS-->
+                                                                <div class="row mt-2">
+                                                                    <div class="col d-flex justify-content-end">
+                                                                        <div class="fw-bold text-uppercase ms-3">&#8369</div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="text-uppercase text-center">@Model.WaterBillingValues[i].PrevWaterBillAmount</div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row pb-1">
+
+                                                            <div class="col border border-secondary d-flex align-content-center">
+                                                                <!-- TOTAL -->
+                                                                <div class="fw-bold text-uppercase ms-3">TOTAL</div>
+                                                            </div>
+
+                                                            <div class="col border border-secondary ">
+                                                                <!--TOTAL DUE-->
+                                                                <div class="row mt-2 ">
+                                                                    <div class="col d-flex justify-content-end">
+                                                                        <div class="fw-bold text-uppercase ms-3">&#8369</div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="text-uppercase text-center">@Model.WaterBillingValues[i].Total</div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!--END @i BILL-->
+                                        }
+
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                <div class="container">
+                                    @ex.Message
+                                </div>
+                            }
+                        }
+
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
+</div>
+<div class="content-container p-3" id="waterReadingView">
+    
 
 </div>

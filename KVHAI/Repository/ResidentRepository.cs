@@ -742,7 +742,7 @@ namespace KVHAI.Repository
                            a.addr_id, a.block, a.lot, a.st_id, a.is_verified
                     FROM resident_tb r
                     JOIN address_tb a ON r.res_id = a.res_id  
-                    WHERE r.verified_at IS NOT NULL AND a.is_verified = @verify AND concat(r.lname,' ',fname,' ',mname) like @search
+                    WHERE r.verified_at IS NOT NULL AND a.is_verified like @verify AND concat(r.lname,' ',fname,' ',mname) like @search
                     ORDER BY r.res_id 
                     OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
             }
@@ -753,7 +753,7 @@ namespace KVHAI.Repository
                            a.addr_id, a.block, a.lot, a.st_id, a.is_verified
                     FROM resident_tb r
                     JOIN address_tb a ON r.res_id = a.res_id  
-                    WHERE r.verified_at IS NOT NULL AND a.is_verified = @verify
+                    WHERE r.verified_at IS NOT NULL AND a.is_verified like @verify
                     ORDER BY r.res_id 
                     OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
             }
@@ -765,7 +765,7 @@ namespace KVHAI.Repository
                 {
 
                     command.Parameters.AddWithValue("@search", "%" + search + "%");
-                    command.Parameters.AddWithValue("@verify", is_verified);
+                    command.Parameters.AddWithValue("@verify", "%" + is_verified + "%");
                     command.Parameters.AddWithValue("@offset", offset);
                     command.Parameters.AddWithValue("@limit", limit);
                     using (var reader = await command.ExecuteReaderAsync())
@@ -854,7 +854,7 @@ namespace KVHAI.Repository
                      SELECT Count(*)
                     FROM resident_tb r
                     JOIN address_tb a ON r.res_id = a.res_id  
-                    WHERE r.verified_at IS NOT NULL AND a.is_verified = @verify AND concat(r.lname,' ',fname,' ',mname) like @search";
+                    WHERE r.verified_at IS NOT NULL AND a.is_verified like @verify AND concat(r.lname,' ',fname,' ',mname) like @search";
             }
             else
             {
@@ -862,7 +862,7 @@ namespace KVHAI.Repository
                     SELECT count(*)
                     FROM resident_tb r
                     JOIN address_tb a ON r.res_id = a.res_id  
-                    WHERE r.verified_at IS NOT NULL AND a.is_verified = @verify AND concat(block,' ',lot) like @search
+                    WHERE r.verified_at IS NOT NULL AND a.is_verified like @verify AND concat(block,' ',lot) like @search
                     ";
             }
 
@@ -872,7 +872,7 @@ namespace KVHAI.Repository
                 {
 
                     command.Parameters.AddWithValue("@search", "%" + search + "%");
-                    command.Parameters.AddWithValue("@verify", active);
+                    command.Parameters.AddWithValue("@verify", "%" + active + "%");
                     var count = await command.ExecuteScalarAsync();
 
                     return Convert.ToInt32(count);

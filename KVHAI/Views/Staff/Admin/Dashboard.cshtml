@@ -8,8 +8,11 @@
     <link href="/lib/evo-calendar/css/evo-calendar.midnight-blue.min.css" rel="stylesheet" />
     <link href="/lib/evo-calendar/css/evo-calendar.royal-navy.min.css" rel="stylesheet" />
     <style>
+        .backgroundgray {
+            background-color: #f1f5f9;
+        }
         #insightContainer{
-            display:none;
+            display:block;
         }
         .chartjs-tooltip {
             background-color: rgba(0, 0, 0, 0.8) !important;
@@ -19,6 +22,23 @@
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5) !important;
             font-size: 12px !important;
         }
+
+        .graph_insight {
+            display: none;
+            font-family: Arial, sans-serif;
+            color: #444;
+            font-size: 0.9rem;
+        }
+
+        /* Dropdown Button Styling */
+        #show_ingsight {
+            cursor:pointer;
+        }
+
+        #show_ingsight:hover {
+            background-color: #f1f5f9; /* Darker blue on hover */
+        }
+
     </style>
 }
 
@@ -73,32 +93,41 @@
     <!--CHART JS SCRIPTS-->
     <script>
         $(document).ready(function () {
-            var myChart;
+            var myChart = null; // Declare the global variable
             GetGraphData();
+
+            $(document).on('change', '#select_year', function () {
+                var selectedYear = $(this).val(); // Get selected year from dropdown
+                GetGraphData(); // Call chartDataSets with the selected year
+            });
+
             function GetGraphData() {
                 $.ajax({
                     url: '@Url.Action("GraphWaterConsumption", "AdminDashboard")',
                     type: 'GET',
                     success: function (data) {
-                        var actual_data = data.actual_Data || []; // Access the actual_Data array
-                        var forecast_data = data.moving_Average || []; // Access the moving_Average array
-                        var insight = data.insights || []; // Access the moving_Average array
+                        console.log(data);
+                        var yearDropdown = $('#select_year');
+                        console.log($(yearDropdown).val());
 
-                        console.log(actual_data);
-                        console.log(forecast_data);
-                        console.log(insight);
+                        var yearlyData = data.yearlyData || {};
+                        var yearsData = {};
+                        var insights = []; // To store all insights
 
-                        //data.forEach(function (item) {
-                        //    actual_data.push(item.actual_data);
-                        //    forecast_data.push(item.forecast_data);
-                        //});
-                        //console.log(actual_data);
-                        //console.log(forecast_data);
+                        Object.keys(yearlyData).forEach(function (year) {
+                            var yearData = yearlyData[year];
+                            yearsData[year] = {
+                                actualData: yearData.actualData || [],
+                                forecastData: yearData.movingAverage || [],
+                                insights: yearData.insights || [],
+                                percentChange: yearData.percentChange || []
+                            };
 
-                        //// Set the chart
-                        SetChartJs(actual_data, forecast_data, insight);
+                            //yearDropdown.append(new Option(year, year));
+                            insights = insights.concat(yearData.insights || []);
+                        });
 
-                        DisplayInsights(insight);
+                        chartDataSets(yearsData); // Call chartDataSets with the initial year
                     },
                     error: function (xhr) {
                         toastr.error(xhr.responseText);
@@ -106,34 +135,55 @@
                 });
             }
 
+            function chartDataSets(yearlyData) {
+                var selectedYear = $('#select_year').val();
+                var yearData = yearlyData[selectedYear]; // Get data for the selected year
+
+                if (!yearData) {
+                    console.error(`No data available for year: ${selectedYear}`);
+                    return;
+                }
+
+                var actualData = {
+                    label: `Cubic Consumption ${selectedYear}`,
+                    data: yearData.actualData,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1,
+                    borderColor: '#052771'
+                };
+
+                var forecastData = {
+                    label: `Forecast Data ${selectedYear}`,
+                    data: yearData.forecastData,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderDash: [5, 5]
+                };
+
+                // Set the chart with the actual and forecast data
+                SetChartJs(actualData, forecastData, yearData.insights);
+                DisplayInsights(yearData.insights); // Call DisplayInsights with collected insights
+
+            }
+
+            // SetChartJs function now accepts datasets and insights
             function SetChartJs(actualData, forecastData, insights) {
                 const ctx = $('#myChart');
 
                 // Destroy the old chart if it exists
-                if (myChart) {
-                    myChart.destroy();
+                if (myChart !== null) {
+                    myChart.destroy(); // Properly destroy the previous chart
                 }
 
-                window.myChart = new Chart(ctx, {
+                // Create a new chart
+                myChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: ['Jan', 'Feb', 'March', 'April', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                        datasets: [{
-                            label: 'Cubic Consumption',
-                            data: actualData,
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.1,
-                            borderColor: '#052771'
-                        },
-                        {
-                            label: 'Forecast Data',
-                            data: forecastData,
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 2,
-                            fill: true,
-                            borderDash: [5, 5]
-                        }]
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [actualData, forecastData] // Pass both datasets (actual and forecast)
                     },
                     options: {
                         responsive: true,
@@ -163,15 +213,14 @@
                             },
                             tooltip: {
                                 enabled: true,
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark background for tooltip
-                                titleFont: { size: 14, weight: 'bold' }, // Font size for title
-                                bodyFont: { size: 12 }, // Font size for body
-                                bodyColor: '#ffffff', // Text color for the body
-                                titleColor: '#ffffff', // Text color for the title
-                                borderColor: '#ffffff', // Tooltip border color
-                                borderWidth: 1, // Tooltip border width
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 12 },
+                                bodyColor: '#ffffff',
+                                titleColor: '#ffffff',
+                                borderColor: '#ffffff',
+                                borderWidth: 1,
                                 callbacks: {
-                                    // Show insights as part of the tooltip
                                     afterLabel: function (tooltipItem) {
                                         var index = tooltipItem.dataIndex;
                                         var insight = insights[index] || '';
@@ -184,15 +233,40 @@
                 });
             }
 
+
+            function getRandomColor() {
+                var r = Math.floor(Math.random() * 156); // 0 to 155
+                var g = Math.floor(Math.random() * 156);
+                var b = Math.floor(Math.random() * 156);
+
+                // Ensure at least one component is very dark
+                var darkComponent = Math.floor(Math.random() * 3);
+                switch (darkComponent) {
+                    case 0: r = Math.floor(Math.random() * 50); break; // 0 to 49
+                    case 1: g = Math.floor(Math.random() * 50); break;
+                    case 2: b = Math.floor(Math.random() * 50); break;
+                }
+
+                // Convert to hex
+                r = r.toString(16).padStart(2, '0');
+                g = g.toString(16).padStart(2, '0');
+                b = b.toString(16).padStart(2, '0');
+
+                return "#" + r + g + b;
+            }
+
             // Function to display insights
             function DisplayInsights(insights) {
                 var insightContainer = $('#insightContainer');
                 insightContainer.empty(); // Clear any previous insights
 
                 if (insights.length > 0) {
-                    var insightText = "<h4>Insights:</h4><ul>";
+                    var insightText = "<ul>";
                     insights.forEach(function (insight) {
-                        insightText += "<li>" + insight + "</li>";
+                        if (insight !== null) {
+                            insightText += "<li>" + insight + "</li>";
+                        }
+                        
                     });
                     insightText += "</ul>";
                     insightContainer.html(insightText); // Add the insights to the container
@@ -201,40 +275,70 @@
                 }
             }
         });
+
+        
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $(document).on('click', '#show_ingsight', function () {
+                $('#insightContainer').fadeToggle('fast');
+            });
+        });
     </script>
 
 }
 
 @section sidebar{
-    <button class="btn-navs active">Dashboard</button>
-    <button class="btn-navs ">TEST2</button>
-    <button class="btn-navs ">TEST3</button>
 }
 @section mobilenav{
-    <button class="btn-navs active">TEST1</button>
-    <button class="btn-navs ">TEST2</button>
-    <button class="btn-navs ">TEST3</button>
 }
 
-<div class="row row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly">
-    <div class="col-xl-7 content-container">
-        <div class="p-2">
-            <span class="content-header">Water Consumption Analytics</span>
-        </div>
-        <div class="header-border"></div>
-        <div class="container">
-            <div id="chartContainer">
-                <canvas id="myChart"></canvas>
-                <div id="insightContainer"></div> <!-- This div will display the insights -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <!--row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly-->
+        <div class="row">
+            <div class="col-xl-8 ">
+                <div class="container border border-2 p-2 rounded shadow-sm">
+                    <div class="row">
+                        <div class="col-9">
+                            <h5 class="fw-bold text-muted p-2 mb-3 flex-grow-1">Water Consumption Analytics</h5>
+                        </div>
+                        <div class="col-3">
+                            <select class="form-control text-center" id="select_year">
+                                <option value="2024" selected>2024</option>
+                                <option value="2025" >2025</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="border border-1 mb-3"></div>
+                    <div class="container">
+                        <div id="chartContainer">
+                            <canvas id="myChart" class="backgroundgray rounded p-2"></canvas>
+                            <!-- This div will display the insights -->
+                            <div class="border border-2 rounded shadow-sm mt-3 backgroundgray">
+                                <div class="d-flex flex-column border border-2 rounded bg-white" id="show_ingsight">
+                                    <h5 class="fw-bold text-muted">Insight</h5>
+                                    <i class="fa-solid fa-caret-down"></i>
+
+                                </div>
+                                <div class="border p-2  graph_insight bg-white" id="insightContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="container border border-2 p-2 rounded shadow-sm">
+                    <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Task</h5>
+                    <div class="header-border"></div>
+                    <!--EVO CALENDAR-->
+                    <div id="calendar"></div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-xl-4 content-container">
-        <div class="p-2">
-            <span class="content-header">Task</span>
-        </div>
-        <div class="header-border"></div>
-        <!--EVO CALENDAR-->
-        <div id="calendar"></div>
+
     </div>
 </div>
+

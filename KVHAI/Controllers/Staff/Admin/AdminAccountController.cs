@@ -86,6 +86,46 @@ namespace KVHAI.Controllers.Staff.Admin
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ResidentPagination(string search, string category, string is_verified, int page_index)
+        {
+            try
+            {
+                //EMPLOYEE
+                var pagination1 = new Pagination<Employee>
+                {
+                    ModelList = await _employeeRepository.GetAllEmployeesAsync(0, 10),
+                    NumberOfData = await _employeeRepository.CountEmployeeData(),
+                    ScriptName = "emppagination"
+                };
+                pagination1.set(pagination1.ModelList.Count, 5, 1);
+
+                //RESIDENT
+                var resSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
+
+                var pagination2 = new Pagination<AddressWithResident>
+                {
+                    NumberOfData = await _residentRepository.CountResidentData(is_verified, category, resSearch),
+                    ScriptName = "respagination"
+                };
+                pagination2.set(10, 5, page_index);
+                pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10, is_verified, category, resSearch);
+
+                var viewmodel = new ModelBinding
+                {
+                    EmployeePagination = pagination1,
+                    ResidentPagination = pagination2
+                };
+                return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
+
+                // Use the more explicit method to return the partial view
+                //return PartialView("PartialView/_ResidentAccount", pagination2);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
 

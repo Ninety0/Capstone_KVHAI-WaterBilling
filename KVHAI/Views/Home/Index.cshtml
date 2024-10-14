@@ -3,7 +3,6 @@
 }
 
 @section sidebar{
-    <button class="btn-navs active">TEST</button>
 }
 @section mobilenav{
     @*<ul class="navbar-nav d">
@@ -20,38 +19,53 @@
                 <a class="nav-link disabled" aria-disabled="true">Disabled</a>
             </li>
         </ul>*@
-    <button class="btn-navs active">TEST1</button>
+    @*<button class="btn-navs active">TEST1</button>
     <button class="btn-navs ">TEST2</button>
-    <button class="btn-navs ">TEST3</button>
+    <button class="btn-navs ">TEST3</button>*@
 } 
 
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <p class="h3">EMPLOYEE</p>
-            <nav class="nav flex-column">
-                <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/accounts">Admin Account.cshtml</a>
-                <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/streets">Admin Streets.cshtml</a>
-                <a class="nav-link" aria-current="page" href="/kvhai/staff/water-reading/">Reading Clerk Index.cshtml</a>
-                <a class="nav-link" aria-current="page" href="/kvhai/staff/water-billing/">Billing Clerk Index.cshtml</a>
-                <a class="nav-link" aria-current="page" href="/kvhai/staff/waterwork/">Waterwork Index.cshtml</a>
-                <a class="nav-link" aria-current="page" href="/kvhai/staff/resident-address/">Admin resident Address</a>
-                <a class="nav-link" aria-current="page" href="/kvhai/staff/announcment/">Post Announcemennt</a>
-            </nav>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="fw-bold text-muted">DASHBORD</h5>
+        <div class="container bg-info">
+            -WATER BILLING HAS AN ERROR
+            -ADD CASHIER UI FOR OFFLINE
+            -ADMIN DASHBOARD COMPLETION
+
         </div>
-        <div class="col">
-            <p class="h3">RESIDENT</p>
-            <nav class="nav flex-column">
-                <a class="nav-link " aria-current="page" href="/kvhai/resident/login">Resident Log</a>
-                <a class="nav-link " aria-current="page" href="/kvhai/resident/signup">Resident Signup</a>
-                <a class="nav-link " aria-current="page" href="/kvhai/resident/register-address">Resident Register Address</a>
-                <a class="nav-link " aria-current="page" href="/kvhai/resident/my-address">Resident My Address</a>
-            </nav>
+
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <p class="h3">EMPLOYEE</p>
+                    <nav class="nav flex-column">
+                        <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/accounts">Admin Account.cshtml</a>
+                        <a class="nav-link" aria-current="page" href="/kvhai/staff/admin/streets">Admin Streets.cshtml</a>
+                        <a class="nav-link" aria-current="page" href="/kvhai/staff/water-reading/">Reading Clerk Index.cshtml</a>
+                        <a class="nav-link" aria-current="page" href="/kvhai/staff/water-billing/">Billing Clerk Index.cshtml</a>
+                        <a class="nav-link" aria-current="page" href="/kvhai/staff/waterwork/">Waterwork Index.cshtml</a>
+                        <a class="nav-link" aria-current="page" href="/kvhai/staff/resident-address/">Admin resident Address</a>
+                        <a class="nav-link" aria-current="page" href="/kvhai/staff/announcment/">Post Announcemennt</a>
+                        <a class="nav-link" aria-current="page" href="/kvhai/staff/request-page/">Request Page</a>
+                    </nav>
+                </div>
+                <div class="col">
+                    <p class="h3">RESIDENT</p>
+                    <nav class="nav flex-column">
+                        <a class="nav-link " aria-current="page" href="/kvhai/resident/login">Resident Log</a>
+                        <a class="nav-link " aria-current="page" href="/kvhai/resident/signup">Resident Signup</a>
+                        <a class="nav-link " aria-current="page" href="/kvhai/resident/register-address">Resident Register Address</a>
+                        <a class="nav-link " aria-current="page" href="/kvhai/resident/my-address">Resident My Address</a>
+                    </nav>
+                </div>
+            </div>
+
+
         </div>
     </div>
-   
-    
 </div>
+
+
 
 
 @*<div class="container">

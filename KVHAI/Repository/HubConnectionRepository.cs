@@ -21,12 +21,20 @@ namespace KVHAI.Repository
             {
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO hubconnection_tb (connection_id, resident_id,username) VALUES(@connection, @res_id, @username)", connection))
+                    //REMOVE EXISTING CONNECTION THAT AVOID POPULATING TABLES
+                    using (var deleteCommand = new SqlCommand("DELETE FROM hubconnection_tb WHERE resident_id = @res_id AND username = @username", connection))
                     {
-                        command.Parameters.AddWithValue("@connection", hubConnect.Connection_ID);
-                        command.Parameters.AddWithValue("@res_id", hubConnect.Resident_ID);
-                        command.Parameters.AddWithValue("@username", hubConnect.Username);
-                        await command.ExecuteNonQueryAsync();
+                        deleteCommand.Parameters.AddWithValue("@res_id", hubConnect.Resident_ID);
+                        deleteCommand.Parameters.AddWithValue("@username", hubConnect.Username);
+                        await deleteCommand.ExecuteNonQueryAsync();
+                    }
+
+                    using (var insertCommand = new SqlCommand("INSERT INTO hubconnection_tb (connection_id, resident_id,username) VALUES(@connection, @res_id, @username)", connection))
+                    {
+                        insertCommand.Parameters.AddWithValue("@connection", hubConnect.Connection_ID);
+                        insertCommand.Parameters.AddWithValue("@res_id", hubConnect.Resident_ID);
+                        insertCommand.Parameters.AddWithValue("@username", hubConnect.Username);
+                        await insertCommand.ExecuteNonQueryAsync();
                     }
                 }
             }

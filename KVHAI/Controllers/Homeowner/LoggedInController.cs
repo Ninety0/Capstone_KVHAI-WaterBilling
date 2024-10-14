@@ -149,7 +149,7 @@ namespace KVHAI.Controllers.Homeowner
 
                 if (result == 2)
                 {
-                    return Ok("Address already registered. Please wait until the admin approve it.");
+                    return Ok("Address already registered.");
                 }
                 return Ok("Registration Successful.");
             }

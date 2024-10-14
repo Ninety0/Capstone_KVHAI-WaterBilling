@@ -9,12 +9,14 @@ namespace KVHAI.Repository
         private readonly DBConnect _dbConnect;
         private readonly InputSanitize _sanitize;
         private readonly StreetRepository _streetRepository;
+        private readonly NotificationRepository _notificationRepository;
 
-        public RequestDetailsRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository)
+        public RequestDetailsRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, NotificationRepository notificationRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
             _streetRepository = streetRepository;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<int> GetRequestID(string addresID, string residentID)
@@ -155,6 +157,128 @@ namespace KVHAI.Repository
             return pendingAddresses;
         }
 
+        public async Task<int> UpdateRequestStatus(RequestDetails request)
+        {
+            try
+            {
+                int result = 0;
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            using (var command = new SqlCommand(@"
+                                UPDATE request_tb set status= @status, status_updated = @update, comments = @comment  WHERE addr_id = @aid AND res_id = @rid AND request_id = @req_id", connection, transaction))
+                            {
+                                command.Parameters.AddWithValue("@aid", request.Address_ID);
+                                command.Parameters.AddWithValue("@rid", request.Resident_ID);
+                                command.Parameters.AddWithValue("@req_id", request.Request_ID);
+                                command.Parameters.AddWithValue("@status", request.Status);
+                                command.Parameters.AddWithValue("@update", DateTime.Now);
+                                command.Parameters.AddWithValue("@comment", "Approve by the admin");
+
+                                result = await command.ExecuteNonQueryAsync();
+
+                                if (result > 0)
+                                {
+                                    //APPROVE
+                                    if (request.Status == 1 && request.RequestType.Contains("Removal of address"))
+                                    {
+                                        int confirmRequest = await ConfirmRequestAction(request, connection, transaction);
+
+                                        if (confirmRequest < 1)
+                                        {
+                                            throw new Exception();
+                                        }
+                                    }
+                                    //REJECT
+                                    else if (request.Status == 2 && request.RequestType.Contains("Removal of address"))
+                                    {
+                                        var rejectStatus = await RejectRequest(request, connection, transaction);
+
+                                        if (rejectStatus < 1)
+                                        {
+                                            throw new Exception();
+                                        }
+                                    }
+                                }
+
+                                var notif = new Notification
+                                {
+                                    Resident_ID = request.Resident_ID.ToString(),
+                                    Title = "Request Action",
+                                    Message = "Your address was removed!",
+                                    Url = "/kvhai/resident/my-address",
+                                    Message_Type = "Personal"
+                                };
+
+                                await _notificationRepository.InsertNotificationPersonal(notif);
+                                // Commit the transaction only if everything succeeded
+                                transaction.Commit();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Rollback if any error occurs
+                            transaction.Rollback();
+                            Console.WriteLine("Transaction rolled back due to: " + ex.Message);
+                            return 0;
+                        }
+                    }
+                }
+                return result;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        // UPDATED ConfirmRequestAction
+        public async Task<int> ConfirmRequestAction(RequestDetails request, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                int deleteImg = 0;
+                if (request.Status == 1) // REQUEST APPROVE DELETE
+                {
+                    using (var deleteCommand = new SqlCommand("DELETE FROM proof_img_tb WHERE addr_id = @aid", connection, transaction))
+                    {
+                        deleteCommand.Parameters.AddWithValue("@aid", request.Address_ID);
+                        deleteImg = await deleteCommand.ExecuteNonQueryAsync();
+                    }
+
+                    if (deleteImg > 0)
+                    {
+                        using (var deleteCommand = new SqlCommand("DELETE FROM address_tb WHERE addr_id = @aid AND res_id = @rid", connection, transaction))
+                        {
+                            deleteCommand.Parameters.AddWithValue("@aid", request.Address_ID);
+                            deleteCommand.Parameters.AddWithValue("@rid", request.Resident_ID);
+
+                            var requestResult = await deleteCommand.ExecuteNonQueryAsync();
+
+                            return requestResult;
+                        }
+                    }
+
+                }
+                else if (request.Status == 2) // REQUEST REJECT
+                {
+                    var rejectStatus = await RejectRequest(request, connection, transaction);
+                    return rejectStatus;
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                // Log error if needed
+                Console.WriteLine(ex.Message);
+                return 0;
+            }
+        }
+
         private async Task<List<Address>> GetAddressById(string adddressID)
         {
             try
@@ -229,6 +353,49 @@ namespace KVHAI.Repository
             {
                 // Handle exception (logging, etc.)
                 return null;
+            }
+        }
+
+        // UPDATED CancelRequestRemoveTokenUpdate
+        public async Task<int> RejectRequest(RequestDetails request, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                using (var command = new SqlCommand(@"
+                    UPDATE address_tb 
+                    SET remove_request_token = @token  
+                    WHERE addr_id = @aid AND res_id = @rid", connection, transaction))
+                {
+                    command.Parameters.AddWithValue("@aid", request.Address_ID);
+                    command.Parameters.AddWithValue("@rid", request.Resident_ID);
+                    command.Parameters.AddWithValue("@token", DBNull.Value);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                using (var updateRequestCommand = new SqlCommand(@"
+                    UPDATE request_tb 
+                    SET status = @status, comments = @comments, status_updated = @statusUpdated
+                    WHERE request_id = @rid", connection, transaction))
+                {
+                    int rejectStatus = 2;
+                    string comments = "Reject by the admin";
+                    DateTime statusUpdated = DateTime.Now;
+
+                    updateRequestCommand.Parameters.AddWithValue("@rid", request.Request_ID);
+                    updateRequestCommand.Parameters.AddWithValue("@status", rejectStatus);
+                    updateRequestCommand.Parameters.AddWithValue("@comments", comments);
+                    updateRequestCommand.Parameters.AddWithValue("@statusUpdated", statusUpdated);
+
+                    await updateRequestCommand.ExecuteNonQueryAsync();
+                }
+
+                return 1;
+            }
+            catch (Exception)
+            {
+                // No rollback here because it will be handled in the main method
+                return 0;
             }
         }
     }

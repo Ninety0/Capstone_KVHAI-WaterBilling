@@ -79,6 +79,7 @@ namespace KVHAI.Repository
 
         public async Task<ModelBinding> GetPreviousReading(string location, string date = "")
         {
+            var _location = string.IsNullOrEmpty(location) ? "1" : location;
             var prevDate = string.IsNullOrEmpty(date) ? DateTime.Now.AddMonths(-1).ToString("yyyy-MM") : date;
             var waterReading = new List<WaterReading>();
             var residentAddress = new List<ResidentAddress>();
@@ -95,7 +96,7 @@ namespace KVHAI.Repository
                 ", connection))
                 {
                     command.Parameters.AddWithValue("@date", "%" + prevDate + "%");
-                    command.Parameters.AddWithValue("@location", "%" + location + "%");
+                    command.Parameters.AddWithValue("@location", "%" + _location + "%");
                     using (var reader = await command.ExecuteReaderAsync())
                     {
 

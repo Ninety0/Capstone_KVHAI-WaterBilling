@@ -16,6 +16,7 @@
     <Content Remove="wwwroot\js\signalrSetupConnection.js" />
     <Content Remove="wwwroot\js\staffAccount.js" />
     <Content Remove="wwwroot\js\streetCRUD.js" />
+    <Content Remove="wwwroot\js\usableButTrahsRN.js" />
     <Content Remove="wwwroot\js\water-reading.js" />
     <Content Remove="wwwroot\ReportViewer\rptWaterBill.rdlc" />
   </ItemGroup>
@@ -24,6 +25,7 @@
     <_ContentIncludedByDefault Remove="Views\Home\Print.cshtml" />
     <_ContentIncludedByDefault Remove="wwwroot\css\toastr.min.css" />
     <_ContentIncludedByDefault Remove="wwwroot\js\residentSignup.js" />
+    <_ContentIncludedByDefault Remove="wwwroot\js\usableButTrahsRN.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,6 +52,7 @@
     <None Include="wwwroot\js\notification.js" />
     <None Include="wwwroot\js\signalr.min.js" />
     <None Include="wwwroot\js\signalrSetupConnection.js" />
+    <None Include="wwwroot\js\usableButTrahsRN.js" />
     <None Include="wwwroot\js\water-reading.js" />
     <None Include="wwwroot\js\staffAccount.js" />
     <None Include="wwwroot\js\employeeSignup.js" />
@@ -91,6 +94,14 @@
 
   <ItemGroup>
     <Content Update="Views\Resident\Reading\WaterConsumption.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Views\Shared\ResidentLayout\_ResidentLayoutCopy.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="wwwroot\css\adminLayout.css">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

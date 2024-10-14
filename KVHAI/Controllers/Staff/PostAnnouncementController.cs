@@ -11,12 +11,15 @@ namespace KVHAI.Controllers.Staff
         private readonly DBConnect _dBConnect;
         private readonly AnnouncementRepository _announcementRepository;
         private readonly IHubContext<AnnouncementHub> _hubContext;
+        private readonly NotificationRepository _notification;
 
-        public PostAnnouncementController(AnnouncementRepository announcementRepository, DBConnect dBConnect, IHubContext<AnnouncementHub> hubContext)
+
+        public PostAnnouncementController(AnnouncementRepository announcementRepository, DBConnect dBConnect, IHubContext<AnnouncementHub> hubContext, NotificationRepository notification)
         {
             _announcementRepository = announcementRepository;
             _dBConnect = dBConnect;
             _hubContext = hubContext;
+            _notification = notification;
         }
         public async Task<IActionResult> Index()
         {
@@ -46,6 +49,16 @@ namespace KVHAI.Controllers.Staff
                     return BadRequest("There was an error posting the announcement. Please try again later.");
                 }
             }
+
+            var notif = new Notification
+            {
+                Title = "Announcement",
+                Message = "New announcement was posted!",
+                Url = "/kvhai/resident/home/",
+                Message_Type = "All"
+            };
+
+            await _notification.InsertNotificationPersonal(notif);
 
             var model = await _announcementRepository.ShowAnnouncement();
 

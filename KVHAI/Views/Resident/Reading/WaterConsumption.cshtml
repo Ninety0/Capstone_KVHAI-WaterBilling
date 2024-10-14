@@ -107,7 +107,7 @@
                 <i class="fa-solid fa-location-dot nav_icon"></i>
             </div>
             <div class="col  d-flex justify-content-start">
-                Address
+                Register
             </div>
 
         </div>
@@ -147,57 +147,46 @@
 }
 
 @section mobilenav{
-    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-house mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-house mobile_nav_icon"></i>
+            <span class="ms-3">
                 Home
-            </div>
+            </span>
+        </div>
+
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            <span class="ms-3">
+                Register Address
+            </span>
 
         </div>
     </a>
-    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                Address
-            </div>
-
-        </div>
-    </a>
-    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+            <span class="ms-3">
                 My Address
-            </div>
-
+            </span>
         </div>
     </a>
-    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 active">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-gauge mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 active ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            <span class="ms-3">
                 Consumption
-            </div>
+            </span>
         </div>
     </a>
-    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3 ">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            <span class="ms-3">
                 Billing
-            </div>
+            </span>
         </div>
     </a>
 }
@@ -213,155 +202,156 @@
     </div>
 </div>
 
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div id="waterReadingView">
+            <div class="row mb-4">
+                <div class="col-12 col-md-4">
+                    <select class="form-select shadow-sm" aria-label="Default select example" id="select_address">
+                        @for (int i = 0; i < Model.AddressList.Count; i++)
+                        {
+                            var addressID = Model.AddressList[i].Address_ID;
+                            var block = "Blk " + Model.AddressList[i].Block;
+                            var lot = "Lot " + Model.AddressList[i].Lot;
+                            var st = Model.AddressList[i].Street_Name + " St.";
+                            var address = string.Join(" ", block, lot, st);
 
+                            if (i == 0)
+                            {
+                                <option value="@addressID" selected>@address</option>
+                            }
+                            else
+                            {
+                                <option value="@addressID">@address</option>
+                            }
 
-<div class="content-container p-4" id="waterReadingView">
-    <div class="row mb-4">
-        <div class="col-12 col-md-4">
-            <select class="form-select shadow-sm" aria-label="Default select example" id="select_address">
-                @for (int i = 0; i < Model.AddressList.Count; i++)
+                        }
+                    </select>
+                </div>
+            </div>
+            <div id="tableData">
+                <!-- Add the table and water history -->
+                @if (Model.NotificationResident != null && Model.NotificationResident.Count > 0)
                 {
-                    var addressID = Model.AddressList[i].Address_ID;
-                    var block = "Blk " + Model.AddressList[i].Block;
-                    var lot = "Lot " + Model.AddressList[i].Lot;
-                    var st = Model.AddressList[i].Street_Name + " St.";
-                    var address = string.Join(" ", block, lot, st);
-
-                    if (i == 0)
-                    {
-                        <option value="@addressID" selected>@address</option>
-                    }
-                    else
-                    {
-                        <option value="@addressID">@address</option>
-                    }
-
+                    <div>cite WORKS</div>
                 }
-            </select>
-        </div>
-    </div>
+                else
+                {
+                    <div>UMAY</div>
+                }
 
-    <div id="tableData">
-        <!-- Add the table and water history -->
-        @if (Model.NotificationResident != null && Model.NotificationResident.Count > 0)
-        {
-            <div>cite WORKS</div>
-        }
-        else
-        {
-            <div>UMAY</div>
-        }
-
-        <!--WATER RATE-->
-        <div class="row mb-4 g-3">
-            <!-- Chart section -->
-            <div class="col-12 col-lg-9">
-                <div class="chart-container p-4 bg-white shadow-sm rounded border">
-                    <div class="row mb-3">
-                        <div class="col-9">
-                            <h5 class="text-muted mb-3">Water Consumption Overview</h5>
+                <!--WATER RATE-->
+                <div class="row mb-4 g-3">
+                    <!-- Chart section -->
+                    <div class="col-12 col-lg-9">
+                        <div class="chart-container p-4 bg-white shadow-sm rounded border">
+                            <div class="row mb-3">
+                                <div class="col-9">
+                                    <h5 class="text-muted mb-3">Water Consumption Overview</h5>
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-control" id="select_year">
+                                        @for (int i = 0; i < Model.GraphYear.Count; i++)
+                                        {
+                                            if (i == 0)
+                                            {
+                                                <option value="@Model.GraphYear[i]" selected>@Model.GraphYear[i]</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@Model.GraphYear[i]">@Model.GraphYear[i]</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-placeholder">
+                                <canvas id="myChart"></canvas>
+                            </div>
                         </div>
-                        <div class="col-3">
-                            <select class="form-control" id="select_year">
-                                @for (int i = 0; i < Model.GraphYear.Count; i++)
-                                {
-                                    if (i == 0)
+                    </div>
+                    <!-- Monthly Consumption Section -->
+                    <div class="col-12 col-lg-3">
+                        <div class="consumption-card bg-white border p-4 rounded shadow-sm">
+                            <div class="mb-3">
+                                <h6 class="text-muted">Monthly Consumption:</h6>
+                                <div class="fw-bold">
+                                    @if (Model.CurrentReading.Count > 0)
                                     {
-                                        <option value="@Model.GraphYear[i]" selected>@Model.GraphYear[i]</option>
+                                        var currentReading = Model.CurrentReading[0].Consumption;
+
+                                        <span>@currentReading</span>
                                     }
                                     else
                                     {
-                                        <option value="@Model.GraphYear[i]">@Model.GraphYear[i]</option>
+                                        <span>N/A</span>
                                     }
-                                }
-                            </select>
-                        </div>
-                    </div>
-                    <div class="chart-placeholder">
-                        <canvas id="myChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <!-- Monthly Consumption Section -->
-            <div class="col-12 col-lg-3">
-                <div class="consumption-card bg-white border p-4 rounded shadow-sm">
-                    <div class="mb-3">
-                        <h6 class="text-muted">Monthly Consumption:</h6>
-                        <div class="fw-bold">
-                            @if (Model.CurrentReading.Count > 0)
-                            {
-                                var currentReading = Model.CurrentReading[0].Consumption;
-
-                                <span>@currentReading</span>
-                            }
-                            else
-                            {
-                                <span>N/A</span>
-                            }
-                        </div>
-                    </div>
-                    <div>
-                        <h6 class="text-muted">Cubic Meter</h6>
-                        <div class="fw-bold">
-                            @if (!string.IsNullOrEmpty(Model.CubicConsumption))
-                            {
-                                var cubic = Model.CubicConsumption;
-
-                                <span>@cubic m³</span>
-                            }
-                            else
-                            {
-                                <span></span>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--WATER HISTORY-->
-        <div class="row">
-            <div class="col-12">
-                <div class="past-readings bg-white p-4 rounded shadow-sm border">
-                    <h5 class="mb-3">Past Reading Water Consumption</h5>
-                    <div class="table-responsive">
-                        <table class="table table-striped align-middle">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Consumption</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (Model.AllWaterReadingByResident.Count > 0)
-                                {
-                                    foreach (var item in Model.AllWaterReadingByResident)
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="text-muted">Cubic Meter</h6>
+                                <div class="fw-bold">
+                                    @if (!string.IsNullOrEmpty(Model.CubicConsumption))
                                     {
-                                        <tr>
-                                            <td>@item.Date</td>
-                                            <td>@item.Consumption</td>
-                                        </tr>
+                                        var cubic = Model.CubicConsumption;
+
+                                        <span>@cubic m³</span>
                                     }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="2" class="text-center p-5">No Existing Data!</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                                    else
+                                    {
+                                        <span></span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--WATER HISTORY-->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="past-readings bg-white p-4 rounded shadow-sm border">
+                            <h5 class="mb-3">Past Reading Water Consumption</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Consumption</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.AllWaterReadingByResident.Count > 0)
+                                        {
+                                            foreach (var item in Model.AllWaterReadingByResident)
+                                            {
+                                                <tr>
+                                                    <td>@item.Date</td>
+                                                    <td>@item.Consumption</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center p-5">No Existing Data!</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
-
 </div>
 
 @section scripts{
     <script src="~/lib/chartjs/chart.umd.min.js"></script>
-    
+
     <script>
         $(document).ready(function () {
             var myChart;

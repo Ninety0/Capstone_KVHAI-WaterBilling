@@ -69,6 +69,16 @@ namespace KVHAI.Controllers.Homeowner
                 return BadRequest("There was an error requesting for address removal. Please Try again later.");
             }
 
+            var notif = new Notification
+            {
+                Title = "Request Action",
+                Message = "Request of removing address",
+                Url = "/kvhai/staff/request-page/",
+                Message_Type = "Admin"
+            };
+
+            await _notification.SendNotificationToAdmin(notif);
+
             return Ok(new { message = "Request of removing address are now on process.", request_id = result });
         }
 

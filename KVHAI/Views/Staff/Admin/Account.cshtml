@@ -51,7 +51,7 @@
 
         .tableRow {
             /*border: 1px solid #ddd;*/
-            background-color: #fff;
+            /*background-color: #fff;*/
             /*box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);*/
         }
 
@@ -62,15 +62,70 @@
             padding: 3px;
             border-color: #334155;
             border-radius: 5px;
+            transition: all 0.3s ease-in-out;
         }
+
+        .tableContents:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+
     </style>
 }
 
 @section scripts{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/signalrSetupConnection.js"></script>
     <script src="~/js/employeeSignup.js"></script>
     <script src="~/js/staffAccount.js"></script> <!--FOR STAFF or EMPLOYEE-->
-    <script src="~/js/residentAccount.js"></script> <!--PARTIAL VIEW RESIDENT-->
+    @*<script src="~/js/residentAccount.js"></script>*@ <!--PARTIAL VIEW RESIDENT-->
     <script>
+        $(document).ready(function () {
+            //event listener
+            $(document).on('change', '#res-search', function () {
+                respagination();
+            })
+
+            $(document).on('click', '.respagination', function (event) {
+                event.preventDefault();
+                //const page = parseInt($(this).text(), 10);
+                var respage = parseInt($(this).data('respagination'), 10);
+                alert(respage);
+                console.log(respage);
+                respagination(respage);
+            });
+
+            function respagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
+                var _search = $('#res-search').val();
+                var _category = $('#res-category').val();
+                //var _isActive = $('#toggleSwitch').prop('checked');
+                //console.log(`Category = ${_category}, Active = ${_isActive}`);
+
+                var array = {
+                    search: _search,
+                    category: _category.toLowerCase(),
+                    //is_verified: _isActive.toString(),
+                    page_index: i
+
+                };
+
+
+                $.ajax({
+                    url: '/AdminAccount/ResidentPagination',
+                    type: "POST",
+                    data: array,
+                    success: function (response) {
+                        var result = $(response).find("#res-tableData").html();
+                        console.log(result);
+                        $('#res-tableData').html(result)
+                    },
+                    error: function (xhr, status, error_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+        });
     </script>
 
     <!-- PAGINATION -->
@@ -95,19 +150,17 @@
 <!-- END Modal FORM -->
 <!--/////////////////////-->
 
-
-<div class="container">
-    <div class="col-xl-7 content-container w-100">
+<div class="card">
+    <div class="card-body">
         <div class="p-3 account-header">
             <div class="container d-flex">
                 <span><a class="link-header active" href="#staff">Staff</a></span>
                 <span><a class="link-header" href="#resident">Resident</a></span>
             </div>
         </div>
-        <div class="container mt-3">
-
+        <div class="container shadow-lg">
             <!-- STAFF SECTION -->
-            <section id="staff">
+            <section id="staff" class="mt-3">
                 <div class="row d-flex align-items-center">
                     <div class="col">
                         <div class="search-wrapper">
@@ -134,7 +187,7 @@
                 </div>
 
                 <div class="table-responsive mt-4">
-                    <table class="table" id="tableData">
+                    <table class="table table-striped" id="tableData">
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
@@ -210,3 +263,4 @@
         </div>
     </div>
 </div>
+    

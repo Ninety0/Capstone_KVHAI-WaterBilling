@@ -41,7 +41,11 @@ namespace KVHAI.Repository
 
                         if (result > 0)
                         {
-                            if (notification.Title.Contains("Water Reading"))
+                            if (notification.Title.Contains("Announcement"))
+                            {
+                                await _hubContext.Clients.All.SendAsync("ReceivedNotification", notification.Title, notification.Resident_ID);
+                            }
+                            else if (notification.Title.Contains("Water Reading"))
                             {
                                 await _hubContext.Clients.All.SendAsync("ReceivedReadingNotification", notification.Title, notification.Resident_ID);
                             }
@@ -52,6 +56,14 @@ namespace KVHAI.Repository
                             else if (notification.Title.Contains("Register Address"))
                             {
                                 await _hubContext.Clients.All.SendAsync("ReceivedAddressNotification", notification.Title, notification.Resident_ID);
+                            }
+                            else if (notification.Title.Contains("My Address"))
+                            {
+                                await _hubContext.Clients.All.SendAsync("ReceivedMyAddressNotification", notification.Title, notification.Resident_ID);
+                            }
+                            else if (notification.Title.Contains("Request Action"))
+                            {
+                                await _hubContext.Clients.All.SendAsync("ReceivedRequestPageNotificationToMyAddress", notification.Title, notification.Resident_ID);
                             }
                         }
 
@@ -65,6 +77,7 @@ namespace KVHAI.Repository
             }
         }
 
+        //NOTIFICATION IN ADMIN END
         public async Task<int> SendNotificationToAdmin(Notification notification)
         {
             try
@@ -98,6 +111,10 @@ namespace KVHAI.Repository
                             else if (notification.Title.Contains("Register Address"))
                             {
                                 await _hubContext.Clients.All.SendAsync("ReceivedAddressNotificationToAdmin", notification.Title, notification.Resident_ID);
+                            }
+                            else if (notification.Title.Contains("Request Action"))
+                            {
+                                await _hubContext.Clients.All.SendAsync("ReceivedRequestPageNotificationToAdmin", notification.Title, notification.Resident_ID);
                             }
                         }
 
@@ -167,7 +184,8 @@ namespace KVHAI.Repository
                 var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("SELECT * FROM notification_tb WHERE res_id = @res_id AND is_read=0", connection))
+                    using (var command = new SqlCommand(@"
+                        SELECT * FROM notification_tb WHERE (res_id = @res_id OR message_type = 'all') AND is_read = 0", connection))
                     {
                         command.Parameters.AddWithValue("@res_id", resident_id);
                         using (var reader = await command.ExecuteReaderAsync())
