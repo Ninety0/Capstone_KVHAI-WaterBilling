@@ -13,9 +13,16 @@
 
     public class YearData
     {
-        public List<double> ActualData { get; set; }
+        public List<double?> ActualData { get; set; }
         public List<double?> MovingAverage { get; set; }
         public List<double?> PercentChange { get; set; }
         public List<string> Insights { get; set; }
+        public List<int> ConsumptionMonth { get; set; }
+
+    }
+
+    public class ConsumptionDataSet
+    {
+        public List<int> ConsumptionData { get; set; }
     }
 }

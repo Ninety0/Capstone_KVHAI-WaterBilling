@@ -11,9 +11,7 @@
         .backgroundgray {
             background-color: #f1f5f9;
         }
-        #insightContainer{
-            display:block;
-        }
+       
         .chartjs-tooltip {
             background-color: rgba(0, 0, 0, 0.8) !important;
             color: #ffffff !important;
@@ -37,6 +35,19 @@
 
         #show_ingsight:hover {
             background-color: #f1f5f9; /* Darker blue on hover */
+        }
+
+        .insights{
+            list-style-type:none;
+        }
+
+        .highlight {
+            background-color: #e9ecef;
+            /*transform: scale(1.1);*/
+            transform: translateY(-2px);
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            ; /* Soft shadow for depth */
         }
 
     </style>
@@ -169,7 +180,6 @@
 
             }
 
-            // SetChartJs function now accepts datasets and insights
             function SetChartJs(actualData, forecastData, insights) {
                 const ctx = $('#myChart');
 
@@ -221,16 +231,82 @@
                                 borderColor: '#ffffff',
                                 borderWidth: 1,
                                 callbacks: {
+                                    // Tooltip content callback
                                     afterLabel: function (tooltipItem) {
                                         var index = tooltipItem.dataIndex;
-                                        var insight = insights[index] || '';
-                                        return insight ? insight : 'No insights for this month';
+                                        var label = tooltipItem.label;
+                                        console.log(tooltipItem);
+                                        console.log(label);
+
+                                        var insight;
+                                        if (tooltipItem.datasetIndex === 1) {
+                                            insight = 'Expected cubic consumption for this month.';
+                                        }
+                                        //var insight = insights[index] || 'Expected cubic consumption for this month.';
+                                        highlightInsight(index); // Highlight the corresponding insight
+                                        return insight;
                                     }
                                 }
+                            }
+                        },
+                        // Event listeners for when the tooltip is hidden (e.g., when the user moves away)
+                        onHover: function (event, chartElement) {
+                            if (chartElement.length === 0) {
+                                resetInsightHighlight(); // Reset highlight when no chart element is hovered
                             }
                         }
                     }
                 });
+            }
+
+            // Function to highlight the relevant insight in the external container
+            function highlightInsight(index) {
+                var insightContainer = $('#insightContainer');
+
+                // Remove existing highlights
+                var highlightedItems = insightContainer.find('.highlight');
+                if (highlightedItems.length) {
+                    highlightedItems.removeClass('highlight');
+                }
+
+                // Find the div with the corresponding data-index attribute
+                var insightItem = insightContainer.find(`[data-index="${index}"]`);
+
+                // Add the highlight class to the matching element
+                insightItem.addClass('highlight');
+
+                console.log(insightItem); // For debugging, shows the element being highlighted
+            }
+
+            // Function to reset the highlighted insight
+            function resetInsightHighlight() {
+                var insightContainer = $('#insightContainer');
+
+                var highlightedItems = insightContainer.find('.highlight');
+                if (highlightedItems.length) {
+                    highlightedItems.removeClass('highlight');
+                }
+            }
+
+            function DisplayInsights(insights) {
+                console.log(insights);
+                var insightContainer = $('#insightContainer');
+                insightContainer.empty(); // Clear any previous insights
+
+                if (insights.length > 0) {
+                    var insightText = `<div class="insights">`;
+                    insights.forEach(function (insight, index) {
+                        if (insight !== null) {
+                            insightText += `<div class="border p-2 rounded mb-3" data-index="${index}"> ${insight}</div>`;
+                        }
+
+
+                    });
+                    insightText += "</div>";
+                    insightContainer.html(insightText); // Add the insights to the container
+                } else {
+                    insightContainer.html("<p>No insights available for this data.</p>");
+                }
             }
 
 
@@ -255,25 +331,7 @@
                 return "#" + r + g + b;
             }
 
-            // Function to display insights
-            function DisplayInsights(insights) {
-                var insightContainer = $('#insightContainer');
-                insightContainer.empty(); // Clear any previous insights
-
-                if (insights.length > 0) {
-                    var insightText = "<ul>";
-                    insights.forEach(function (insight) {
-                        if (insight !== null) {
-                            insightText += "<li>" + insight + "</li>";
-                        }
-                        
-                    });
-                    insightText += "</ul>";
-                    insightContainer.html(insightText); // Add the insights to the container
-                } else {
-                    insightContainer.html("<p>No insights available for this data.</p>");
-                }
-            }
+          
         });
 
         
@@ -338,7 +396,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 

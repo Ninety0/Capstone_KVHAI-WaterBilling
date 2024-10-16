@@ -10,6 +10,7 @@ namespace KVHAI.CustomClass
         private readonly WaterReadingRepository _waterReadingRepository;
         private readonly WaterBillRepository _waterBillRepository;
         private readonly AddressRepository _addressRepository;
+        private readonly Forecasting _forecasting;
 
         //FOR BOTH READINg AND BILLING
         public double WaterRate { get; set; } = 18.0;
@@ -34,6 +35,7 @@ namespace KVHAI.CustomClass
         //FOR WATER READING
         public List<WaterReading>? AllWaterReadingByResident { get; set; } = new List<WaterReading>();
         public List<Address>? AddressList { get; set; } = new List<Address>();
+        public List<int> YearList { get; set; }
         public List<WaterReading>? GraphData { get; set; } = new List<WaterReading>();
         public List<string>? GraphYear { get; set; } = new List<string>();
         public string CubicConsumption { get; set; } = string.Empty;
@@ -89,13 +91,14 @@ namespace KVHAI.CustomClass
         public HtmlString GenerateSelect = new HtmlString("");
 
         int index = 1;
-        public WaterBillingFunction(WaterReadingRepository waterReadingRepository, WaterBillRepository waterBillRepository, AddressRepository addressRepository)
+        public WaterBillingFunction(WaterReadingRepository waterReadingRepository, WaterBillRepository waterBillRepository, AddressRepository addressRepository, Forecasting forecasting)
         {
             _waterReadingRepository = waterReadingRepository;
             _waterBillRepository = waterBillRepository;
             _addressRepository = addressRepository;
             CubicMeter = new List<double>();
             BillAmount = new List<Double>();
+            _forecasting = forecasting;
         }
 
         //FOR WATER READING
@@ -112,6 +115,21 @@ namespace KVHAI.CustomClass
 
                 this.AllWaterReadingByResident = allReadingResident.AllWaterConsumptionByResident;
                 this.AddressList = address;
+
+                var yearLst = new List<int>();
+                foreach (var year in allReadingResident.AllWaterConsumptionByResident)
+                {
+                    if (DateTime.TryParse(year.Date, out DateTime yearResult))
+                    {
+                        int yearData = Convert.ToInt32(yearResult.ToString("yyyy"));
+                        if (!yearLst.Contains(yearData))
+                        {
+                            yearLst.Add(yearData);
+                        }
+                    }
+                }
+
+                this.YearList = yearLst;
 
             }
 
@@ -149,13 +167,16 @@ namespace KVHAI.CustomClass
 
         }
 
-        public async Task GetGraphData(string addressID, string year = "") //List<WaterReading>
+        public async Task<Models.Forecasting> GetGraphData(string addressID, string year = "") //List<WaterReading>
         {
             var readings = await _waterReadingRepository.GerReadingForGraph(addressID, year);
             // Sort readings by date
             var sortedReadings = readings.OrderBy(r => r.Date).ToList();
 
+            var forecast = new KVHAI.Models.Forecasting();
             var graphData = new List<WaterReading>();
+            var monthList = new List<int>();
+            var consumptionList = new List<double?>();
 
             var yearList = new List<string>();
 
@@ -166,13 +187,17 @@ namespace KVHAI.CustomClass
                 string month = "";
                 string _year = "";
 
-                var consumptionDifference = Convert.ToInt32(currentReading.Consumption) - Convert.ToInt32(previousReading.Consumption);
+                var consumptionDifference = Convert.ToInt32(currentReading.Consumption) - Convert.ToInt32(previousReading.Consumption);//) * WaterRate;
+
 
                 if (DateTime.TryParse(previousReading.Date, out DateTime Month))
                 {
-                    month = Month.ToString("MMMM");
+                    month = Month.ToString("MM");
                     _year = Month.ToString("yyyy");
                 }
+
+                consumptionList.Add(consumptionDifference);
+                monthList.Add(Convert.ToInt32(month));
 
                 var yearExist = yearList.Contains(_year);
 
@@ -181,14 +206,26 @@ namespace KVHAI.CustomClass
                     yearList.Add(_year);
                 }
 
+
+
                 graphData.Add(new WaterReading
                 {
                     DateMonth = month,
                     CubicConsumption = consumptionDifference.ToString()
                 });
             }
+
+            var data = new YearData
+            {
+                ActualData = consumptionList,
+                ConsumptionMonth = monthList
+            };
+
             this.GraphYear = yearList;
             this.GraphData = graphData;
+            var forecastData = await _forecasting.GetPercentChange(data, yearList);
+
+            return forecastData;
         }
 
         public async Task<List<string>> GetWaterBillNumberList()

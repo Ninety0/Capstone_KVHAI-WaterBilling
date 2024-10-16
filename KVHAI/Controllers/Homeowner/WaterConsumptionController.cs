@@ -33,7 +33,7 @@ namespace KVHAI.Controllers.Homeowner
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var address = await _addressRepository.GetAddressById(residentID);
 
-            await _waterBillingFunction.GetGraphData(address.FirstOrDefault().Address_ID.ToString());
+            //await _waterBillingFunction.GetGraphData(address.FirstOrDefault().Address_ID.ToString());
             await GetWaterConsumptionByAddress(address.FirstOrDefault().Address_ID.ToString(), residentID);
             _waterBillingFunction.NotificationResident = await _notification.GetNotificationByResident(residentID);
 
@@ -43,8 +43,9 @@ namespace KVHAI.Controllers.Homeowner
         [HttpGet]
         public async Task<IActionResult> GraphWaterReading(string addressID, string year = "")
         {
-            await _waterBillingFunction.GetGraphData(addressID, year);
-            return Json(_waterBillingFunction.GraphData);
+            var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
+            return Json(forecastData);
+            //return Json(_waterBillingFunction.GraphData);
         }
 
         //[HttpPost]
@@ -66,14 +67,14 @@ namespace KVHAI.Controllers.Homeowner
         {
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            await _waterBillingFunction.GetGraphData(addressID, year);
+            var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
             await GetWaterConsumptionByAddress(addressID, residentID);
 
             var partialView = await this.RenderViewAsync("~/Views/Resident/Reading/WaterConsumption.cshtml", _waterBillingFunction, false);
             return Json(new
             {
                 Html = partialView,
-                GraphData = _waterBillingFunction.GraphData
+                GraphData = forecastData
             });
 
             //var viewName = "~/Views/Resident/Reading/WaterConsumption.cshtml";
@@ -131,6 +132,24 @@ namespace KVHAI.Controllers.Homeowner
         private async Task GetWaterConsumptionByAddress(string addressID, string residentID)
         {
             await _waterBillingFunction.WaterReading(addressID: addressID, residentID: residentID);
+
+            var listConsumptions = new List<double>();
+            var listCubic = new List<Double>();
+
+            foreach (var item in _waterBillingFunction.AllWaterReadingByResident)
+            {
+                listConsumptions.Add(Convert.ToDouble(item.Consumption));
+            }
+
+            for (int i = listConsumptions.Count - 1; i > 0; i--)
+            {
+                var difference = listConsumptions[i - 1] - listConsumptions[i];
+                listCubic.Add(difference);
+            }
+
+            _waterBillingFunction.CubicMeter = listCubic;
+            _waterBillingFunction.CubicMeter.Reverse();
+
             var previous = _waterBillingFunction.PreviousReading;
             var current = _waterBillingFunction.CurrentReading;
             var address = _waterBillingFunction.ResidentAddress;
@@ -167,6 +186,8 @@ namespace KVHAI.Controllers.Homeowner
                 }
 
                 cubic = (nextConsumption - previousConsumption) < 1 ? 0 : nextConsumption - previousConsumption;
+
+                _waterBillingFunction.CubicMeter.Add(cubic);
 
                 _waterBillingFunction.CubicConsumption = cubic.ToString();
             }
