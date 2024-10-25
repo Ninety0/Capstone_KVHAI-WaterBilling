@@ -121,11 +121,14 @@
                             @if (User.Identity.IsAuthenticated)
                             {
                                 var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                                var role = User.FindFirst(ClaimTypes.Role)?.Value;
                                 var username = User.Identity.Name;
+
                                 <span class="fw-bold">Hi, @username!</span> <!-- Display the username -->
                                 <!-- You can also hide the ID or use it for some internal purposes -->
                                 <input type="hidden" id="cookie_id" value="@residentID" />
                                 <input type="hidden" id="cookie_name" value="@username" />
+                                <input type="hidden" id="cookie_roles" value="@role" />
                             }
                             else
                             {

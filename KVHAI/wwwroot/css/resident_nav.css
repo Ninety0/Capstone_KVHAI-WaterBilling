@@ -11,14 +11,12 @@
 
     .nav_sidebar:hover {
         font-weight: 700;
-        font-size: 1.3rem;
         background-color: rgba(180, 204, 255,.5);
         color: #0E2046;
     }
 
     .nav_sidebar.active {
         font-weight: 700;
-        font-size: 1.3rem;
         background-color: #B4CCFF;
         padding: 5px;
         color: #0E2046;

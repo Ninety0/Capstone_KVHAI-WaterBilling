@@ -3,6 +3,7 @@
     public class ReportWaterBilling
     {
         public int WaterBill_ID { get; set; }
+        public string Reference_No { get; set; } = string.Empty;
         public int CurrentReading_ID { get; set; }
         public int WaterBill_Number { get; set; }
         public string Block { get; set; } = string.Empty;

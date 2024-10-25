@@ -18,6 +18,7 @@
     <Content Remove="wwwroot\js\streetCRUD.js" />
     <Content Remove="wwwroot\js\usableButTrahsRN.js" />
     <Content Remove="wwwroot\js\water-reading.js" />
+    <Content Remove="wwwroot\ReportViewer\rptPayment.rdlc" />
     <Content Remove="wwwroot\ReportViewer\rptWaterBill.rdlc" />
   </ItemGroup>
 
@@ -29,17 +30,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="wwwroot\ReportViewer\rptPayment.rdlc" />
     <EmbeddedResource Include="wwwroot\ReportViewer\rptWaterBill.rdlc" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Controllers\Staff\Cashier2\" />
-    <Folder Include="Controllers\Staff\Cashier1\" />
     <Folder Include="Views\ClerkWaterBilling\" />
-    <Folder Include="Views\Resident\LoggedIn\Renter\" />
     <Folder Include="Views\Resident\Home\" />
     <Folder Include="Views\Staff\Cashier2\" />
-    <Folder Include="Views\Staff\Cashier1\" />
     <Folder Include="wwwroot\css\Admins\" />
     <Folder Include="wwwroot\css\Resident\" />
     <Folder Include="wwwroot\GeneratedReports\" />
@@ -85,6 +84,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="ReportDataSet\dsPayment.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>dsPayment.xsd</DependentUpon>
+    </Compile>
     <Compile Update="ReportDataSet\dsWaterBill.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -112,6 +116,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="ReportDataSet\dsPayment.xsd">
+      <SubType>Designer</SubType>
+      <LastGenOutput>dsPayment.Designer.cs</LastGenOutput>
+      <Generator>MSDataSetGenerator</Generator>
+    </None>
     <None Update="ReportDataSet\dsWaterBill.xsd">
       <SubType>Designer</SubType>
       <LastGenOutput>dsWaterBill.Designer.cs</LastGenOutput>

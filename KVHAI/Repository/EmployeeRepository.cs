@@ -18,6 +18,174 @@ namespace KVHAI.Repository
             _sanitize = sanitize;
         }
 
+        public async Task<List<Employee>> EmployeeList()
+        {
+            try
+            {
+                var empList = new List<Employee>();
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("select * from employee_tb", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var emp = new Employee
+                                {
+                                    Emp_ID = reader.GetInt32(0).ToString(),
+                                    Lname = reader.GetString(1),
+                                    Fname = reader.GetString(2),
+                                    Mname = reader.GetString(3),
+                                    Phone = reader.GetString(4),
+                                    Email = reader.GetString(5),
+                                    Username = reader.GetString(6),
+                                    Password = reader.GetString(7),
+                                    Role = reader.GetString(8),
+                                    Created_At = reader.GetDateTime(9).ToString("yyyy-MM-dd"),
+                                };
+
+                                empList.Add(emp);
+                            }
+                        }
+                    }
+                }
+
+                return empList;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> ValidatePassword(string username, string password)
+        {
+            try
+            {
+                // Sanitize the input username
+                string _user = await _sanitize.HTMLSanitizerAsync(username);
+                string _pass = await _sanitize.HTMLSanitizerAsync(password);
+
+                // Fetch the employee list
+                var empList = await EmployeeList();
+
+                // Get the password from the database associated with the username
+                var passwordFromDB = empList.Where(u => u.Username == _user).Select(p => p.Password).FirstOrDefault();
+
+                // If no password was found, return false (username does not exist or password is null)
+                if (string.IsNullOrEmpty(passwordFromDB))
+                {
+                    return false; // Username not found or password missing
+                }
+
+                // Verify the password using the hashing service
+                if (_hash.VerifyPassword(passwordFromDB, _pass))
+                {
+                    return true; // Password is correct
+                }
+                else
+                {
+                    return false; // Password is incorrect
+                }
+            }
+            catch (Exception ex)
+            {
+                // Optionally log the exception
+                // Log(ex);  // You can log the exception here if needed
+                return false; // In case of any exception, return false
+            }
+        }
+
+        public async Task<AuthClaims> GetEmployeeByUserandPass(string user, string pass)
+        {
+            try
+            {
+                // Sanitize the input username and password
+                string _user = await _sanitize.HTMLSanitizerAsync(user);
+                string _pass = await _sanitize.HTMLSanitizerAsync(pass);
+
+                // Fetch the employee list
+                var empList = await EmployeeList();
+
+                // Get the password from the database associated with the username
+                var passwordFromDB = empList.Where(u => u.Username == _user).Select(p => p.Password).FirstOrDefault();
+
+                // If no password was found, return null (username does not exist or password is null)
+                if (string.IsNullOrEmpty(passwordFromDB))
+                {
+                    return null; // Username not found or password missing
+                }
+
+                // Verify the password using the hashing service
+                if (_hash.VerifyPassword(passwordFromDB, _pass))
+                {
+                    // Return employee details for the matched username and password
+                    var claim = empList
+                        .Where(u => u.Username == _user) // Assuming username is unique
+                        .Select(e => new AuthClaims
+                        {
+                            ID = e.Emp_ID, // Fill in employee details
+                            Role = e.Role,
+                        })
+                        .FirstOrDefault(); // Select the first matching employee
+
+                    return claim;
+                }
+                else
+                {
+                    return null; // Password is incorrect
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception appropriately (log it, etc.)
+                return null;
+            }
+        }
+
+
+
+
+        public async Task<int> ValidateAccount(string username, string password)
+        {
+            try
+            {
+                // Sanitize the input username
+                string _user = await _sanitize.HTMLSanitizerAsync(username);
+
+                // Fetch the employee list
+                var empList = await EmployeeList();
+
+                // Get the password from the database associated with the username
+                var passwordFromDB = empList.Where(u => u.Username == _user).Select(p => p.Password).FirstOrDefault();
+
+                // If no password was found, return 0 (either username does not exist or password is null)
+                if (string.IsNullOrEmpty(passwordFromDB))
+                {
+                    return 0; // Username not found or password missing
+                }
+
+                // Verify the password using the hashing service
+                if (_hash.VerifyPassword(passwordFromDB, password))
+                {
+                    // Fetch the employee ID of the matched user
+                    var emp_id = empList.Where(u => u.Username == _user).Select(u => u.Emp_ID).FirstOrDefault();
+                    return Convert.ToInt32(emp_id);
+                }
+                else
+                {
+                    return 0; // Password is incorrect
+                }
+            }
+            catch (Exception ex)
+            {
+                // Optionally, log the exception here
+                throw new Exception("Error occurred during account validation", ex);
+            }
+        }
+
+
         //CREATE
         public async Task<int> CreateEmployee(Employee employee)
         {
@@ -305,7 +473,7 @@ namespace KVHAI.Repository
                             employee.Username = reader[6]?.ToString() ?? string.Empty;
                             employee.Password = reader[7]?.ToString() ?? string.Empty;
                             employee.Role = reader[8]?.ToString() ?? string.Empty;
-                            employee.Created_At = reader[9]?.ToString() ?? string.Empty;
+                            employee.Created_At = reader.GetDateTime(9).ToString("yyyy-MM-dd");
                             employees.Add(employee);
 
                         }
@@ -354,7 +522,7 @@ namespace KVHAI.Repository
                             employee.Username = reader[6]?.ToString() ?? string.Empty;
                             employee.Password = reader[7]?.ToString() ?? string.Empty;
                             employee.Role = reader[8]?.ToString() ?? string.Empty;
-                            employee.Created_At = reader[9]?.ToString() ?? string.Empty;
+                            employee.Created_At = reader.GetDateTime(9).ToString("yyyy-MM-dd");
                             employees.Add(employee);
 
                         }

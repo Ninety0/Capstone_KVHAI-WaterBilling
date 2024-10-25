@@ -12,9 +12,90 @@
     <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-icon.css">
     <link href="~/css/toastr.min.css" rel="stylesheet" />
-    <link href="~/css/login.css" rel="stylesheet" />
+    @*<link href="~/css/login.css" rel="stylesheet" />*@
     <link href="~/css/header-font.css" rel="stylesheet" />
 
+    <style>
+        *{
+    padding:0;
+    margin:0;
+    }
+
+    /* .navbar {
+        background-color: #EFF3FF;
+    } */
+
+    body {
+        font-family: "Inter", sans-serif;
+        font-size: 0.8rem;
+        background-color: #f1f5f9;
+    }
+
+    #header {
+        font-weight: 400;
+        font-style: normal;
+        letter-spacing: .5rem;
+        font-size: 2rem;
+        color: #1B8EC9;
+        font-family: "Poetsen One", sans-serif;
+
+    }
+
+    .center-form {
+        border: none;
+        background-color: white;
+        padding: 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #btn-login{
+        font-family: "Poetsen One", sans-serif;
+        font-weight: 300;
+        font-style: normal;
+    }
+
+    #btn-sign {
+        font-family: "Poetsen One", sans-serif;
+        font-weight: 300;
+        font-style: normal;
+        background-color: #36A420;
+        color:white;
+    }
+
+    .center-text {
+        font-family: "Poetsen One", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-size: 2rem;
+    }
+
+    .res-login{
+        height: calc(100vh - 70px);
+    }
+
+    .portal-logo{
+        width: 50px;
+        height: 50px;
+    }
+
+    .forgot{
+        color: #0E55DA;
+        font-size:.9rem;        
+    }
+
+    input.form-control {
+        border-radius: 8px;
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    input.form-control:focus {
+        box-shadow: 0 0 5px #1B8EC9;
+        border-color: #1B8EC9;
+    }
+
+
+    </style>
 </head>
 <body>
     <div class="container vh-100">
@@ -27,7 +108,7 @@
             <div class="container flex-grow-1 d-flex justify-content-center align-items-center">
 
                 @* CENTER FORM *@
-                <div class="row center-form">
+                <div class="row center-form rounded">
                     @* RIGHT SIDE *@
                     <div class="col-12 p-2 ">
                         <div class="container pe-2 ps-2">
@@ -102,10 +183,10 @@
                 window.location.href = origin + url;
             });
 
-            $('#btn-login').on('click', function (e) {
+            $(document).on('click','#btn-login', function (e) {
                 e.preventDefault();
                 var formData = new FormData($('#form_login')[0]);
-                console.log(formData);
+                console.log($('#form_login').serialize());
 
                 if (!validateCurrentTab()) {
                     toastr.error('Please fill out all required fields correctly.');
@@ -130,7 +211,8 @@
                         else if (response.redirectUrl) {
                             toastr.success("Login Successfully");
                             setTimeout(function () {
-                                window.location.href = '/kvhai/resident/home';
+                                alert(response.redirectUrl);
+                                window.location.href = response.redirectUrl;
                             }, 1000);
                         }
                         

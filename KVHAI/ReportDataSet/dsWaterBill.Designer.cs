@@ -281,6 +281,8 @@ namespace KVHAI.ReportDataSet {
             
             private global::System.Data.DataColumn columnwaterbill_id;
             
+            private global::System.Data.DataColumn columnreference_no;
+            
             private global::System.Data.DataColumn columnwaterbill_no;
             
             private global::System.Data.DataColumn columnblock;
@@ -310,6 +312,8 @@ namespace KVHAI.ReportDataSet {
             private global::System.Data.DataColumn columnamount_previous;
             
             private global::System.Data.DataColumn columntotal;
+            
+            private global::System.Data.DataColumn columnperiod_cover;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
@@ -349,6 +353,14 @@ namespace KVHAI.ReportDataSet {
             public global::System.Data.DataColumn waterbill_idColumn {
                 get {
                     return this.columnwaterbill_id;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public global::System.Data.DataColumn reference_noColumn {
+                get {
+                    return this.columnreference_no;
                 }
             }
             
@@ -474,6 +486,14 @@ namespace KVHAI.ReportDataSet {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public global::System.Data.DataColumn period_coverColumn {
+                get {
+                    return this.columnperiod_cover;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -511,6 +531,7 @@ namespace KVHAI.ReportDataSet {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public report_waterbillRow Addreport_waterbillRow(
                         string waterbill_id, 
+                        string reference_no, 
                         string waterbill_no, 
                         string block, 
                         string lot, 
@@ -525,10 +546,12 @@ namespace KVHAI.ReportDataSet {
                         string previous_waterbill, 
                         string amount_due_now, 
                         string amount_previous, 
-                        string total) {
+                        string total, 
+                        string period_cover) {
                 report_waterbillRow rowreport_waterbillRow = ((report_waterbillRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         waterbill_id,
+                        reference_no,
                         waterbill_no,
                         block,
                         lot,
@@ -543,7 +566,8 @@ namespace KVHAI.ReportDataSet {
                         previous_waterbill,
                         amount_due_now,
                         amount_previous,
-                        total};
+                        total,
+                        period_cover};
                 rowreport_waterbillRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowreport_waterbillRow);
                 return rowreport_waterbillRow;
@@ -567,6 +591,7 @@ namespace KVHAI.ReportDataSet {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             internal void InitVars() {
                 this.columnwaterbill_id = base.Columns["waterbill_id"];
+                this.columnreference_no = base.Columns["reference_no"];
                 this.columnwaterbill_no = base.Columns["waterbill_no"];
                 this.columnblock = base.Columns["block"];
                 this.columnlot = base.Columns["lot"];
@@ -582,6 +607,7 @@ namespace KVHAI.ReportDataSet {
                 this.columnamount_due_now = base.Columns["amount_due_now"];
                 this.columnamount_previous = base.Columns["amount_previous"];
                 this.columntotal = base.Columns["total"];
+                this.columnperiod_cover = base.Columns["period_cover"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -589,6 +615,8 @@ namespace KVHAI.ReportDataSet {
             private void InitClass() {
                 this.columnwaterbill_id = new global::System.Data.DataColumn("waterbill_id", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnwaterbill_id);
+                this.columnreference_no = new global::System.Data.DataColumn("reference_no", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnreference_no);
                 this.columnwaterbill_no = new global::System.Data.DataColumn("waterbill_no", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnwaterbill_no);
                 this.columnblock = new global::System.Data.DataColumn("block", typeof(string), null, global::System.Data.MappingType.Element);
@@ -619,6 +647,8 @@ namespace KVHAI.ReportDataSet {
                 base.Columns.Add(this.columnamount_previous);
                 this.columntotal = new global::System.Data.DataColumn("total", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columntotal);
+                this.columnperiod_cover = new global::System.Data.DataColumn("period_cover", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnperiod_cover);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -772,6 +802,22 @@ namespace KVHAI.ReportDataSet {
                 }
                 set {
                     this[this.tablereport_waterbill.waterbill_idColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public string reference_no {
+                get {
+                    try {
+                        return ((string)(this[this.tablereport_waterbill.reference_noColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'reference_no\' in table \'report_waterbill\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tablereport_waterbill.reference_noColumn] = value;
                 }
             }
             
@@ -1017,6 +1063,22 @@ namespace KVHAI.ReportDataSet {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public string period_cover {
+                get {
+                    try {
+                        return ((string)(this[this.tablereport_waterbill.period_coverColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'period_cover\' in table \'report_waterbill\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tablereport_waterbill.period_coverColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public bool Iswaterbill_idNull() {
                 return this.IsNull(this.tablereport_waterbill.waterbill_idColumn);
             }
@@ -1025,6 +1087,18 @@ namespace KVHAI.ReportDataSet {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public void Setwaterbill_idNull() {
                 this[this.tablereport_waterbill.waterbill_idColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public bool Isreference_noNull() {
+                return this.IsNull(this.tablereport_waterbill.reference_noColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public void Setreference_noNull() {
+                this[this.tablereport_waterbill.reference_noColumn] = global::System.Convert.DBNull;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1205,6 +1279,18 @@ namespace KVHAI.ReportDataSet {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public void SettotalNull() {
                 this[this.tablereport_waterbill.totalColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public bool Isperiod_coverNull() {
+                return this.IsNull(this.tablereport_waterbill.period_coverColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public void Setperiod_coverNull() {
+                this[this.tablereport_waterbill.period_coverColumn] = global::System.Convert.DBNull;
             }
         }
         

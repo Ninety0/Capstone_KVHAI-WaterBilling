@@ -24,7 +24,7 @@ namespace KVHAI.Controllers.Staff.Clerk
             //return View("ClerkWaterBilling");
             var billNumList = await _waterBilling.GetWaterBillNumberList();
 
-            await _waterBilling.WaterBilling(location: "1", wbnumber: billNumList.FirstOrDefault());
+            //await _waterBilling.WaterBilling(location: "1", wbnumber: billNumList.FirstOrDefault());
             return View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling);
             //return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
         }
@@ -32,7 +32,8 @@ namespace KVHAI.Controllers.Staff.Clerk
         [HttpGet]
         public async Task<IActionResult> GetWaterBills(string location, string bill_num)
         {
-            await _waterBilling.WaterBilling(location: location, wbnumber: bill_num);
+            //await _waterBilling.WaterBilling(location: location, wbnumber: bill_num);
+            await _waterBilling.GetWaterBillingValues(location, bill_num);
             return View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling);
         }
 
@@ -54,7 +55,7 @@ namespace KVHAI.Controllers.Staff.Clerk
                     return BadRequest("File type not specified.");
                 }
 
-                var dt = await _waterBilling.ReportWaterBilling(reportWaterBilling);
+                var dt = await _waterBilling.PrintWaterBilling(reportWaterBilling);
                 if (dt == null || dt.Rows.Count < 1)
                 {
                     return BadRequest("No data found for the given parameters.");
@@ -139,7 +140,7 @@ namespace KVHAI.Controllers.Staff.Clerk
         {
             try
             {
-                var dt = await _waterBilling.ReportWaterBilling(reportWaterBilling);
+                var dt = await _waterBilling.PrintWaterBilling(reportWaterBilling);
                 if (dt == null || dt.Rows.Count < 1)
                 {
                     return BadRequest();
@@ -171,7 +172,8 @@ namespace KVHAI.Controllers.Staff.Clerk
         {
             try
             {
-                await _waterBilling.WaterBilling(location: location, wbnumber: waterBill);
+                //await _waterBilling.WaterBilling(location: location, wbnumber: waterBill);
+                await _waterBilling.GetWaterBillingValues(location, waterBill);
                 string jsonData = JsonConvert.SerializeObject(View("~/Views/Staff/Clerk/WBilling.cshtml", _waterBilling).ToString());
                 //return Ok(jsonData);
                 //return Ok($"WaterBillingLocation called with location: {location}, waterBill: {waterBill}");

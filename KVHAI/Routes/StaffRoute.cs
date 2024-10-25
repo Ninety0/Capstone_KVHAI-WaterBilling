@@ -9,9 +9,22 @@ namespace KVHAI.Routes
             endpoint.MapControllerRoute(
                 name: "StaffLogin",
                 pattern: "kvhai/staff/login",
-                defaults: new { controller = "Login", action = "Index" }
+                defaults: new { controller = "AdminLogin", action = "Index" }
             );
 
+            endpoint.MapControllerRoute(
+                name: "StaffError",
+                pattern: "/kvhai/admin/error",
+                defaults: new { controller = "AdminLogin", action = "Index" }
+            );
+
+            endpoint.MapControllerRoute(
+                name: "StaffForgotPass",
+                pattern: "kvhai/staff/login/forgot-password",
+                defaults: new { controller = "AdminLogin", action = "Forgot" }
+            );
+
+            #region ADMIN
             endpoint.MapControllerRoute(
                 name: "AdminDashboard",
                 pattern: "kvhai/staff/admin/dashboard",
@@ -30,7 +43,24 @@ namespace KVHAI.Routes
                 defaults: new { controller = "Street", action = "Index" }
             );
 
+            endpoint.MapControllerRoute(
+               name: "PostAnnouncement",
+               pattern: "kvhai/staff/announcment/",
+               defaults: new { controller = "PostAnnouncement", action = "Index" }
+           );
 
+            endpoint.MapControllerRoute(
+                name: "ResidentConfirmation",
+                pattern: "kvhai/staff/resident-address/",
+                defaults: new { controller = "ResidentAddress", action = "Index" }
+            );
+            endpoint.MapControllerRoute(
+                name: "PageRequest",
+                pattern: "kvhai/staff/request-page/",
+                defaults: new { controller = "RequestPage", action = "Index" }
+            );
+            #endregion
+            #region CLERK
             endpoint.MapControllerRoute(
                 name: "ReadingClerk",
                 pattern: "kvhai/staff/water-reading/",
@@ -43,32 +73,25 @@ namespace KVHAI.Routes
                 defaults: new { controller = "ClerkWaterBilling", action = "Index" }
             );
 
-
-
             endpoint.MapControllerRoute(
                 name: "WaterWorks",
                 pattern: "kvhai/staff/waterwork/",
                 defaults: new { controller = "WaterWorks", action = "Index" }
             );
+            #endregion
 
-            endpoint.MapControllerRoute(
-                name: "PostAnnouncement",
-                pattern: "kvhai/staff/announcment/",
-                defaults: new { controller = "PostAnnouncement", action = "Index" }
-            );
+            /////////////////////////////////////////////////////////////////
+            #region CASHIER ON
+            #endregion
 
-            endpoint.MapControllerRoute(
-                name: "ResidentConfirmation",
-                pattern: "kvhai/staff/resident-address/",
-                defaults: new { controller = "ResidentAddress", action = "Index" }
-            );
+            ////////////////////////////////////////////////////////////////
+            #region CASHIER OFF
+            #endregion
 
-            endpoint.MapControllerRoute(
-                name: "PageRequest",
-                pattern: "kvhai/staff/request-page/",
-                defaults: new { controller = "RequestPage", action = "Index" }
-            );
+            ////////////////////////////////////////////////////////////////
 
+            #region WATER WORKS
+            #endregion
 
             #region FOR SIGNALR MAPS
             endpoint.MapHub<StreetHub>("/kvhai/staff/admin/streethub");

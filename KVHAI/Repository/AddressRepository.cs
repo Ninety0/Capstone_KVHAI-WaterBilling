@@ -26,12 +26,55 @@ namespace KVHAI.Repository
             _requestDetailsRepository = requestDetailsRepository;
             _notificationRepository = notificationRepository;
         }
+
+        //READ
+        public async Task<List<ResidentAddress>> ResidentAddressList()
+        {
+            var residentAddress = new List<ResidentAddress>();
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(@"
+                    SELECT addr_id as ID, Name, block, lot, st_name as street
+                    FROM (
+                        SELECT 
+		                    a.addr_id,
+                            CONCAT(res.lname, ', ', res.fname, ', ', res.mname) AS Name, 
+                            res.block, 
+                            res.lot, 
+                            st.st_name 
+                        FROM address_tb a
+                        JOIN street_tb st ON a.st_id = st.st_id
+                        JOIN resident_tb res ON a.res_id = res.res_id
+                    ) AS Combined", connection))
+                {
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var _residentAddress = new ResidentAddress
+                            {
+                                ID = Convert.ToInt32(reader["ID"].ToString()),
+                                Name = reader["Name"].ToString() ?? string.Empty,
+                                Block = reader["block"].ToString() ?? string.Empty,
+                                Lot = reader["lot"].ToString() ?? string.Empty,
+                                Street = reader["street"].ToString() ?? string.Empty,
+                            };
+                            residentAddress.Add(_residentAddress);
+                        }
+                    }
+                }
+            }
+            return residentAddress;
+        }
+
+
         //CREATE
         public async Task<List<Address>> CreateAddress(string res_id, List<Address> addressess, SqlTransaction transaction, SqlConnection connection)
         {
             try
             {
                 var addressIDList = new List<Address>();
+                var addressID = 0;
 
                 foreach (var address in addressess)
                 {
@@ -45,8 +88,8 @@ namespace KVHAI.Repository
                     }
 
                     using (var command = new SqlCommand(@"
-                        INSERT INTO address_tb (res_id,block,lot,st_id,location, is_verified) 
-                        VALUES(@res,@blk,@lot,@st,@location,'false');
+                        INSERT INTO address_tb (res_id,block,lot,st_id,location, is_verified, register_at) 
+                        VALUES(@res,@blk,@lot,@st,@location,'false', @date);
                         SELECT CAST(SCOPE_IDENTITY() AS INT);", connection, transaction))
                     {
                         int _location = 0;
@@ -82,13 +125,28 @@ namespace KVHAI.Repository
                         command.Parameters.AddWithValue("@lot", address.Lot ?? "");
                         command.Parameters.AddWithValue("@st", address.Street_ID);
                         command.Parameters.AddWithValue("@location", _location);
+                        command.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
-                        var id = (int?)(await command.ExecuteScalarAsync()) ?? 0;
+                        addressID = (int?)(await command.ExecuteScalarAsync()) ?? 0;
                         //intDict.Add("Location", _location);
                         //intDict.Add("ID", resID);
-                        var addressModel = new Address { Address_ID = id };
+                        var addressModel = new Address { Address_ID = addressID };
 
                         addressIDList.Add(addressModel);
+                    }
+                    //OWNET DATA TYPE BIT
+                    //1 - homeowner
+                    //0 - renter
+                    using (var command = new SqlCommand(@"
+                        INSERT INTO resident_address_tb (res_id,addr_id,is_owner) 
+                        VALUES(@res,@addr,@owner);
+                        ", connection, transaction))
+                    {
+                        command.Parameters.AddWithValue("@res", res_id);
+                        command.Parameters.AddWithValue("@addr", addressID);
+                        command.Parameters.AddWithValue("@owner", 1);
+
+                        await command.ExecuteNonQueryAsync();
                     }
                 }
                 return addressIDList;
@@ -100,6 +158,67 @@ namespace KVHAI.Repository
             }
 
         }
+        #region FOR RENTER
+        public async Task<int> InsertRenterAddress(string res_id, string address_id)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    //OWNET DATA TYPE BIT
+                    //1 - homeowner
+                    //0 - renter
+
+                    //STATUS - 0 (Pending), 1 (Accepted), or 2 (Rejected) 
+                    using (var command = new SqlCommand(@"
+                        INSERT INTO resident_address_tb (res_id,addr_id,is_owner,status,request_date) 
+                        VALUES(@res,@addr,@owner,@status,@req);", connection))
+                    {
+                        command.Parameters.AddWithValue("@res", res_id);
+                        command.Parameters.AddWithValue("@addr", address_id);
+                        command.Parameters.AddWithValue("@owner", 0);//renter
+                        command.Parameters.AddWithValue("@status", 0);//pending
+                        command.Parameters.AddWithValue("@req", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                        return await command.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                return 0;
+            }
+        }
+
+        public async Task<int> GetAddressIDForRenter(ResidentAddress address)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                        SELECT addr_id FROM address_tb 
+                        WHERE block = @blk AND lot = @lot AND st_id = @st", connection)) // Removed extra parenthesis
+                    {
+                        command.Parameters.AddWithValue("@blk", address.Block);
+                        command.Parameters.AddWithValue("@lot", address.Lot);
+                        command.Parameters.AddWithValue("@st", address.ID);
+
+                        int result = (int)await command.ExecuteScalarAsync();
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log exception for debugging
+                Console.WriteLine($"Error: {ex.Message}");
+                return 0; // Return false in case of an error
+            }
+        }
+        #endregion
+
 
         // CHECK IF EXIST
         public async Task<bool> IsAddressExist(string res_id, string block, string lot, int st_id, SqlConnection connection, SqlTransaction transaction)
@@ -152,45 +271,8 @@ namespace KVHAI.Repository
 
         }
 
+        //not used
 
-        public async Task<List<ResidentAddress>> GetResidentAddressList()
-        {
-            var residentAddress = new List<ResidentAddress>();
-            using (var connection = await _dbConnect.GetOpenConnectionAsync())
-            {
-                using (var command = new SqlCommand(@"
-                    SELECT addr_id as ID, Name, block, lot, st_name as street
-                    FROM (
-                        SELECT 
-		                    a.addr_id,
-                            CONCAT(res.lname, ', ', res.fname, ', ', res.mname) AS Name, 
-                            res.block, 
-                            res.lot, 
-                            st.st_name 
-                        FROM address_tb a
-                        JOIN street_tb st ON a.st_id = st.st_id
-                        JOIN resident_tb res ON a.res_id = res.res_id
-                    ) AS Combined", connection))
-                {
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            var _residentAddress = new ResidentAddress
-                            {
-                                ID = Convert.ToInt32(reader["ID"].ToString()),
-                                Name = reader["Name"].ToString() ?? string.Empty,
-                                Block = reader["block"].ToString() ?? string.Empty,
-                                Lot = reader["lot"].ToString() ?? string.Empty,
-                                Street = reader["street"].ToString() ?? string.Empty,
-                            };
-                            residentAddress.Add(_residentAddress);
-                        }
-                    }
-                }
-            }
-            return residentAddress;
-        }
 
         public async Task<int> ValidateAddress(ResidentAddress residentAddress)
         {
@@ -765,6 +847,48 @@ namespace KVHAI.Repository
             }
         }
 
+        public async Task<List<ResidentAddress>> GetNewRegisteringAddress()
+        {
+            try
+            {
+                var residentAddress = new List<ResidentAddress>();
 
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                    select a.addr_id,r.res_id,s.st_id,a.block,a.lot,s.st_name,CONCAT(r.lname,', ',r.fname,', ',r.mname) as name, a.register_at from address_tb a 
+                    JOIN resident_tb r ON a.res_id = r.res_id
+                    JOIN street_tb s ON a.st_id = s.st_id
+                    WHERE CONVERT(VARCHAR, a.register_at, 23) LIKE '%2024-01%' ORDER BY a.register_at DESC", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var _residentAddress = new ResidentAddress
+                                {
+                                    Address_ID = reader.GetInt32(0),
+                                    Resident_ID = reader.GetInt32(1),
+                                    Street_ID = reader.GetInt32(2),
+                                    Block = reader.GetString(3),
+                                    Lot = reader.GetString(4),
+                                    Street = reader.GetString(5),
+                                    Name = reader.GetString(6),
+                                    Register_At = reader.GetDateTime(7).ToString("MMM dd yyyy hh:mm t"),
+                                };
+                                residentAddress.Add(_residentAddress);
+                            }
+                        }
+                    }
+                }
+
+                return residentAddress;
+            }
+            catch (Exception)
+            {
+
+                return null;
+            }
+        }
     }
 }

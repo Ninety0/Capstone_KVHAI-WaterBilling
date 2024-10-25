@@ -19,7 +19,8 @@ namespace KVHAI.Controllers
         public async Task<IActionResult> Index()
         {
             var employees = await _employeeRepository.GetAllEmployeesAsync();
-            return View(employees);
+            return View("~Views/Staff/Login/Index.cshtml");
+            //return View(employees);
             //return View();
         }
 

@@ -33,9 +33,20 @@ namespace KVHAI.Routes
             #region USER LOGGED IN TEMPLATE
             //LOGGEDIN HOME
             endpoint.MapControllerRoute(
-                name: "ResidentLoggedIn",
-                pattern: "kvhai/resident/home",
+                name: "ResidentAnnouncement",
+                pattern: "kvhai/resident/announcement",
                 defaults: new { controller = "LoggedIn", action = "Index" }
+            );
+
+            endpoint.MapControllerRoute(
+                name: "ResidentOwnerHome",
+                pattern: "kvhai/resident/rental/home",
+                defaults: new { controller = "ResidentHome", action = "Index" }
+            );
+            endpoint.MapControllerRoute(
+                name: "ResidentRenterHome",
+                pattern: "kvhai/resident/home",
+                defaults: new { controller = "ResidentHome", action = "OwnerHome" }
             );
 
             endpoint.MapControllerRoute(
@@ -63,6 +74,12 @@ namespace KVHAI.Routes
                 defaults: new { controller = "WaterConsumption", action = "Index" }
             );
 
+            endpoint.MapControllerRoute(
+                name: "RenterRegisterAddress",
+                pattern: "kvhai/resident/register/address",
+                defaults: new { controller = "ResidentHome", action = "Index" }
+            );
+
             #endregion
 
             #region FOR SIGNALR MAPS
@@ -72,6 +89,7 @@ namespace KVHAI.Routes
             endpoint.MapHub<NotificationHub>("/resident/water-bill");
             endpoint.MapHub<NotificationHub>("/resident/register-address");
             endpoint.MapHub<NotificationHub>("/resident/my-address");
+            endpoint.MapHub<AnnouncementHub>("/resident/announcement");
 
             endpoint.MapHub<NotificationHub>("/resident/notification");
             #endregion

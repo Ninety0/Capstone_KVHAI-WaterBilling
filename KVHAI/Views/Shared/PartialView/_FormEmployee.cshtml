@@ -6,7 +6,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">Employee Account</h1>
+                <h5 class="fw-bold text-muted">Employee Account</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="form-emp" autocomplete="off" class="needs-validation" novalidate>
@@ -23,7 +23,7 @@
                             <div class="col-md-4">
                                 <div class="form-check mb-3">
                                     <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
-                                    <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required>
+                                    <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required autocomplete="nope">
                                     <div class="invalid-feedback">
                                         Required.
                                     </div>
@@ -32,7 +32,7 @@
                             <div class="col-md-4">
                                 <div class="form-check mb-3">
                                     <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
-                                    <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required>
+                                    <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required autocomplete="nope">
                                     <div class="invalid-feedback">
                                         Required.
                                     </div>
@@ -41,7 +41,7 @@
                             <div class="col-md-4">
                                 <div class="form-check mb-3">
                                     <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
-                                    <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required>
+                                    <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required autocomplete="nope">
                                     <div class="invalid-feedback">
                                         Required.
                                     </div>
@@ -55,7 +55,7 @@
                                     <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
                                     <div class="form-check input-group mb-3 ps-0">
                                         <span class="input-group-text" id="num-span">63</span>
-                                        <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required>
+                                        <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required autocomplete="nope">
                                         <div class="invalid-feedback">
                                             Required.
                                         </div>
@@ -66,7 +66,7 @@
                             <div class="col-md-4">
                                 <div class="form-check mb-3">
                                     <label for="Email" class="form-label fw-bold fs-6">Email</label>
-                                    <input type="email" maxlength="50" class="form-control" id="Email" name="Email" required>
+                                    <input type="email" maxlength="50" class="form-control" id="Email" name="Email" required autocomplete="nope">
                                     <div class="invalid-feedback">
                                         Required.
                                     </div>
@@ -74,8 +74,15 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check mb-3">
-                                    <label for="Block" class="form-label fw-bold fs-6">Role</label>
-                                    <input type="number" min="1" class="form-control" id="Role" name="Role" required>
+                                    <label for="Occupancy" class="form-label fw-bold fs-6">Role</label>
+                                    <select id="Role" name="Role" class="form-select mb-3" required>
+                                        <option value="" disabled selected hidden>Select Role</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="clerk">Clerk</option>
+                                        <option value="cashier1">Cashier (Offline)</option>
+                                        <option value="cashier2" class="cashier">Cashier (Online)</option>
+                                        <option value="waterworks">Water Works</option>
+                                    </select>
                                     <div class="invalid-feedback">
                                         Required.
                                     </div>
@@ -87,7 +94,7 @@
                             <div class="col-md-4">
                                 <div class="form-check mb-3">
                                     <label for="Username" class="form-label fw-bold fs-6">Username</label>
-                                    <input type="text" maxlength="50" class="form-control" id="Username" name="Username" required>
+                                    <input type="text" maxlength="50" class="form-control" id="Username" name="Username" required autocomplete="nope">
                                     <div class="invalid-feedback">
                                         Required.
                                     </div>
@@ -96,7 +103,7 @@
                             <div class="col-md-4">
                                 <div class="form-check mb-3">
                                     <label for="Password" class="form-label fw-bold fs-6">Password</label>
-                                    <input type="password" maxlength="50" class="form-control" id="Password" name="Password" required>
+                                    <input type="password" maxlength="50" class="form-control" id="Password" name="Password" required autocomplete="nope">
                                     <div class="invalid-feedback">
                                         Required.
                                     </div>
@@ -105,7 +112,7 @@
                             <div class="col-md-4">
                                 <div class="form-check mb-3">
                                     <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
-                                    <input type="password" maxlength="50" class="form-control" id="cpass" required>
+                                    <input type="password" maxlength="50" class="form-control" id="cpass" required autocomplete="nope">
                                     <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
                                 </div>
 
@@ -120,7 +127,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary" id="btn-register">Register</button>
                     <button type="submit" class="btn btn-primary d-none" id="btn-update">Update</button>
-                    <button type="button" id="btn-test">TEST</button>
+                    @*<button type="button" id="btn-test">TEST</button>*@
 
                 </div>
             </form>

@@ -104,6 +104,7 @@
 
             function InsertWaterBill() {
                 var _date = $('#lblDate').data('date')
+                var dateFrom = $('#waterReadingSelect option:selected').data('datefrom');
                 var rowData = $('.rowData')
                 var billingData = [];
 
@@ -111,22 +112,26 @@
                     var addressID= parseInt($(this).find('[data-reading]').data("reading"),10);
                     var _amount = $(this).find('[data-bill]').data("bill");
                     var _cubic = $(this).find('[data-cubic]').data("cubic");
+                    var previous = $(this).find('[data-prev]').data("prev");
+                    var current = $(this).find('[data-current]').data("current");
 
                     billingData.push({
                         Address_ID: addressID,
+                        Previous_Reading: previous,
+                        Current_Reading: current,
                         Cubic_Meter: _cubic,
-                        Amount: _amount
+                        Amount: _amount,
+                        Bill_For: dateFrom
                         //date: _date
                     });
                 });
-
                 var formData = {
                     waterBilling: billingData,
                 };
 
                 $.ajax({
                     type: 'POST',
-                    url: '/Clerk/CreateBilling',
+                    url: '/Clerk/CreateWaterBilling',
                     data: formData,
                     success: function (result) {
                         console.log(result);
@@ -192,7 +197,7 @@
                 }
             </div>
         </div>
-        <div class="container border shadow-lg rounded" id="tableView">
+        <div class="container-fluid border shadow-lg rounded" id="tableView">
             <div class="row">
                 <div class="col-12 col-lg-6 d-flex">
                     <select id="location" class="form-select w-75 mt-3 mb-lg-3 flex-grow-1 flex-lg-grow-0" aria-label="Default select example">
@@ -296,8 +301,8 @@
                                             <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
                                             <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
                                             <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
-                                            <td class="previous-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].PreviousReading</td>
-                                            <td class="current-reading text-center border border-secondary-subtle">@Model.WaterBillingValues[i].CurrentReading</td>
+                                            <td class="previous-reading text-center border border-secondary-subtle" data-prev="@Model.WaterBillingValues[i].PreviousReading">@Model.WaterBillingValues[i].PreviousReading</td>
+                                            <td class="current-reading text-center border border-secondary-subtle" data-current="@Model.WaterBillingValues[i].CurrentReading">@Model.WaterBillingValues[i].CurrentReading</td>
                                             <td class="text-center border border-secondary-subtle" data-cubic="@Model.WaterBillingValues[i].CubicMeter">@Model.WaterBillingValues[i].CubicMeter</td>
                                             <td class="border border-secondary-subtle" data-bill="@Model.WaterBillingValues[i].Total">@Model.WaterBillingValues[i].Total</td>
                                             @*<td>@arrears</td>*@

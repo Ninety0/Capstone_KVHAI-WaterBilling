@@ -1,0 +1,645 @@
+﻿@using System.Security.Claims;
+@{
+    Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
+    ViewBag.Title = "Bills";
+
+    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+    var registerAddressURL = "";
+
+    if (role == "1")//owner
+    {
+        registerAddressURL = "/kvhai/resident/register-addres";
+    }
+    else //renter
+    {
+        registerAddressURL = "/kvhai/resident/register/address";
+    }
+}
+@section head{
+    <link href="~/css/customModal.css" rel="stylesheet" />
+    <style>
+        .row_bill {
+            background-color: #052572;
+            padding: 1rem;
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .bill_amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+
+        .btn_pay {
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 4px 4px 8px 1px rgba(241, 245, 249,.5);
+            transition: transform ease;
+            background-color: white;
+            color: #0c2a5c;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+            .btn_pay:hover {
+                transform: translateY(3px);
+            }
+
+        .bill_status {
+            font-weight: 600;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .bill_slider {
+            position: absolute;
+            bottom: 0;
+            left: 0%;
+            width: 50%;
+            height: 10%;
+            background-color: rgb(5, 37, 114);
+            transition: left 0.3s ease;
+        }
+
+        .bill_status.active {
+            font-weight: bold;
+        }
+
+        .tableData {
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            font-size: 1rem;
+        }
+
+        .bill_content {
+            background-color: white;
+            box-shadow: 0 4px 4px rgba(71, 85, 105, 0.1);
+            padding: 3px;
+            border-color: #334155;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+            .bill_content:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+        /*.row_details {
+            background-color: white;
+            box-shadow: 0 4px 4px rgba(71, 85, 105, 0.1);
+            padding: 3px;
+            border-color: #334155;
+            border-radius: 5px;
+            font-size: 1rem;
+        }*/
+
+        .col_details {
+            font-size: 1rem;
+        }
+
+        .col_status_text {
+            border: 1px solid #0c2a5c;
+            color: #0c2a5c;
+            font-weight: 400;
+            padding: 5px;
+        }
+
+        .col_due {
+            font-weight: 400;
+        }
+
+        .bill_section {
+            background-color: #e2e8f0;
+            position: relative;
+        }
+
+        .row_title {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: #6B7280;
+        }
+
+        .fa-caret-down {
+            transition: transform 0.3s ease;
+        }
+
+            .fa-caret-down.active {
+                transform: rotate(180deg);
+            }
+
+        /*MODAL CSS*/
+
+    </style>
+}
+
+@section scripts{
+    <script src="~/js/signalrSetupConnection.js"></script>
+    <script>
+        $(document).ready(function () {
+            const billConnection = setupSignalRConnection("/resident/water-bill", "Billing Hub");
+
+            billConnection.on("ReceivedBillingNotification", function (message, resident_id) {
+                alert("Gumana");
+                GetNewBills();
+            });
+
+            GetCurrentTab();
+
+            $(document).on('click', '.row_header', function () {
+                $(this).find('.fa-caret-down').toggleClass('active');
+                $(this).next('.row_details').toggleClass('d-none');
+            });
+
+            // Handle click event on bill status buttons
+            $('.bill_status').click(function () {
+                $('.bill_status').removeClass('active');
+                $(this).addClass('active');
+                var targetSection = $(this).data('status');
+                localStorage.setItem("bill_tab", targetSection);
+
+                if (targetSection === 'paid') {
+                    $('.bill_slider').css('left', '50%');
+                    $('#paid').removeClass('d-none');
+                    $('#unpaid').addClass('d-none');
+                } else {
+                    $('.bill_slider').css('left', '0');
+                    $('#unpaid').removeClass('d-none');
+                    $('#paid').addClass('d-none');
+                }
+            });
+
+            //FETCH BILLS
+            function GetNewBills() {
+                $.ajax({
+                    type: "GET",
+                    url: "/Billing/GetNewBills",
+                    success: function (response) {
+                        var result = $(response).find('#waterReadingView').html();
+                        $('#waterReadingView').html(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function GetCurrentTab() {
+                var tab = localStorage.getItem("bill_tab");
+                console.log(tab);
+                if (tab) {
+                    $('.bill_status').removeClass('active');
+                    $(`.bill_status[data-status="${tab}"]`).addClass('active');
+                    if (tab === 'paid') {
+                        $('.bill_slider').css('left', '50%');
+                        $('#paid').removeClass('d-none');
+                        $('#unpaid').addClass('d-none');
+                    } else {
+                        $('.bill_slider').css('left', '0');
+                        $('#unpaid').removeClass('d-none');
+                        $('#paid').addClass('d-none');
+                    }
+                } else {
+                    // If no tab is saved, default to 'unpaid'
+                    $('.bill_status[data-status="unpaid"]').addClass('active');
+                    $('.bill_slider').css('left', '0');
+                    $('#unpaid').removeClass('d-none');
+                    $('#paid').addClass('d-none');
+                }
+            }
+
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $(document).on('click', '#btn_pay', function () {
+                $('.pop_container').fadeIn('slow');
+                $('.pop_body').empty();
+                $('#modal_bill').clone().appendTo('.pop_body');
+            });
+            $(document).on('click', '.pop_close', function () {
+                $('.pop_container').fadeOut('slow');
+            });
+        });
+
+        var bill_amount = 0.00;
+        $('#total_amount').text(bill_amount.toFixed(2));
+
+        $(document).on('change', 'input[id^="chk_bill"]', function () {
+            // Find the closest parent row
+            var $row = $(this).closest('.row_header');
+
+            // Find the element with data-bill attribute within this row
+            var $dataBillElement = $row.find('[data-bill]');
+
+            // Get the data-bill value and parse it as a float
+            var dataBillValue = parseFloat($dataBillElement.data('bill'));
+
+            if ($(this).is(':checked')) {
+                console.log('Checkbox checked. Data-bill value:', dataBillValue);
+                bill_amount += dataBillValue;
+            } else {
+                console.log('Checkbox unchecked. Data-bill value:', dataBillValue);
+                bill_amount -= dataBillValue;
+            }
+
+            // Update the total amount, ensuring two decimal places
+            $('#total_amount').text(bill_amount.toFixed(2));
+        });
+    </script>
+}
+
+@section sidebar{
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-house nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Home
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/announcement" class="nav_sidebar  mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Announcement
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-dot nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Register
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                My Address
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-gauge nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Consumption
+            </div>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar active mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-money-bills nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Billing
+            </div>
+        </div>
+    </a>
+
+}
+
+@section mobilenav{
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-house nav_icon"></i>
+            <span class="ms-3">
+                Home
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/announcement" class="nav_sidebar  mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span class="ms-3">
+                Announcement
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            <span class="ms-3">
+                Register Address
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+            <span class="ms-3">
+                My Address
+            </span>
+        </div>
+    </a>
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            <span class="ms-3">
+                Consumption
+            </span>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar active mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            <span class="ms-3">
+                Billing
+            </span>
+        </div>
+    </a>
+}
+
+<div class="pop_container">
+    <div class="pop_content">
+        <div class="pop_header">
+            <h3 class="fw-bold text-muted">Bills</h3>
+            <button class="pop_close">x</button>
+        </div>
+        <hr />
+        <div class="pop_body"></div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div id="waterReadingView">
+            <div class="row align-items-center row_bill">
+                <div class="col-md-8">
+                    <div class="total-label mb-2">Total amount to pay</div>
+                    @{
+                        if (Model.UnpaidResidentWaterBilling.Count < 1)
+                        {
+                            <div class="bill_amount">₱ 0.00</div>
+                        }
+                        else
+                        {
+                            var count = Model.UnpaidResidentWaterBilling.Count;
+                            var index = count - 1;
+                            <div class="bill_amount">₱ @Model.UnpaidResidentWaterBilling[index].TotalAmount</div>
+                        }
+
+                    }
+                </div>
+                <div class="col-md-4 d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
+                    <button class="btn_pay" id="btn_pay">Pay Water Bill</button>
+                </div>
+            </div>
+
+            <div class="row border position-relative">
+                <div class="col d-flex justify-content-center p-3 bill_status active" data-status="unpaid">Unpaid</div>
+                <div class="col d-flex justify-content-center p-3 bill_status" data-status="paid">Paid</div>
+                <span class="bill_slider"></span>
+            </div>
+            <div class="row border position-relative mb-3">
+
+                <section class="bill_section" id="unpaid">
+                    <div class="row_title mt-2 mb-2">Upcoming Bill</div>
+                    @{
+                        //IF HAS VALUE
+                        if (Model.UnpaidResidentWaterBilling.Count > 0)
+                        {
+                            foreach (var item in Model.UnpaidResidentWaterBilling)
+                            {
+                                string _dueDateLong = "";
+                                string _dueDateShort = "";
+                                string dueDateFromDay = "";
+                                string dueDateToDay = "";
+                                string dueDateMonthLong = "";
+                                string dueDateMonthShort = "";
+
+                                if (DateTime.TryParse(item.Due_Date_From, out DateTime dueFrom))
+                                {
+                                    dueDateFromDay = dueFrom.ToString("dd");
+                                }
+
+                                if (DateTime.TryParse(item.Due_Date_To, out DateTime dueTo))
+                                {
+                                    dueDateToDay = dueTo.ToString("dd");
+                                    dueDateMonthLong = dueTo.ToString("MMMM");
+                                    dueDateMonthShort = dueTo.ToString("MMM");
+                                }
+
+                                //DUE DATE
+                                _dueDateLong = $"{dueDateFromDay}-{dueDateMonthLong}-{dueDateToDay}";
+                                _dueDateShort = $"{dueDateFromDay}-{dueDateMonthShort}-{dueDateToDay}";
+
+                                <div class="container bill_content mb-3" id="unpaid_content">
+                                    <div class="row row_header p-3">
+                                        <div class="col col_details d-md-flex align-items-center">
+                                            <div class="total-label mb-2 mb-md-0 fw-bold me-3"><span class="d-none d-md-block">@_dueDateLong</span><span class="d-md-none">@dueDateMonthShort</span></div>
+                                            <div class="total-label mb-2 mb-md-0"><span class="col_status_text">Unpaid</span></div>
+                                            <div class="total-label mb-2 mb-md-0 col_due d-md-none">Due @_dueDateShort</div>
+                                        </div>
+                                        <div class="col d-flex align-items-center justify-content-end">
+                                            <div class="h3 fw-bold me-3">₱ @item.Amount</div>
+                                            <div><i class="fa-solid fa-caret-down"></i></div>
+                                        </div>
+                                    </div>
+                                    <div class="row row_details d-none">
+                                        <div class="col-12">
+                                            <hr class="m-0 mb-3" />
+                                            <div class="container d-flex justify-content-between align-items-center pb-2 contentView">
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <span class="fw-bold">Block</span>
+                                                    <span class="">@item.Block</span>
+                                                </div>
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <span class="fw-bold">Lot</span>
+                                                    <span class="">@item.Lot</span>
+                                                </div>
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <span class="fw-bold">Street</span>
+                                                    <span class="">@item.Street_Name</span>
+                                                </div>
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <span class="fw-bold">Amount</span>
+                                                    <span class="">@item.Amount</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            }
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                </section>
+
+                <!--PAID BILL-->
+                <section class="bill_section d-none" id="paid">
+                    @for (int i = 0; i < 2; i++)
+                    {
+                        ///////////
+                        ///CODE HERE IS STATIC NEED TO CHANGE IF THERE IS EXISTING PAYMENT METHOD
+                        ///
+
+                        <div class="row_title mt-2 mb-2">202 @i</div>
+                        @for (int j = 0; j < 2; j++)
+                        {
+                            <div class="container bill_content mb-3">
+                                <div class="row row_header p-3">
+                                    <div class="col col_details d-md-flex align-items-center">
+                                        <div class="total-label mb-2 mb-md-0 fw-bold me-3"><span class="d-none d-md-block">JANUNARY 00, 2024</span><span class="d-md-none">JAN</span></div>
+                                        <div class="total-label mb-2 mb-md-0"><span class="col_status_text">Paid</span></div>
+                                        <div class="total-label mb-2 mb-md-0 col_due d-md-none">Due today</div>
+                                    </div>
+                                    <div class="col d-flex align-items-center justify-content-end">
+                                        <div class="h3 fw-bold me-3">₱0.00</div>
+                                        <div><i class="fa-solid fa-caret-down"></i></div>
+                                    </div>
+                                </div>
+                                <div class="row row_details d-none">
+                                    <div class="col">
+                                        <hr class="m-0 mb-3" />
+                                        <div class="container d-flex justify-content-between align-items-center pb-2 contentView">
+                                            <div class="d-flex flex-column align-items-center">
+                                                <span class="fw-bold">Block</span>
+                                                <span class="">Previous Consumption</span>
+                                            </div>
+                                            <div class="d-flex flex-column align-items-center">
+                                                <span class="fw-bold">Lot</span>
+                                                <span class="">Current Consumption</span>
+                                            </div>
+                                            <div class="d-flex flex-column align-items-center">
+                                                <span class="fw-bold">Street</span>
+                                                <span class="">Cubic Meter</span>
+                                            </div>
+                                            <div class="d-flex flex-column align-items-center">
+                                                <span class="fw-bold">Amount</span>
+                                                <span class="">Water Rate</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                </section>
+
+                <!--FOR MODAL VALUES-->
+                @{
+                    if (Model.UnpaidResidentWaterBilling.Count > 0)
+                    {
+                        <div class="d-none">
+                            <section class="bill_section" id="modal_bill">
+                                <div class="container">
+                                    <div class="row align-items-center row_bill">
+                                        <div class="col-md-8">
+                                            <div class="total-label mb-2">Total amount to pay</div>
+                                            <div class="bill_amount">₱ <span id="total_amount"></span></div>
+                                        </div>
+                                        <div class="col-md-4 d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
+                                            <button class="btn_pay" id="btn_paynow">Pay Now</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                @foreach (var item in Model.UnpaidResidentWaterBilling)
+                                {
+                                    string _dueDateLong = "";
+                                    string _dueDateShort = "";
+                                    string dueDateFromDay = "";
+                                    string dueDateToDay = "";
+                                    string dueDateMonthLong = "";
+                                    string dueDateMonthShort = "";
+
+                                    if (DateTime.TryParse(item.Due_Date_From, out DateTime dueFrom))
+                                    {
+                                        dueDateFromDay = dueFrom.ToString("dd");
+                                    }
+
+                                    if (DateTime.TryParse(item.Due_Date_To, out DateTime dueTo))
+                                    {
+                                        dueDateToDay = dueTo.ToString("dd");
+                                        dueDateMonthLong = dueTo.ToString("MMMM");
+                                        dueDateMonthShort = dueTo.ToString("MMM");
+                                    }
+
+                                    //DUE DATE
+                                    _dueDateLong = $"{dueDateFromDay}-{dueDateMonthLong}-{dueDateToDay}";
+                                    _dueDateShort = $"{dueDateFromDay}-{dueDateMonthShort}-{dueDateToDay}";
+                                    <div class="container bill_content mb-3" id="unpaid_content">
+                                        <div class="row row_header p-3">
+                                            <div class="col-1">
+                                                <input class="form-check-input" type="checkbox" value="" id="chk_bill">
+                                            </div>
+                                            <div class="col col_details d-md-flex align-items-center">
+                                                <div class="total-label mb-2 mb-md-0 fw-bold me-3"><span class="d-none d-md-block">@_dueDateLong</span><span class="d-md-none">@dueDateMonthShort</span></div>
+                                                <div class="total-label mb-2 mb-md-0"><span class="col_status_text">Unpaid</span></div>
+                                                <div class="total-label mb-2 mb-md-0 col_due d-md-none">Due @_dueDateShort</div>
+                                            </div>
+                                            <div class="col d-flex align-items-center justify-content-end">
+                                                <div class="h3 fw-bold me-3" data-bill="@item.Amount">₱ @item.Amount</div>
+                                                <div><i class="fa-solid fa-caret-down"></i></div>
+                                            </div>
+                                        </div>
+                                        <div class="row row_details d-none">
+                                            <div class="col-12">
+                                                <hr class="m-0 mb-3" />
+                                                <div class="container d-flex justify-content-between align-items-center pb-2 contentView">
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <span class="fw-bold">Block</span>
+                                                        <span class="">@item.Block</span>
+                                                    </div>
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <span class="fw-bold">Lot</span>
+                                                        <span class="">@item.Lot</span>
+                                                    </div>
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <span class="fw-bold">Street</span>
+                                                        <span class="">@item.Street_Name</span>
+                                                    </div>
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <span class="fw-bold">Amount</span>
+                                                        <span class="">@item.Amount</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                }
+                            </section>
+
+                        </div>
+                    }
+                }
+
+            </div>
+        </div>
+    </div>
+</div>

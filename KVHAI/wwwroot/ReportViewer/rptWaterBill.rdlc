@@ -236,7 +236,7 @@
                         <Paragraph>
                           <TextRuns>
                             <TextRun>
-                              <Value>=First(Fields!waterbill_id.Value, "dsreport_waterbill")</Value>
+                              <Value>=Fields!reference_no.Value</Value>
                               <Style>
                                 <FontSize>8pt</FontSize>
                               </Style>
@@ -490,7 +490,6 @@
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
                     </Textbox>
-                    <rd:Selected>true</rd:Selected>
                   </CellContents>
                 </TablixCell>
                 <TablixCell>
@@ -502,7 +501,7 @@
                         <Paragraph>
                           <TextRuns>
                             <TextRun>
-                              <Value>=First(Fields!waterbill_no.Value, "dsreport_waterbill")</Value>
+                              <Value>=Fields!waterbill_no.Value</Value>
                               <Style>
                                 <FontSize>8pt</FontSize>
                                 <FontWeight>Bold</FontWeight>
@@ -536,7 +535,7 @@
                         <Paragraph>
                           <TextRuns>
                             <TextRun>
-                              <Value>=First(Fields!name.Value, "dsreport_waterbill")</Value>
+                              <Value>=Fields!name.Value</Value>
                               <Style>
                                 <FontSize>8pt</FontSize>
                                 <FontWeight>Bold</FontWeight>
@@ -657,7 +656,7 @@
                         <Paragraph>
                           <TextRuns>
                             <TextRun>
-                              <Value>=Fields!waterbill_no.Value</Value>
+                              <Value />
                               <Style>
                                 <FontSize>8pt</FontSize>
                                 <FontWeight>Bold</FontWeight>
@@ -675,6 +674,12 @@
                           <Color>LightGrey</Color>
                           <Style>Solid</Style>
                         </Border>
+                        <LeftBorder>
+                          <Style>None</Style>
+                        </LeftBorder>
+                        <RightBorder>
+                          <Style>None</Style>
+                        </RightBorder>
                         <PaddingLeft>2pt</PaddingLeft>
                         <PaddingRight>2pt</PaddingRight>
                         <PaddingTop>2pt</PaddingTop>
@@ -692,7 +697,7 @@
                         <Paragraph>
                           <TextRuns>
                             <TextRun>
-                              <Value>=Fields!datebillmonth.Value</Value>
+                              <Value>=Fields!period_cover.Value</Value>
                               <Style>
                                 <FontSize>8pt</FontSize>
                                 <FontWeight>Bold</FontWeight>
@@ -1785,6 +1790,10 @@
           <DataField>waterbill_id</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="reference_no">
+          <DataField>reference_no</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="waterbill_no">
           <DataField>waterbill_no</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -1843,6 +1852,10 @@
         </Field>
         <Field Name="total">
           <DataField>total</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="period_cover">
+          <DataField>period_cover</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>

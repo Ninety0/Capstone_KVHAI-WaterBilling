@@ -46,6 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="dsPayment.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>dsPayment.xsd</DependentUpon>
+    </Compile>
     <Compile Include="dsWaterBill.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -69,6 +74,17 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <EmbeddedResource Include="rptWaterBill.rdlc" />
+    <None Include="dsPayment.xsc">
+      <DependentUpon>dsPayment.xsd</DependentUpon>
+    </None>
+    <None Include="dsPayment.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>dsPayment.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="dsPayment.xss">
+      <DependentUpon>dsPayment.xsd</DependentUpon>
+    </None>
     <None Include="dsWaterBill.xsc">
       <DependentUpon>dsWaterBill.xsd</DependentUpon>
     </None>

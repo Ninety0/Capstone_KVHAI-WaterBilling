@@ -6,6 +6,7 @@ namespace KVHAI.Models
     {
         public string Resident_ID { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
 
         public IEnumerable<Resident>? Residents { get; set; }
         public IEnumerable<Employee>? Employees { get; set; }
@@ -35,6 +36,7 @@ namespace KVHAI.Models
         public List<WaterBillWithAddress>? WaterBillAddress { get; set; }
 
         public List<WaterReading>? AllWaterConsumptionByResident { get; set; }
+        public List<ResidentAddress> RequestAddressList { get; set; }
 
 
     }

@@ -36,6 +36,7 @@ namespace KVHAI.Controllers.Homeowner
         {
             var username = User.Identity.Name;
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
             var announcments = await _announcementRepository.ShowAnnouncement();
             var notifList = await _notification.GetNotificationByResident(residentID);
@@ -45,12 +46,13 @@ namespace KVHAI.Controllers.Homeowner
             {
                 Resident_ID = residentID,
                 Username = username,
+                Role = role,
                 AnnouncementList = announcments,
                 NotificationResident = notifList
             };
             //await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
 
-            return View("~/Views/Resident/LoggedIn/Home.cshtml", viewModel);
+            return View("~/Views/Resident/LoggedIn/Announcement.cshtml", viewModel);
         }
 
         [HttpGet]
@@ -63,7 +65,7 @@ namespace KVHAI.Controllers.Homeowner
                 AnnouncementList = model
             };
 
-            return View("~/Views/Resident/LoggedIn/Home.cshtml", viewModel);
+            return View("~/Views/Resident/LoggedIn/Announcement.cshtml", viewModel);
         }
 
         [HttpGet]
@@ -79,7 +81,7 @@ namespace KVHAI.Controllers.Homeowner
                 AnnouncementList = model
             };
 
-            return View("~/Views/Resident/LoggedIn/Home.cshtml", viewModel);
+            return View("~/Views/Resident/LoggedIn/Announcement.cshtml", viewModel);
         }
 
         [HttpPost]
@@ -94,6 +96,8 @@ namespace KVHAI.Controllers.Homeowner
         {
             var username = User.Identity.Name;
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
             var notifList = await _notification.GetNotificationByResident(residentID);
             var listStreet = await _streetRepository.GetAllStreets();
 
@@ -102,7 +106,15 @@ namespace KVHAI.Controllers.Homeowner
                 NotificationResident = notifList,
                 ListStreet = listStreet
             };
-            return View("~/Views/Resident/LoggedIn/Owner/RegisterAddress.cshtml", viewModel);
+
+            if (role == "1")//owner
+            {
+                return View("~/Views/Resident/LoggedIn/Owner/RegisterAddress.cshtml", viewModel);
+            }
+            else //renter
+            {
+                return View("~/Views/Resident/LoggedIn/Renter/RenterRegisterAddress.cshtml", viewModel);
+            }
         }
 
         [HttpPost]

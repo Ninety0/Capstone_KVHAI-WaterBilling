@@ -3,6 +3,7 @@
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
     //Global Variable
     let emp_id = 0;
+    InputKeyPress();
 
     $('#btn-test').on('click', () => {
         const form = $('#form-emp');
@@ -25,6 +26,25 @@
     $('#btn-register').click(handleRegistration);
     $('#btn-update').click(UpdateEmployee);
 
+    $(document).on('click', '.btn-close', function () {
+        $('#form-emp')[0].reset();
+    });
+
+    function InputKeyPress() {
+        const inputs = $('#form-emp input');
+
+        inputs.each(function () {
+            if (this.id === 'Phone') {
+                $(this).on('keypress', function (e) {
+                    var key = e.keyCode || e.which;
+
+                    if (key < 48 || key > 57) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    }
 
     function validateCurrentTab(action) {
         const form = $('#form-emp'); // jQuery
@@ -245,6 +265,8 @@
     $(document).on('click', '.edit-btn', function () {
         $('#btn-update').removeClass('d-none');
         $('#btn-register').addClass('d-none');
+
+        //$('#form-emp').reset();
 
         emp_id = $(this).data('id');
         //alert('Edit button clicked for Employee ID:' + emp_id);

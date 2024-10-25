@@ -1,19 +1,27 @@
 ﻿using KVHAI.CustomClass;
+using KVHAI.Models;
+using KVHAI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
     public class AdminDashboardController : Controller
     {
-        private readonly Forecasting _forecasting;
+        private readonly ForecastingRepo _forecasting;
+        private readonly AddressRepository _addressRepository;
 
-        public AdminDashboardController(Forecasting forecasting)
+        public AdminDashboardController(ForecastingRepo forecasting, AddressRepository addressRepository)
         {
             _forecasting = forecasting;
+            _addressRepository = addressRepository;
         }
+
+        [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "admin")]
         public IActionResult Index()
         {
-            return View("~/Views/Staff/Admin/Dashboard.cshtml");
+            var modelBinding = new ModelBinding();
+            return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
         }
 
         [HttpGet]
@@ -21,6 +29,19 @@ namespace KVHAI.Controllers.Staff.Admin
         {
             var model = await _forecasting.GetPercentChange();
             return Json(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRegisterAddress()
+        {
+            var model = await _addressRepository.GetNewRegisteringAddress();
+            var modelBinding = new ModelBinding
+            {
+                ResidentAddress = model
+            };
+
+            //return Json(model);
+            return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
         }
     }
 }

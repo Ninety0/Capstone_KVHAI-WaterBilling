@@ -2,11 +2,11 @@
 
 namespace KVHAI.CustomClass
 {
-    public class Forecasting
+    public class ForecastingRepo
     {
         private readonly DBConnect _dbConnect;
 
-        public Forecasting(DBConnect dBConnect)
+        public ForecastingRepo(DBConnect dBConnect)
         {
             _dbConnect = dBConnect;
         }
@@ -73,9 +73,9 @@ namespace KVHAI.CustomClass
         }
 
         // Get percentage change and insights
-        public async Task<Models.Forecasting> GetPercentChange()
+        public async Task<Forecasting> GetPercentChange()
         {
-            var forecast = new KVHAI.Models.Forecasting();
+            var forecast = new Forecasting();
             var years = new[] { 2024, 2025 }; //we can have get year
 
             foreach (var year in years)
@@ -99,9 +99,9 @@ namespace KVHAI.CustomClass
             return forecast;
         }
 
-        public async Task<Models.Forecasting> GetPercentChange(YearData forecastData, List<string> yearList)
+        public async Task<Forecasting> GetPercentChange(YearData forecastData, List<string> yearList)
         {
-            var forecast = new KVHAI.Models.Forecasting();
+            var forecast = new Forecasting();
             var years = new[] { 2024, 2025 }; //we can have get year
 
             foreach (var year in yearList)

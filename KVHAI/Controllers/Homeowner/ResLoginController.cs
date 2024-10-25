@@ -71,9 +71,9 @@ namespace KVHAI.Controllers.Homeowner
                 return Ok(new { message = "Account is not verified!", token = verifiedAt[0].Verification_Token, email = verifiedAt[0].Email });
             }
 
-            var id = await _residentRepository.GetResidentID(credentials);
+            var authCredentials = await _residentRepository.GetResidentID(credentials);
 
-            if (id < 1)
+            if (authCredentials == null)
             {
                 return BadRequest("There was an error accessing your account.");
             }
@@ -81,7 +81,8 @@ namespace KVHAI.Controllers.Homeowner
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, credentials.Username),
-                new Claim(ClaimTypes.NameIdentifier, id.ToString()??"0") // You can add roles or other claims here
+                new Claim(ClaimTypes.NameIdentifier, authCredentials.ID), // You can add roles or other claims here
+                new Claim(ClaimTypes.Role, authCredentials.Role)
             };
 
             var identity = new ClaimsIdentity(claims, "MyCookieAuth");
@@ -90,7 +91,16 @@ namespace KVHAI.Controllers.Homeowner
 
             await HttpContext.SignInAsync("MyCookieAuth", principal, props);
 
-            return Ok(new { redirectUrl = Url.Action("LoggedIn", "LoggedIn") });
+            var role = authCredentials.Role;
+            if (role == "1")
+            {
+                return Ok(new { redirectUrl = "/kvhai/resident/home" });
+            }
+            else
+            {
+                return Ok(new { redirectUrl = "/kvhai/resident/rental/home" });
+            }
+            //return Ok(new { redirectUrl = Url.Action("LoggedIn", "LoggedIn") });
             //ViewData["Username"] = credentials.Username;
 
             //return RedirectToAction("LoggedIn");

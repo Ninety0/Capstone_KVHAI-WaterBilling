@@ -1,0 +1,333 @@
+﻿@{
+    Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
+    ViewBag.Title = "Announcement";
+}
+
+@section head{
+    <style>
+        .new_post {
+            font-size: .8rem;
+            position: relative;
+            text-align: center;
+            font-weight: 600;
+        }
+        /*.new_post::before{
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0px;
+            width: 45%;
+            height: 1px;
+            background: #ccc;
+            font-weight:600;
+
+        }
+
+        .new_post::after{
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 55%;
+            width: 45%;
+            height: 1px;
+            background: #ccc;
+            font-weight:600;
+
+        }*/
+
+        .line_post {
+            width: 100%;
+            height: 1px;
+            background: #ccc;
+        }
+
+        .post_img {
+            width: 150px;
+            height: 150px;
+        }
+
+        .content-container {
+            padding: 2rem;
+        }
+
+        .announcement-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+            .announcement-card:hover {
+                transform: scale(1.02);
+            }
+
+            .announcement-card h4 {
+                font-weight: 600;
+                color: #333;
+            }
+
+            .announcement-card h5 {
+                font-size: 0.9rem;
+                font-weight: 400;
+            }
+
+        .announcement-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .image-click {
+            border-radius: 8px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .image-click img {
+                object-fit: cover;
+                width: 100%;
+                height: 100%;
+            }
+
+            .image-click:hover {
+                transform: scale(1.05);
+            }
+
+        .badge {
+            font-size: 0.8rem;
+        }
+    </style>
+}
+
+
+@section sidebar{
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-house nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Home
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/announcement" class="nav_sidebar active mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Announcement
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-dot nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Register
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                My Address
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-gauge nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Consumption
+            </div>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-money-bills nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Billing
+            </div>
+        </div>
+    </a>
+
+}
+
+@section mobilenav{
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-house nav_icon"></i>
+            <span class="ms-3">
+                Home
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/announcement" class="nav_sidebar  mb-3  active ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span class="ms-3">
+                Announcement
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            <span class="ms-3">
+                Register Address
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+            <span class="ms-3">
+                My Address
+            </span>
+        </div>
+    </a>
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            <span class="ms-3">
+                Consumption
+            </span>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            <span class="ms-3">
+                Billing
+            </span>
+        </div>
+    </a>
+}
+
+
+<!-- Modal -->
+<!-- Modal Structure -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <img id="modalImage" src="" class="img-fluid" alt="Enlarged Image" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- BODY -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="fw-bold text-muted">Announcement</h5>
+        <hr class="border border-black" />
+        <div id="table_announcement">
+            @foreach (var announcement in Model.AnnouncementList)
+            {
+                var datePost = "";
+                if (DateTime.TryParse(announcement.Date_Created, out DateTime datepost))
+                {
+                    datePost = datepost.ToString("MMMM dd, yyyy");
+                }
+
+                <div class="announcement-card card mb-4 p-4 shadow-sm rounded">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h4 class="text-capitalize">@announcement.Title</h4>
+                            <h5 class="text-muted">@datePost</h5>
+                        </div>
+                        <div class="col-auto text-end">
+                            <span class="badge bg-primary p-2">New Post</span>
+                            <div class="text-muted small">@announcement.Date_Created</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col">
+                            <p class="announcement-content">@announcement.Contents</p>
+                        </div>
+                    </div>
+
+                    @if (announcement.Images.Count > 0)
+                    {
+                        <div class="row mt-3">
+                            <div class="col d-flex flex-wrap justify-content-center gap-3">
+                                @foreach (var image in announcement.Images)
+                                {
+                                    <a class="image-click border rounded overflow-hidden shadow-sm"
+                                       style="width: 150px; height: 100px; object-fit: cover;"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#imageModal"
+                                       data-image="@image">
+                                        <img src="@image" alt="@announcement.Title" class="img-fluid post_img" />
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <hr class="mt-4" />
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            //CODE FOR SIGNALR
+
+            const homeConnection = setupSignalRConnection("/resident/announcement", "Announcement Hub");
+
+            homeConnection.on("ShowAnnouncement", function () {
+                toastr.info("Theres is an update in the announcement");
+                updateAnnouncement();
+            });
+
+            function updateAnnouncement() {
+                $.ajax({
+                    url: "/LoggedIn/GetAnnouncement", // Your endpoint to fetch the updated list
+                    type: "GET",
+                    success: function (response) {
+                        console.log(response);
+                        var result = $(response).find("#table_announcement").html();
+                        $('#table_announcement').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                        console.error("Error fetching updated data:", error);
+                    }
+                });
+            }
+
+            $(document).on('click', '.image-click', function () {
+                // Get the image URL from the clicked image
+                var imageSrc = $(this).data('image');
+                // Set the image inside the modal
+                $('#modalImage').attr('src', imageSrc);
+            });
+        });
+    </script>
+}

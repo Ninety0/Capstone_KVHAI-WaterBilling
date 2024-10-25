@@ -33,16 +33,24 @@ namespace KVHAI.Controllers.Homeowner
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var address = await _addressRepository.GetAddressById(residentID);
 
+            if (address.Count > 0)
+            {
+                await GetWaterConsumptionByAddress(address.FirstOrDefault().Address_ID.ToString(), residentID);
+
+            }
             //await _waterBillingFunction.GetGraphData(address.FirstOrDefault().Address_ID.ToString());
-            await GetWaterConsumptionByAddress(address.FirstOrDefault().Address_ID.ToString(), residentID);
             _waterBillingFunction.NotificationResident = await _notification.GetNotificationByResident(residentID);
 
-            return View("~/Views/Resident/Reading/WaterConsumption.cshtml", _waterBillingFunction);
+            return View("~/Views/Resident/LoggedIn/WaterConsumption.cshtml", _waterBillingFunction);
         }
 
         [HttpGet]
         public async Task<IActionResult> GraphWaterReading(string addressID, string year = "")
         {
+            if (string.IsNullOrEmpty(addressID))
+            {
+                return BadRequest("You currently have no address.");
+            }
             var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
             return Json(forecastData);
             //return Json(_waterBillingFunction.GraphData);
@@ -70,7 +78,7 @@ namespace KVHAI.Controllers.Homeowner
             var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
             await GetWaterConsumptionByAddress(addressID, residentID);
 
-            var partialView = await this.RenderViewAsync("~/Views/Resident/Reading/WaterConsumption.cshtml", _waterBillingFunction, false);
+            var partialView = await this.RenderViewAsync("~/Views/Resident/LoggedIn/WaterConsumption.cshtml", _waterBillingFunction, false);
             return Json(new
             {
                 Html = partialView,

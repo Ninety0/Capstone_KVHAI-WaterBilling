@@ -300,6 +300,36 @@ namespace KVHAI.Repository
             }
         }
 
+        //RETURN ID OF STREET
+        public async Task<int> GetStreetID(ResidentAddress street)
+        {
+            try
+            {
+                var result = 0;
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("SELECT * FROM street_tb WHERE st_name like @name", connection))
+                    {
+                        command.Parameters.AddWithValue("@name", "%" + street.Street + "%");
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                result = Convert.ToInt32(reader["st_id"].ToString());
+
+                            }
+                        }
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
+
         //RETURN STREET NAME
         public async Task<string> GetStreetName(string id)
         {

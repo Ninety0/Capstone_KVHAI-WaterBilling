@@ -1,0 +1,158 @@
+﻿@model List<Employee>
+@{
+    Layout = null;
+
+}
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin | Login</title>
+
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-icon.css">
+    <link rel="stylesheet" href="~/css/toastr.min.css">
+    <link href="~/css/login.css" rel="stylesheet" />
+    <link href="~/css/header-font.css" rel="stylesheet" />
+
+    <style>
+        /*.is_valid {
+            display: none !important;
+        }*/
+    </style>
+</head>
+<body>
+    <div class="container vh-100">
+        <div class="d-flex flex-column login">
+            <div class="d-flex justify-content-center align-items-center w-100">
+
+                <!-- CENTER FORM -->
+                <div class="row center-form w-75 rounded">
+                    <!-- LEFT SIDE (Image) -->
+                    <div class="col-6 d-none d-lg-block p-0">
+                        <img src="~/img/background.png" alt="Katarungan Village" class="background-img rounded shadow-sm">
+                    </div>
+
+                    <!-- RIGHT SIDE (Login form) -->
+                    <div class="col-lg-6 col-12 p-3">
+                        <div class="d-flex align-items-center flex-column mb-3">
+                            <img src="~/img/kvhai.png" alt="KVHAI Logo" class="kvhai-img">
+                            <p id="right-header" class="mt-2">Login</p>
+                        </div>
+
+                        <!-- Login Form -->
+                        <form id="form_log" class="needs-validation" novalidate>
+                            @Html.AntiForgeryToken()
+
+                            <!-- Username -->
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4a4 4 0 1 1 0 8a4 4 0 0 1 0-8m0 16s8 0 8-2c0-2.4-3.9-5-8-5s-8 2.6-8 5c0 2 8 2 8 2" /></svg>
+                                </span>
+                                <input type="text" class="form-control" placeholder="Username" id="Username" name="Username" aria-describedby="basic-addon1" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M18 8h-1V7c0-2.757-2.243-5-5-5S7 4.243 7 7v1H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2M9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v1H9zm4 8.723V18h-2v-2.277c-.595-.346-1-.984-1-1.723a2 2 0 1 1 4 0c0 .738-.405 1.376-1 1.723" /></svg>
+                                </span>
+                                <input type="password" class="form-control" placeholder="Password" id="Password" name="Password" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+
+                            <!-- Remember Me and Forgot Password -->
+                            <div class="d-flex justify-content-end">
+                                <a href="/kvhai/staff/login/forgot-password" class="forgot">Forgot Password?</a>
+                            </div>
+
+                            <!-- Login Button -->
+                            <button type="submit" class="btn btn-primary w-100 mt-3" id="login">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/toastr.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $(document).on('click', '#login', function (e) {
+                e.preventDefault();
+                if (ValiteTab()) {
+                    Login();
+                }
+                else {
+                    toastr.error("Fillout missing fields.");
+                }
+
+            });
+
+            function Login() {
+                var _user = $('#Username').val();
+                var _pass = $('#Password').val();
+
+                console.log(`USER: ${_user}, PASS: ${_pass}`)
+
+                var formData = {
+                    user: _user,
+                    pass: _pass
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: "/AdminLogin/Login",
+                    data: formData,
+                    success: function (response) {
+                        toastr.success("Login Successfully.");
+                        console.log(response);
+                        setTimeout(function () {
+                            window.location.href = response.redirectUrl;
+                        }, 3000);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+
+            }
+
+            function ValiteTab() {
+                const form = $('#form_log'); // jQuery
+                const inputs = form.find('input');
+                let isValid = true;
+
+                inputs.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    // Handle other inputs
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                });
+
+                return isValid;
+            }
+
+            $('input, select').on('input', function () {
+                $(this).removeClass('is-invalid');
+                $(this).closest('form').removeClass('was-validated');
+            });
+        });
+    </script>
+</body>
+
+</html>

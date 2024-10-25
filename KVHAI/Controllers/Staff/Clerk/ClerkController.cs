@@ -152,5 +152,72 @@ namespace KVHAI.Controllers.Staff.Clerk
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateWaterBilling(List<WaterBilling> waterBilling)//([FromBody] ModelBinding binding)//int id, string amount, string date)
+        {
+            try
+            {
+                if (waterBilling == null || waterBilling.Count < 1)
+                {
+                    return BadRequest("There was an error generating the bill");
+                }
+
+                var ListBilling = new List<WaterBilling>();
+                var billing = await _waterBillRepository.GetDateBilling();//DATE ISSUE OF BILL
+                var due = await _waterBillRepository.GetDueDate();                    //DUE DATE OF BILL
+                var status = "unpaid";
+
+                foreach (var item in waterBilling)
+                {
+                    //if (item == null)
+                    //{
+                    //    return BadRequest("There was an error processing the data.");
+                    //}
+
+                    var wb = new WaterBilling()
+                    {
+                        Address_ID = item.Address_ID,
+                        Cubic_Meter = item.Cubic_Meter,
+                        Previous_Reading = item.Previous_Reading,
+                        Current_Reading = item.Current_Reading,
+                        Amount = item.Amount,
+                        Bill_For = item.Bill_For,
+                        Date_Issue_From = billing.Date_Issue_From,
+                        Date_Issue_To = billing.Date_Issue_To,
+                        Due_Date_From = due.Due_Date_From,
+                        Due_Date_To = due.Due_Date_To,
+                        Status = status
+                    };
+
+                    if (string.IsNullOrEmpty(wb.Date_Issue_From) || string.IsNullOrEmpty(wb.Date_Issue_To) || string.IsNullOrEmpty(wb.Due_Date_From) || string.IsNullOrEmpty(wb.Due_Date_To))
+                    {
+                        return BadRequest("There was an error processing the data.");
+                    }
+
+                    ListBilling.Add(wb);
+
+                }
+
+                if (await _waterBillRepository.CheckExistingWaterBilling(ListBilling))
+                {
+                    return BadRequest("The reading in current location is already done.");
+                }
+
+                int result = await _waterBillRepository.CreateWaterBill(ListBilling);
+                if (result < 1)
+                {
+                    return BadRequest("There was an error processing the data.");
+                }
+
+
+                return Ok("Generate bill successfully. Proceed to Billing.");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

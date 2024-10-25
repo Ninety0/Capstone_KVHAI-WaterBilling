@@ -120,19 +120,20 @@ namespace KVHAI.Repository
         }
 
         //READ
-        public async Task<int> GetResidentID(Resident resident)
+        public async Task<AuthClaims> GetResidentID(Resident resident)
         {
             try
             {
                 string passFromDB = string.Empty;
                 string resIDFromDB = string.Empty;
+                string occupancy = string.Empty;
 
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     // Query only by username to get the hashed password
                     using (var command = new SqlCommand("SELECT * FROM resident_tb WHERE username = @user", connection))
                     {
-                        command.Parameters.AddWithValue("@user", resident.Username);
+                        command.Parameters.AddWithValue("@user", await _sanitize.HTMLSanitizerAsync(resident.Username));
 
                         using (var reader = await command.ExecuteReaderAsync())
                         {
@@ -141,33 +142,39 @@ namespace KVHAI.Repository
                                 // Retrieve the hashed password from the database
                                 passFromDB = reader["password"].ToString() ?? string.Empty;
                                 resIDFromDB = reader["res_id"].ToString() ?? string.Empty;
+                                occupancy = reader["occupancy"].ToString() ?? string.Empty;
                             }
                         }
 
                         // If no password was found, return false
                         if (string.IsNullOrEmpty(passFromDB))
                         {
-                            return 0; // Username not found or password missing
+                            return null; // Username not found or password missing
                         }
 
                         // Verify the input password with the hashed password from the database
                         if (_hash.VerifyPassword(passFromDB, resident.Password))
                         {
-                            if (!string.IsNullOrEmpty(resIDFromDB))
+                            if (!string.IsNullOrEmpty(resIDFromDB) && !string.IsNullOrEmpty(occupancy))
                             {
-                                return Convert.ToInt32(resIDFromDB);
+                                AuthClaims claims = new AuthClaims
+                                {
+                                    ID = resIDFromDB,
+                                    Role = occupancy
+                                };
+                                return claims;
                             } // Password is correct
                         }
 
-                        return 0;
                         // Password is incorrect
+                        return null;
                     }
                 }
             }
             catch (Exception)
             {
                 // Handle exception (logging, etc.)
-                return 0;
+                return null;
             }
         }
 
@@ -179,12 +186,13 @@ namespace KVHAI.Repository
         {
             try
             {
+
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     // Query to get the hashed password based on the username
                     using (var command = new SqlCommand("SELECT COUNT(username) FROM resident_tb WHERE username = @user", connection))
                     {
-                        command.Parameters.AddWithValue("@user", resident.Username);
+                        command.Parameters.AddWithValue("@user", await _sanitize.HTMLSanitizerAsync(resident.Username));
 
                         // Execute the query and get the hashed password
                         var count = await command.ExecuteScalarAsync();
@@ -260,7 +268,7 @@ namespace KVHAI.Repository
                     // Query only by username to get the hashed password and verification status
                     using (var command = new SqlCommand("SELECT * FROM resident_tb WHERE username = @user", connection))
                     {
-                        command.Parameters.AddWithValue("@user", resident.Username);
+                        command.Parameters.AddWithValue("@user", await _sanitize.HTMLSanitizerAsync(resident.Username));
 
                         using (var reader = await command.ExecuteReaderAsync())
                         {

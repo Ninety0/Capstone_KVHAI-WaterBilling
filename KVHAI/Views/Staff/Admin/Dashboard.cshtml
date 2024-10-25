@@ -26,6 +26,9 @@
             font-family: Arial, sans-serif;
             color: #444;
             font-size: 0.9rem;
+            background-color: #fafafa; /* Light grey background */
+            padding: 20px;
+            border-radius: 5px; /* Rounded corners */
         }
 
         /* Dropdown Button Styling */
@@ -37,18 +40,57 @@
             background-color: #f1f5f9; /* Darker blue on hover */
         }
 
-        .insights{
-            list-style-type:none;
+        .highlight {
+            background-color: red;
+            border: 2px solid #007bff; /* Adding a border */
+            padding: 12px;
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, border 0.3s ease;
         }
 
-        .highlight {
-            background-color: #e9ecef;
-            /*transform: scale(1.1);*/
-            transform: translateY(-2px);
-            padding: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            ; /* Soft shadow for depth */
+        .highlight td {
+            border: 2px solid #007bff; /* Border for each cell in the highlighted row */
         }
+
+        .chart-container {
+            max-width: 1600px; /* or larger */
+            margin-bottom: 30px; /* More space between chart and insights */
+        }
+
+        #insightContainer {
+            padding: 15px;
+        }
+
+        .table.insight_table td:hover {
+            background-color: #f9f9f9; /* Light hover background */
+            cursor: pointer;
+        }
+
+        /* Insight table styling */
+        .table.insight_table th,
+        .table.insight_table td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 10px; /* Add more padding */
+            font-size: 14px; /* Adjust font size for better readability */
+        }
+
+        .table.insight_table th {
+            background-color: #f0f0f0; /* Light background for headers */
+            color: #333; /* Darker text for better contrast */
+            border: 1px solid #ddd; /* Subtle border for better separation */
+        }
+
+        .table.insight_table td {
+            background-color: #ffffff; /* White background for table cells */
+            border: 1px solid #ddd; /* Subtle border for better definition */
+        }
+        .p-2.rounded.mb-3 {
+            margin-bottom: 10px; /* Add space between table rows */
+            border-radius: 5px; /* Softer rounded corners for table cells */
+        }
+
 
     </style>
 }
@@ -106,11 +148,28 @@
         $(document).ready(function () {
             var myChart = null; // Declare the global variable
             GetGraphData();
+            GetNewRegister();
 
             $(document).on('change', '#select_year', function () {
                 var selectedYear = $(this).val(); // Get selected year from dropdown
                 GetGraphData(); // Call chartDataSets with the selected year
             });
+
+            function GetNewRegister() {
+                $.ajax({
+                    url: '/AdminDashboard/GetRegisterAddress',
+                    type: 'GET',
+                    success: function (response) {
+                        //console.log(response);
+                        var result = $(response).find('#table_address').html();
+                        $('#table_address').html(result);
+
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
 
             function GetGraphData() {
                 $.ajax({
@@ -160,7 +219,8 @@
                     data: yearData.actualData,
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.1,
+                    tension: 0.4,
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
                     borderColor: '#052771'
                 };
 
@@ -169,8 +229,8 @@
                     data: yearData.forecastData,
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.1,
-                    borderColor: 'rgba(255, 99, 132, 1)',
+                    tension: 0.4,
+                    borderColor: 'red',//rgba(255, 99, 132, 1)
                     borderDash: [5, 5]
                 };
 
@@ -197,15 +257,29 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 title: {
                                     display: true,
                                     text: 'Cubic Meter Consumption'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(200, 200, 200, 0.2)', // Lighter gridlines
                                 }
                             },
                             x: {
+                                ticks: {
+                                    font: {
+                                        size: 14
+                                    }
+                                },
                                 title: {
                                     display: true,
                                     text: 'Months'
@@ -273,7 +347,7 @@
                 var insightItem = insightContainer.find(`[data-index="${index}"]`);
 
                 // Add the highlight class to the matching element
-                insightItem.addClass('highlight');
+                insightItem.addClass('highlight bg-dark text-white');
 
                 console.log(insightItem); // For debugging, shows the element being highlighted
             }
@@ -284,30 +358,39 @@
 
                 var highlightedItems = insightContainer.find('.highlight');
                 if (highlightedItems.length) {
-                    highlightedItems.removeClass('highlight');
+                    highlightedItems.removeClass('highlight bg-dark text-white');
                 }
             }
 
             function DisplayInsights(insights) {
-                console.log(insights);
+
+                console.log("Insights Data:", insights); // Check if insights has data
+
                 var insightContainer = $('#insightContainer');
-                insightContainer.empty(); // Clear any previous insights
+                var tbody = $('.insight_table').find('tbody');
+
+                tbody.empty(); // Clear any previous insights
 
                 if (insights.length > 0) {
-                    var insightText = `<div class="insights">`;
+                    var insightText = '<tr>';
+
                     insights.forEach(function (insight, index) {
                         if (insight !== null) {
-                            insightText += `<div class="border p-2 rounded mb-3" data-index="${index}"> ${insight}</div>`;
+                            insightText += `<td class="p-2 rounded mb-3" data-index="${index}">${insight}</td>`;
                         }
-
-
+                        else {
+                            insightText += `<td class="p-2 rounded mb-3" data-index="${index}">No Insights for this month.</td>`;
+                        }
                     });
-                    insightText += "</div>";
-                    insightContainer.html(insightText); // Add the insights to the container
-                } else {
-                    insightContainer.html("<p>No insights available for this data.</p>");
-                }
+
+                    insightText += "</tr>";
+                    console.log("Generated HTML Row:", insightText); // Check generated row HTML
+
+                    tbody.append(insightText); // Append row to table body
+                } 
             }
+
+
 
 
             function getRandomColor() {
@@ -331,10 +414,10 @@
                 return "#" + r + g + b;
             }
 
-          
+
         });
 
-        
+
     </script>
 
     <script>
@@ -355,8 +438,8 @@
 <div class="card shadow-sm">
     <div class="card-body">
         <!--row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly-->
-        <div class="row">
-            <div class="col-xl-8 ">
+        <div class="row mb-3">
+            <div class="col-12 ">
                 <div class="container border border-2 p-2 rounded shadow-sm">
                     <div class="row">
                         <div class="col-9">
@@ -365,23 +448,101 @@
                         <div class="col-3">
                             <select class="form-control text-center" id="select_year">
                                 <option value="2024" selected>2024</option>
-                                <option value="2025" >2025</option>
+                                <option value="2025">2025</option>
                             </select>
                         </div>
                     </div>
                     <div class="border border-1 mb-3"></div>
-                    <div class="container">
-                        <div id="chartContainer">
-                            <canvas id="myChart" class="backgroundgray rounded p-2"></canvas>
-                            <!-- This div will display the insights -->
-                            <div class="border border-2 rounded shadow-sm mt-3 backgroundgray">
-                                <div class="d-flex flex-column border border-2 rounded bg-white" id="show_ingsight">
-                                    <h5 class="fw-bold text-muted">Insight</h5>
-                                    <i class="fa-solid fa-caret-down"></i>
+                    <div class="chart-container" style="width: 95%; height:200px; margin: 20px auto;">
+                        <canvas id="myChart" class="backgroundgray rounded p-2"></canvas>
 
-                                </div>
-                                <div class="border p-2  graph_insight bg-white" id="insightContainer"></div>
-                            </div>
+                    </div>
+                    <!-- This div will display the insights -->
+                    <div class="border border-2 rounded shadow-sm mt-3 backgroundgray">
+                        <div class="d-flex flex-column border border-2 rounded bg-white" id="show_ingsight">
+                            <h5 class="fw-bold text-muted">Insight</h5>
+                            <i class="fa-solid fa-caret-down"></i>
+                        </div>
+
+                        <div class="border p-2 graph_insight bg-white table-responsive" id="insightContainer">
+                            <table class="table insight_table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Jan</th>
+                                        <th scope="col">Feb</th>
+                                        <th scope="col">Mar</th>
+                                        <th scope="col">Apr</th>
+                                        <th scope="col">May</th>
+                                        <th scope="col">Jun</th>
+                                        <th scope="col">Jul</th>
+                                        <th scope="col">Aug</th>
+                                        <th scope="col">Sep</th>
+                                        <th scope="col">Oct</th>
+                                        <th scope="col">Nov</th>
+                                        <th scope="col">Dec</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            
+        </div>
+
+        <!--ROW 2-->
+        <div class="row">
+            <div class="col-xl-5">
+                <div class="container border border-2 p-2 rounded shadow-sm">
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recent register address</h5>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="table-responsive">
+                            <table class="table" id="table_address">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Block</th>
+                                        <th scope="col">Lot</th>
+                                        <th scope="col">Street</th>
+                                        <th scope="col">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ 
+                                        if (Model.ResidentAddress != null)
+                                        {
+                                            if (Model.ResidentAddress.Count > 0)
+                                            {
+                                                foreach (var item in Model.ResidentAddress)
+                                                {
+                                                    <tr data-address="@item.Address_ID">
+                                                        <td data-res="@item.Resident_ID">@item.Name</td>
+                                                        <td>@item.Block</td>
+                                                        <td>@item.Lot</td>
+                                                        <td data-st="@item.Street_ID">@item.Street</td>
+                                                        <td>@item.Register_At</td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="5">No Data Found.</td>
+                                                </tr>
+                                            }
+                                        }
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

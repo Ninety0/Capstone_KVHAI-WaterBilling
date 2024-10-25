@@ -1,0 +1,486 @@
+﻿@using System.Security.Claims;
+
+@{
+    ViewData["Title"] = "My Address";
+    Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
+
+    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+    var registerAddressURL = "";
+
+    if (role == "1")//owner
+    {
+        registerAddressURL = "/kvhai/resident/register-addres";
+    }
+    else //renter
+    {
+        registerAddressURL = "/kvhai/resident/register/address";
+    }
+}
+
+@section head{
+    <style>
+        .row_address {
+            position: relative;
+        }
+
+        .btn_cancel, .btn_remove {
+            /*            background-color: #16a34a;
+            color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 400;
+
+            display: flex;
+            justify-content: center;
+            align-items: center*/;
+            /*position: absolute;
+            top: 31px;*/
+            /*position: absolute;
+            top:31px;*/
+            height: 38px;
+            width: 150px;
+        }
+
+        .btn_remove {
+            background-color: #dc2626;
+        }
+
+        #btn_Register {
+            height: 38px;
+            width: 150px;
+        }
+    </style>
+}
+
+@section sidebar{
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-house nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Home
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/announcement" class="nav_sidebar mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Announcement
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-dot nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Register
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/my-address" class="nav_sidebar active mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                My Address
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-gauge nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Consumption
+            </div>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-money-bills nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Billing
+            </div>
+        </div>
+    </a>
+
+}
+
+@section mobilenav{
+    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-house nav_icon"></i>
+            <span class="ms-3">
+                Home
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/announcement" class="nav_sidebar  mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span class="ms-3">
+                Announcement
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            <span class="ms-3">
+                Register Address
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/my-address" class="nav_sidebar active mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+            <span class="ms-3">
+                My Address
+            </span>
+        </div>
+    </a>
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            <span class="ms-3">
+                Consumption
+            </span>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            <span class="ms-3">
+                Billing
+            </span>
+        </div>
+    </a>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row">
+            <div class="col">
+                <div class="d-flex flex-column align-items-start">
+                    <h5 class="fw-bold text-muted">Registered Address</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="container border mb-3" id="tableView">
+            @{
+                for (int i = 0; i < Model.ListAddress.Count; i++)
+                {
+                    string btn_remove = "";
+                    string btn_cancel = "";
+                    string elementIDName = $"select-street{i + 1}";
+
+                    if (string.IsNullOrEmpty(Model.ListAddress[i].Remove_Request_Token))
+                    {
+                        btn_cancel = "disabled";
+                    }
+                    else
+                    {
+                        btn_remove = "disabled";
+                    }
+
+                    <div class="container">
+                        @* ADDRESS *@
+                        <div id="add_item">
+                            <div class="row row_address">
+                                <!-- BLOCK-->
+                                <div class="col-md-3">
+                                    <div class="form-check mb-3">
+                                        <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                                        <input type="text" min="1" class="form-control " value="@Model.ListAddress[i].Block" id="Block" name="Block" disabled required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- LOT-->
+                                <div class="col-md-3">
+                                    <div class="form-check mb-3">
+                                        <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                                        <input type="text" min="1" class="form-control " value="@Model.ListAddress[i].Lot" id="Lot" name="Lot" disabled required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--STREET-->
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="fname" class="form-label fw-bold fs-6">Street</label>
+
+                                        <select id="@elementIDName" class="form-select" aria-label="Default select example" required>
+                                            @{
+                                                foreach (var item in Model.ListStreet)
+                                                {
+                                                    <option value="@item.Street_ID">@item.Street_Name</option>
+                                                }
+                                            }
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-2 mb-3 mb-md-0 mt-3 d-flex justify-content-evenly">
+                                    <button class="btn btn-danger btn-sm me-2 btn_remove @btn_remove" data-id="@Model.ListAddress[i].Address_ID" data-request-id="@Model.ListAddress[i].Request_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm btn_cancel @btn_cancel" data-id="@Model.ListAddress[i].Address_ID" data-request-id="@Model.ListAddress[i].Request_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                        <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                </div>
+                                <hr class="d-block" />
+
+                            </div>
+
+                        </div>
+                        @*END ADDRESS *@
+
+                    </div>
+
+                }
+            }
+        </div>
+
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        @for (int i = 0; i < Model.ListAddress.Count; i++)
+        {
+            var elementIDName = $"select-street{i + 1}";
+            <text>
+                $('#@(elementIDName)').editableSelect();
+                $('#@(elementIDName)').prop("disabled", true);
+                $('#@(elementIDName)').val('@Model.ListAddress[i].Street_Name');
+            </text>
+        }
+        $(document).ready(function () {
+            const registerConnection = setupSignalRConnection("/resident/my-address", "My Address Hub");
+
+            registerConnection.on("ReceivedMyAddressNotification", function (message, resident_id) {
+                alert("Verify");
+                GetAddress();
+            });
+
+            registerConnection.on("ReceivedRequestPageNotificationToMyAddress", function (message, resident_id) {
+                alert("Action Approve/Reject");
+                GetAddress();
+            });
+
+            function GetAddress() {
+                var res_id = $('#cookie_id').val();
+                $.ajax({
+                    type: "GET",
+                    url: "/MyAddress/GetAddress",
+                    data: { resident_id: res_id },
+                    success: function (response) {
+                        console.log(response);
+                        var result = $(response).find('#tableView').html();
+                        $('#tableView').html(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            };
+
+            //streets.forEach(street => {
+            //    formData.append('streets[]', street); // append each street value as an array
+            //});
+            $('#btn_Register').on('click', function (e) {
+                    e.preventDefault()
+                //var formData = new FormData($('#myForm')[0]);
+
+                    //console.log(formData);
+
+                    //var fileInput = $('#formFile');
+                    //formData.append('file', fileInput.files[0]);
+                if (validateForm()) {
+                        var formData = new FormData();
+                        var addressesData = [];
+                        var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $('.row_address').each(function (index, element) {
+                            var id = "select-street" + (index + 1);
+                            var block = $(element).find('#Block').val();
+                            var lot = $(element).find('#Lot').val();
+                            var street = $(element).find('#' + id).val();
+                            var fileInput = $(element).find('.file_upload')[0];
+
+                            var addressData = { block: block, lot: lot, street: street };
+                        addressesData.push(addressData);
+
+                        if (fileInput.files.length > 0) {
+                            formData.append('files', fileInput.files[0]);
+                        }
+                    });
+                    formData.append('addresses', JSON.stringify(addressesData));
+                    formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/LoggedIn/Register',
+                        contentType: false,
+                        processData: false,
+                        data: formData,
+                        success: function (response) {
+                            //console.log(response);
+                            //const errorMessage = 'There was an error saving the resident and the image.';
+                            //const successMessage = 'Registration Successful.';
+
+                            //if (response.message.includes('error')) {
+                            //    toastr.error(errorMessage);
+                            //}
+                            //else if (response.message.includes('exist')) {
+                            //    toastr.error('Email or Username already taken.');
+                            //}
+                            //else {}
+                            toastr.info(response);
+                            setTimeout(function () {
+                                location.reload();
+                            }, 5000);
+                        },
+                        error: function (xhr, status, error) {
+                            //console.log(xhr.responseText);
+                            toastr.error(xhr.responseText);
+                        }
+                    });
+
+                }
+
+            })
+
+            //REQUST REMOVE TOKEN
+            $(document).on('click', '.btn_remove', function () {
+                var btn = $(this);
+
+                var id = $(this).data('id');
+
+                var formData = {
+                    addressID: id
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: '/MyAddress/RemoveToken',
+                    data: formData,
+                    success: function (response) {
+                        toastr.info(response.message);
+                        console.log(btn);
+                        if (response.request_id) {
+                            alert(response.request_id);
+                            $(btn).siblings().data('request-id', response.request_id)
+                        }
+
+                        $(btn).siblings().removeClass('disabled');
+                        $(btn).addClass('disabled');
+                        //setTimeout(function () {
+                        //    location.reload();
+                        //}, 5000);
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            });
+
+            //CANCEL BTN
+            $(document).on('click', '.btn_cancel', function () {
+                var aid = $(this).data('id'); //address ID
+                var rid = $(this).data('request-id'); // Request ID
+                var btn = $(this);
+                alert(rid);
+                var formData = {
+                    addressID: aid,
+                    requestID: rid
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: '/MyAddress/CancelRemoveToken',
+                    data: formData,
+                    success: function (response) {
+                        toastr.info(response);
+
+                        $(btn).addClass('disabled');
+                        $(btn).data('request-id','0')
+                        $(btn).siblings().removeClass('disabled');
+                        //setTimeout(function () {
+                        //    location.reload();
+                        //}, 5000);
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            });
+
+            function validateForm() {
+                var isValid = true;
+                //var inputs = document.querySelectorAll('#myForm input[required], #myForm select[required]');
+                const form = $('#myForm'); // jQuery
+                const inputs = form.find('input, select');
+                const file = form.find('.file_upload');
+
+                inputs.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                });
+
+                file.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    if (!input.val()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                });
+
+                return isValid;
+
+            }
+
+        });
+
+        $('input, select').on('input', function () {
+            $(this).removeClass('is-invalid');
+            $(this).closest('form').removeClass('was-validated');
+        });
+
+    </script>
+}

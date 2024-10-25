@@ -35,7 +35,7 @@ namespace KVHAI.Controllers.Homeowner
                 ListAddress = address,
                 NotificationResident = notifList
             };
-            return View("~/Views/Resident/LoggedIn/Owner/MyAddress.cshtml", model);
+            return View("~/Views/Resident/LoggedIn/MyAddress.cshtml", model);
         }
 
         [HttpGet]
@@ -49,7 +49,7 @@ namespace KVHAI.Controllers.Homeowner
                 ListAddress = address,
             };
 
-            return View("~/Views/Resident/LoggedIn/Owner/MyAddress.cshtml", model);
+            return View("~/Views/Resident/LoggedIn/MyAddress.cshtml", model);
         }
 
         [HttpPost]

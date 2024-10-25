@@ -17,7 +17,14 @@ builder.Services.AddAuthentication("MyCookieAuth").AddCookie("MyCookieAuth", opt
     options.Cookie.Name = "UserLoginCookie";
     options.LoginPath = "/kvhai/resident/login";
     options.AccessDeniedPath = "/kvhai/error";
+})
+.AddCookie("AdminCookieAuth", options =>
+{
+    options.Cookie.Name = "AdminLoginCookie";
+    options.LoginPath = "/kvhai/staff/login";
+    options.AccessDeniedPath = "/kvhai/admin/error";
 });
+
 
 //Set content root  and web root
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
@@ -49,7 +56,7 @@ builder.Services.AddTransient<WaterBillingFunction>();
 builder.Services.AddTransient(typeof(Pagination<>));
 
 // Register EmployeeRepository as a scoped service
-builder.Services.AddScoped<KVHAI.CustomClass.Forecasting>();
+builder.Services.AddScoped<ForecastingRepo>();
 builder.Services.AddScoped<EmployeeRepository>();
 builder.Services.AddScoped<ResidentRepository>();
 builder.Services.AddScoped<ImageUploadRepository>();
@@ -62,6 +69,8 @@ builder.Services.AddScoped<AnnouncementRepository>();
 builder.Services.AddScoped<AnnouncementImageRepository>();
 builder.Services.AddScoped<HubConnectionRepository>();
 builder.Services.AddScoped<NotificationRepository>();
+builder.Services.AddScoped<ResidentAddressRepository>();
+builder.Services.AddScoped<PaymentRepository>();
 
 var app = builder.Build();
 

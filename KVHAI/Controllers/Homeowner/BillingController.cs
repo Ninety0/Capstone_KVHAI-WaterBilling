@@ -25,7 +25,7 @@ namespace KVHAI.Controllers.Homeowner
         {
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var notifList = await _notification.GetNotificationByResident(residentID);
-            var model = await _waterBillRepo.UnpaidResidentWaterBilling("1");
+            var model = await _waterBillRepo.UnpaidResidentWaterBilling(residentID);
 
 
             var viewModel = new ModelBinding
@@ -34,7 +34,7 @@ namespace KVHAI.Controllers.Homeowner
                 UnpaidResidentWaterBilling = model
             };
             //await _waterBillingFunction.UnpaidWaterBillingByResident("1");
-            return View("~/Views/Resident/Billing/Bills.cshtml", viewModel);
+            return View("~/Views/Resident/LoggedIn/Bills.cshtml", viewModel);
         }
 
         [HttpGet]
@@ -51,7 +51,7 @@ namespace KVHAI.Controllers.Homeowner
                 UnpaidResidentWaterBilling = model
             };
             //await _waterBillingFunction.UnpaidWaterBillingByResident("1");
-            return View("~/Views/Resident/Billing/Bills.cshtml", viewModel);
+            return View("~/Views/Resident/LoggedIn/Bills.cshtml", viewModel);
         }
     }
 }
