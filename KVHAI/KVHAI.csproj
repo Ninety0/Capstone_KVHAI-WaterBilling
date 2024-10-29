@@ -35,11 +35,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\Homeowner\Renter\" />
     <Folder Include="Controllers\Staff\Cashier2\" />
     <Folder Include="Views\ClerkWaterBilling\" />
     <Folder Include="Views\Resident\Home\" />
     <Folder Include="Views\Staff\Cashier2\" />
-    <Folder Include="wwwroot\css\Admins\" />
     <Folder Include="wwwroot\css\Resident\" />
     <Folder Include="wwwroot\GeneratedReports\" />
     <Folder Include="wwwroot\announcement_img\" />
@@ -106,6 +106,10 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Update="wwwroot\css\adminLayout.css">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="wwwroot\css\Admins\dashboard.css">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

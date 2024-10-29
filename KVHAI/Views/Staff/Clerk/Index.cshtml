@@ -2,6 +2,31 @@
     ViewBag.Title = "Water Reading";
 }
 
+@section sidebar{
+    <a href="#" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/water-reading/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-file-earmark-text me-2"></i> Reading
+    </a>
+    <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Billing
+    </a>
+    
+}
+@section mobilenav{
+    <a href="#" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/water-reading/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-file-earmark-text me-2"></i> Reading
+    </a>
+    <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Billing
+    </a>
+
+}
+
 @section scripts{
     <script src="~/js/signalr.min.js"></script>
     <script defer>

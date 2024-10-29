@@ -345,5 +345,52 @@ namespace KVHAI.Repository
                 }
             }
         }
+
+        public async Task<List<ResidentAddress>> GetStreetNameList(List<Address> addressess)
+        {
+            try
+            {
+                var residentAddress = new List<ResidentAddress>();
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    foreach (var item in addressess)
+                    {
+                        using (var command = new SqlCommand(@"
+                            select addr_id,s.st_id, block,lot, st_name  from address_tb a
+                            JOIN street_tb s ON a.st_id = s.st_id
+                            WHERE addr_id = @id", connection))
+                        {
+                            command.Parameters.AddWithValue("@id", item.Address_ID);
+
+                            using (var reader = await command.ExecuteReaderAsync())
+                            {
+                                while (await reader.ReadAsync())
+                                {
+                                    var ra = new ResidentAddress
+                                    {
+                                        Address_ID = reader.GetInt32(0),
+                                        Street_ID = reader.GetInt32(1),
+                                        Block = reader.GetString(2),
+                                        Lot = reader.GetString(3),
+                                        Street = reader.GetString(4),
+                                    };
+
+                                    residentAddress.Add(ra);
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+
+                return residentAddress;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+        }
     }
 }

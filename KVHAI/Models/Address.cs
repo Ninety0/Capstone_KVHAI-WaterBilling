@@ -8,6 +8,8 @@
         public string Lot { get; set; } = string.Empty;
         public int Street_ID { get; set; }
         public string Location { get; set; } = string.Empty;
+        public string Is_Verified { get; set; } = string.Empty;
+        public DateTime Register_At { get; set; }
         public string Remove_Request_Token { get; set; } = string.Empty;
         public string Remove_Token_Date { get; set; } = string.Empty;
 

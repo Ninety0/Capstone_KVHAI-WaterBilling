@@ -11,7 +11,13 @@
         public decimal Remaining_Balance { get; set; }
         public string? Payment_Method { get; set; }
         public string? Payment_Status { get; set; }
-        public DateTime? Payment_Date { get; set; }
+        public string? Payment_Date { get; set; }
         public string? Paid_By { get; set; }
+
+        public string Block { get; set; } = string.Empty;
+        public string Lot { get; set; } = string.Empty;
+        public string Street { get; set; } = string.Empty;
+        public Boolean Is_Owner { get; set; }
+
     }
 }

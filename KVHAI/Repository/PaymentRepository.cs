@@ -43,7 +43,7 @@ namespace KVHAI.Repository
                                 Remaining_Balance = reader.GetDecimal(6),
                                 Payment_Method = reader.GetString(7),
                                 Payment_Status = reader.GetString(8),
-                                Payment_Date = reader.GetDateTime(9),
+                                Payment_Date = reader.GetDateTime(9).ToString("yyyy-MM-dd HH:mm:ss"),
                                 Paid_By = reader.GetString(10),
                             };
 
@@ -351,6 +351,59 @@ namespace KVHAI.Repository
             {
                 throw;
                 return 0;
+            }
+        }
+
+        public async Task<List<Payment>> GetNewPayment()
+        {
+            try
+            {
+                var payment = new List<Payment>();
+                var residentAddress = new List<ResidentAddress>();
+
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                    select ra.res_id, a.addr_id,payment_id,paid_by,block,lot,st_name,payment_method, payment_status,payment_date, is_owner 
+                    from payment_tb p
+                    JOIN address_tb a ON p.addr_id = a.addr_id
+                    JOIN resident_address_tb ra ON a.addr_id = ra.addr_id AND p.res_id = ra.res_id
+                    JOIN street_tb s ON a.st_id = s.st_id 
+                    WHERE CONVERT(VARCHAR, payment_date,23) LIKE '%2024-10-23%'
+                    ORDER BY payment_date DESC", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var _payment = new Payment
+                                {
+                                    Resident_ID = reader.GetInt32(0),
+                                    Address_ID = reader.GetInt32(1),
+                                    Payment_ID = reader.GetInt32(2),
+                                    Paid_By = reader.GetString(3),
+                                    Block = reader.GetString(4),
+                                    Lot = reader.GetString(5),
+                                    Street = reader.GetString(6),
+                                    Payment_Method = reader.GetString(7),
+                                    Payment_Status = reader.GetString(8),
+                                    Payment_Date = reader.GetDateTime(9).ToString("MMM dd yyyy hh:mm tt"),
+                                    Is_Owner = reader.GetBoolean(10),
+
+                                };
+                                payment.Add(_payment);
+                            }
+                        }
+                    }
+                }
+
+
+                return payment;
+            }
+            catch (Exception)
+            {
+
+                return null;
             }
         }
     }

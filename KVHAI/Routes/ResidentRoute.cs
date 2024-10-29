@@ -46,7 +46,7 @@ namespace KVHAI.Routes
             endpoint.MapControllerRoute(
                 name: "ResidentRenterHome",
                 pattern: "kvhai/resident/home",
-                defaults: new { controller = "ResidentHome", action = "OwnerHome" }
+                defaults: new { controller = "OwnerHome", action = "OwnerHome" }
             );
 
             endpoint.MapControllerRoute(

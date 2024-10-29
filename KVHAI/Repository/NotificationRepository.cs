@@ -11,13 +11,17 @@ namespace KVHAI.Repository
         private readonly DBConnect _dbConnect;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly HubConnectionRepository _connectionRepository;
+        private readonly ListRepository _listRepo;
 
-        public NotificationRepository(DBConnect dBConnect, IHubContext<NotificationHub> hubContext, HubConnectionRepository connectionRepository)
+        public NotificationRepository(DBConnect dBConnect, IHubContext<NotificationHub> hubContext, HubConnectionRepository connectionRepository, ListRepository listRepo)
         {
             _dbConnect = dBConnect;
             _hubContext = hubContext;
             _connectionRepository = connectionRepository;
+            _listRepo = listRepo;
         }
+
+
 
         public async Task<int> InsertNotificationPersonal(Notification notification)
         {

@@ -34,11 +34,24 @@
 
         if (toggle) {
             lblSwitch.html('<b>VERIFIED</b>');
-            lblSwitch.css('background-color', '#22c55e');
+            
+            $('#lblSwitch').css({
+                'background-color': 'white',
+                'outline': '1px solid #22c55e',
+                'color': '#22c55e'
+            });
         }
         else {
             lblSwitch.html('<b>NOT VERIFIED</b>');
-            lblSwitch.css('background-color', '#ef4444');
+            $('#lblSwitch').css({
+                'background-color': 'white',
+                'outline': '1px solid #ef4444',
+                'color': '#ef4444'
+            });
+
+            //lblSwitch.css('background-color', 'white');
+            //lblSwitch.css('outline', '1px solid #ef4444');
+            //lblSwitch.css('color', '#ef4444');
         }
 
         localStorage.setItem('toggleState', toggle);
@@ -188,10 +201,20 @@
             var lblSwitch = $('#lblSwitch');
             if (isChecked) {
                 lblSwitch.html('<b>VERIFIED</b>');
-                lblSwitch.css('background-color', '#22c55e');
+                $('#lblSwitch').css({
+                    'background-color': 'white',
+                    'outline': '1px solid #22c55e',
+                    'color': '#22c55e'
+                });
+                
+
             } else {
                 lblSwitch.html('<b>NOT VERIFIED</b>');
-                lblSwitch.css('background-color', '#ef4444');
+                $('#lblSwitch').css({
+                    'background-color': 'white',
+                    'outline': '1px solid #ef4444',
+                    'color': '#ef4444'
+                });
             }
         }
 

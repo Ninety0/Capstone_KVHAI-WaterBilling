@@ -22,6 +22,7 @@ namespace KVHAI.Models
         public List<WaterReading>? PreviousReading { get; set; }
         public List<WaterReading>? CurrentReading { get; set; }
         public List<ResidentAddress>? ResidentAddress { get; set; }
+        public List<Payment>? PaymentList { get; set; }
         public List<WaterBilling>? WBilling { get; set; }
 
         public List<WaterBilling> Bill { get; set; }

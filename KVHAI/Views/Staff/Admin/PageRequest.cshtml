@@ -2,6 +2,49 @@
     ViewBag.Title = "Request Page";
 }
 
+@section sidebar{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
+}
+@section mobilenav{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
+}
+
 @section head{
     <link href="/lib/just-select/justselect.css" rel="stylesheet" />
     <link href="/css/custom-search.css" rel="stylesheet" />
@@ -19,29 +62,29 @@
             text-align: center;
         }
 
-            .approve {
-                background-color: #d1fae5;
-                color: #16a34a;
-            }
+        .approve {
+            background-color: #d1fae5;
+            color: #16a34a;
+        }
 
-            .reject {
-                background-color: #fee2e2;
-                color: #ef4444;
-            }
+        .reject {
+            background-color: #fee2e2;
+            color: #ef4444;
+        }
 
-            .pending {
-                background-color: #fef3c7;
-                color: #d97706;
-            }
+        .pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
 
-            .cancel {
-                background-color: #e2e8f0;
-                color: #475569;
-            }
+        .cancel {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
 
-        .status_text{
-            font-size:.8rem;
-            font-weight:600;
+        .status_text {
+            font-size: .8rem;
+            font-weight: 600;
         }
 
         .filter_pill {
@@ -53,11 +96,12 @@
             font-weight: 600;
         }
 
-        .search-wrapper{
-            font-size:1rem;
-            height:40px;
-            width:400px;
+        .search-wrapper {
+            font-size: 1rem;
+            height: 40px;
+            width: 400px;
         }
+
         .clear_text {
             font-size: .9rem;
             font-weight: 600;
@@ -112,11 +156,11 @@
                 //alert("approve: " + request_id);
 
                 var formData = {
-                    Request_ID : request_id,
-                    Resident_ID : res_id,
-                    Address_ID : addr_ID,
-                    RequestType : _request,
-                    Status : "1",
+                    Request_ID: request_id,
+                    Resident_ID: res_id,
+                    Address_ID: addr_ID,
+                    RequestType: _request,
+                    Status: "1",
                 };
 
                 $.ajax({
@@ -165,7 +209,7 @@
                 updateStatus('Pending', 'pending');
                 var statusID = $(this).data('status');
                 statusCode = statusID.toString();
-                
+
                 statusFilter(statusID);
                 showClearFilter();
             });
@@ -292,9 +336,9 @@
 }
 <div class="card shadow-sm">
     <div class="card-body">
-        <div class="container border border-2">
+        <div class="container-fluid border shadow-sm rounded">
             <!-- FILTER -->
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row mt-3 mb-3">
 
                     <!--FILTER FOR NAME-->
@@ -322,7 +366,7 @@
 
                     <!--FILTER FOR STATUS-->
                     <div class="col-12 col-md-6 col-lg-3 mb-3">
-                        <div class="dropdown">
+                        <div class="dropup-center dropup">
                             <button class="form-control border border-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 STATUS
                                 <span class="status_text"></span>
@@ -332,17 +376,17 @@
                                     <div class="container mb-2"><a class="dropdown-item status pending" data-status="0" id="btn_pending">Pending</a></div>
                                 </li>
                                 <li>
-                                    <div class="container mb-2">
+                                    <div class="container-fluid mb-2">
                                         <a class="dropdown-item status approve" id="btn_approve" data-status="1">Approved</a>
                                     </div>
                                 </li>
                                 <li>
-                                    <div class="container mb-2">
+                                    <div class="container-fluid mb-2">
                                         <a class="dropdown-item status reject" id="btn_reject" data-status="2">Reject</a>
                                     </div>
                                 </li>
                                 <li>
-                                    <div class="container mb-2">
+                                    <div class="container-fluid mb-2">
                                         <a class="dropdown-item status cancel" id="btn_cancel" data-status="3">Canceled</a>
                                     </div>
                                 </li>
@@ -447,12 +491,12 @@
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <div class="container mb-2">
+                                                            <div class="container-fluid mb-2">
                                                                 <a class="dropdown-item status approve" data-request-id="@item.Request_ID" data-id="@item.Address_ID" id="btnrequest_approve">Approved</a>
                                                             </div>
                                                         </li>
                                                         <li>
-                                                            <div class="container mb-2">
+                                                            <div class="container-fluid mb-2">
                                                                 <a class="dropdown-item status reject" data-request-id="@item.Request_ID" data-id="@item.Address_ID" id="btnrequest_reject">Reject</a>
                                                             </div>
                                                         </li>
@@ -474,7 +518,7 @@
 </div>
 
 <!--
-    
+
 UPDATE NEEDED ARE SEARCH OF NAME AND HOW ACTION WILL BE USED
     -click action then modal will popup to put comments then after submit request will be process
 

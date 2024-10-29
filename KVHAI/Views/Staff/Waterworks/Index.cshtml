@@ -45,11 +45,17 @@
 
 }
 
-@section mobilenav{
-    <div>Dashboard</div>
-    <div class="active">Water Reading</div>
+@section sidebar{
+    <a href="/kvhai/staff/waterwork/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Reading
+    </a>
+    
 }
-
+@section mobilenav{
+    <a href="/kvhai/staff/waterwork/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Reading
+    </a>
+}
 @{
     if (Model.Count < 1)
     {

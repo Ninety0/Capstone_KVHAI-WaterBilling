@@ -7,11 +7,12 @@
     <link href="/lib/evo-calendar/css/evo-calendar.css" rel="stylesheet" />
     <link href="/lib/evo-calendar/css/evo-calendar.midnight-blue.min.css" rel="stylesheet" />
     <link href="/lib/evo-calendar/css/evo-calendar.royal-navy.min.css" rel="stylesheet" />
+    <link href="/css/Admins/dashboard.css" rel="stylesheet" />
     <style>
         .backgroundgray {
             background-color: #f1f5f9;
         }
-       
+
         .chartjs-tooltip {
             background-color: rgba(0, 0, 0, 0.8) !important;
             color: #ffffff !important;
@@ -33,12 +34,12 @@
 
         /* Dropdown Button Styling */
         #show_ingsight {
-            cursor:pointer;
+            cursor: pointer;
         }
 
-        #show_ingsight:hover {
-            background-color: #f1f5f9; /* Darker blue on hover */
-        }
+            #show_ingsight:hover {
+                background-color: #f1f5f9; /* Darker blue on hover */
+            }
 
         .highlight {
             background-color: red;
@@ -49,9 +50,9 @@
             transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, border 0.3s ease;
         }
 
-        .highlight td {
-            border: 2px solid #007bff; /* Border for each cell in the highlighted row */
-        }
+            .highlight td {
+                border: 2px solid #007bff; /* Border for each cell in the highlighted row */
+            }
 
         .chart-container {
             max-width: 1600px; /* or larger */
@@ -86,12 +87,11 @@
             background-color: #ffffff; /* White background for table cells */
             border: 1px solid #ddd; /* Subtle border for better definition */
         }
+
         .p-2.rounded.mb-3 {
             margin-bottom: 10px; /* Add space between table rows */
             border-radius: 5px; /* Softer rounded corners for table cells */
         }
-
-
     </style>
 }
 
@@ -149,6 +149,7 @@
             var myChart = null; // Declare the global variable
             GetGraphData();
             GetNewRegister();
+            GetNewPayment();
 
             $(document).on('change', '#select_year', function () {
                 var selectedYear = $(this).val(); // Get selected year from dropdown
@@ -171,12 +172,28 @@
                 });
             }
 
+            function GetNewPayment() {
+                $.ajax({
+                    url: '/AdminDashboard/GetPayments',
+                    type: 'GET',
+                    success: function (response) {
+                        //console.log(response);
+                        var result = $(response).find('#table_payment').html();
+                        $('#table_payment').html(result);
+
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
             function GetGraphData() {
                 $.ajax({
                     url: '@Url.Action("GraphWaterConsumption", "AdminDashboard")',
                     type: 'GET',
                     success: function (data) {
-                        console.log(data);
+                        //console.log(data);
                         var yearDropdown = $('#select_year');
                         console.log($(yearDropdown).val());
 
@@ -309,8 +326,8 @@
                                     afterLabel: function (tooltipItem) {
                                         var index = tooltipItem.dataIndex;
                                         var label = tooltipItem.label;
-                                        console.log(tooltipItem);
-                                        console.log(label);
+                                        //console.log(tooltipItem);
+                                        //console.log(label);
 
                                         var insight;
                                         if (tooltipItem.datasetIndex === 1) {
@@ -349,7 +366,7 @@
                 // Add the highlight class to the matching element
                 insightItem.addClass('highlight bg-dark text-white');
 
-                console.log(insightItem); // For debugging, shows the element being highlighted
+                //console.log(insightItem); // For debugging, shows the element being highlighted
             }
 
             // Function to reset the highlighted insight
@@ -364,7 +381,7 @@
 
             function DisplayInsights(insights) {
 
-                console.log("Insights Data:", insights); // Check if insights has data
+                //console.log("Insights Data:", insights); // Check if insights has data
 
                 var insightContainer = $('#insightContainer');
                 var tbody = $('.insight_table').find('tbody');
@@ -384,10 +401,10 @@
                     });
 
                     insightText += "</tr>";
-                    console.log("Generated HTML Row:", insightText); // Check generated row HTML
+                    //console.log("Generated HTML Row:", insightText); // Check generated row HTML
 
                     tbody.append(insightText); // Append row to table body
-                } 
+                }
             }
 
 
@@ -422,91 +439,461 @@
 
     <script>
         $(document).ready(function () {
+            const averageConsumption = 1500;
+            const currentConsumption = 1000;
+            SetStackedBarChart(currentConsumption, averageConsumption);
+
+            //const average = 300; // Example forecasted average for the month
+            //const valuePercentage = Math.min(Math.max(((currentValue - forecastedValue) / forecastedValue) * 100, 0), 100);
+            //const currentValue = 280; // Example current consumption for the month
+
+            //createGaugeMeterWithPin(average, currentValue);
+
             $(document).on('click', '#show_ingsight', function () {
                 $('#insightContainer').fadeToggle('fast');
             });
+
+            function SetStackedBarChart(currentValue, forecastedValue) {
+                // Calculate the percentage difference from the forecasted value
+                const valuePercentage = Math.abs((currentValue - forecastedValue) / forecastedValue) * 100;
+
+                // Define color segments based on forecasted value ranges
+                const barColors = [
+                    { range: [0, 5], color: '#C8E6C9', label: 'Good' },       // Green for normal range (±5%)
+                    { range: [5, 25], color: '#FFECB3', label: 'Warning' },   // Yellow for moderate increase (5-25%)
+                    { range: [25, 50], color: '#ff0019', label: 'High' },     // Red for high increase (25-50%)
+                    { range: [50, 100], color: '#b30012', label: 'Critical' } // Dark Red for critical (above 50%)
+                ];
+
+                // Determine the color based on valuePercentage
+                let actualColor = '#b30012'; // Default to dark red for safety
+                let legendLabel = 'Critical';
+                for (const colorInfo of barColors) {
+                    const [minRange, maxRange] = colorInfo.range;
+                    if (valuePercentage >= minRange && valuePercentage < maxRange) {
+                        actualColor = colorInfo.color;
+                        legendLabel = colorInfo.label;
+                        break;
+                    }
+                }
+
+                // Chart configuration
+                const config = {
+                    type: 'bar',
+                    data: {
+                        labels: ['Water Consumption'],
+                        datasets: [
+                            {
+                                label: 'Forecasted Consumption',
+                                data: [forecastedValue],
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)',  // Light blue for forecasted
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                                stack: 'Stack 0'
+                            },
+                            {
+                                label: 'Actual Consumption',
+                                data: [currentValue],
+                                backgroundColor: actualColor,   // Color based on the deviation
+                                borderColor: actualColor,
+                                borderWidth: 1,
+                                stack: 'Stack 0'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        indexAxis: 'y',  // Make the chart horizontal
+                        scales: {
+                            x: {
+                                stacked: true,  // Stack the bars along the x-axis
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Cubic Meters'
+                                },
+                                ticks: {
+                                    callback: value => `${value} m³`
+                                }
+                            },
+                            y: {
+                                stacked: true,
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    generateLabels: function (chart) {
+                                        const originalLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                                        const customLegend = barColors.map(colorInfo => ({
+                                            text: `${colorInfo.label} (Range: ${colorInfo.range[0]}% - ${colorInfo.range[1]}%)`,
+                                            fillStyle: colorInfo.color,
+                                            strokeStyle: colorInfo.color,
+                                            hidden: false,
+                                            index: -1
+                                        }));
+                                        return [...originalLabels, ...customLegend];
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.dataset.label}: ${context.raw} m³`;
+                                    }
+                                }
+                            },
+                            annotation: {
+                                annotations: {
+                                    increaseLine: {
+                                        type: 'line',
+                                        xMin: forecastedValue,
+                                        xMax: currentValue,
+                                        yMin: -0.5,
+                                        yMax: 0.5,
+                                        borderColor: 'black',
+                                        borderWidth: 2,
+                                        label: {
+                                            content: `${valuePercentage.toFixed(2)}% ${valuePercentage > 0 ? 'Increase' : 'Decrease'}`,
+                                            enabled: true,
+                                            position: 'center',
+                                            backgroundColor: 'rgba(0,0,0,0.8)',
+                                            color: 'white',
+                                            font: {
+                                                size: 12
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                // Render the chart
+                const ctx = document.getElementById('chart_bar');
+                if (ctx) {
+                    new Chart(ctx, config);
+                }
+            }
+
+
+
+
+
+
+
+            function SetChartJsGauge(currentValue, forecastedValue, maxValue = 100) {
+                // Convert currentValue into a percentage relative to forecastedValue
+                //const value = Math.min((currentValue / forecastedValue) * maxValue, maxValue);
+                const value = Math.min(((currentValue - forecastedValue) / forecastedValue) * maxValue, maxValue);
+                //(actualData - forecastData) / forecastData) * 100
+                // Custom plugin to add text and indicator
+                const gaugeChartText = {
+                    id: 'gaugeChartText',
+                    afterDatasetsDraw(chart, args, pluginOptions) {
+                        const { ctx, chartArea: { width, height } } = chart;
+                        const xCenter = width / 2;
+                        const yCenter = height / 1.15;
+                        const outerRadius = chart.getDatasetMeta(0).data[0].outerRadius - 6;
+
+                        // Adjust the angle to correctly position the needle within the 180° range
+                        const valueText = value < 0 ? 0 : value;
+                        const angle = value < 0 ? 0 / maxValue : (Math.PI * value) / maxValue;
+                        ctx.save();
+                        ctx.translate(xCenter, yCenter);
+
+                        // Draw the needle
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(Math.cos(angle - Math.PI) * outerRadius, Math.sin(angle - Math.PI) * outerRadius);
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle = '#333';
+                        ctx.stroke();
+
+                        // Draw the needle base circle
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 6, 0, Math.PI * 2);
+                        ctx.fillStyle = '#333';
+                        ctx.fill();
+
+                        // Draw text at the center to show the percentage
+                        ctx.font = 'bold 16px Arial';
+                        ctx.fillStyle = '#333';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(`${Math.round(valueText)}%`, 0, -20);
+                        ctx.restore();
+                    }
+                };
+
+                // Calculate gauge colors based on percentage difference from forecastedValue
+                const getGradientColors = (currentValue, forecastedValue) => {
+                    const percentChange = ((currentValue - forecastedValue) / forecastedValue) * 100;
+                    console.log(percentChange);
+                    if (percentChange <= 5) return ['#C8E6C9'];       // Green (close to average)
+                    else if (percentChange <= 25) return ['#FFECB3'];  // Yellow (moderate increase)
+                    else if (percentChange <= 50) return ['#ff0019'];  // Red (high increase)
+                    else return ['#b30012'];                           // Dark Red (critical)
+                };
+                const colors = getGradientColors(currentValue, forecastedValue);
+
+                // Chart configuration
+                const config = {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [value, maxValue - value],
+                            backgroundColor: [...colors, '#E0E0E0'], // Colors with grey for remainder
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        cutout: '85%',       // Smaller cutout for a better gauge look
+                        rotation: -90,       // Start from the bottom center
+                        circumference: 180,  // Draw a half-circle gauge
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    },
+                    plugins: [gaugeChartText]
+                };
+
+                // Render the chart
+                const ctx = document.getElementById('chart_gauge');
+                if (ctx) {
+                    new Chart(ctx, config);
+                }
+            }
+
+
+
+
+
+            function createGaugeMeterWithPin(average, currentValue) {
+                // Predefined colors for different consumption levels
+                const gaugeColors = ['#4CAF50', '#FFC107', '#F44336']; // Green for average, Yellow for moderate, Red for critical
+
+                // Calculate the percentage of currentValue relative to average and normalize it to fit within the gauge
+                let consumptionPercentage = (currentValue / average) * 100;
+                if (consumptionPercentage > 100) consumptionPercentage = 100; // Cap at 100%
+
+                // Define chart data as segments of 33% each (representing green, yellow, red)
+                const data = {
+                    datasets: [{
+                        data: [33, 33, 34], // Splits the gauge into 3 equal parts
+                        backgroundColor: gaugeColors, // Segment colors
+                        borderWidth: 0 // Remove segment borders
+                    }]
+                };
+
+                // Destroy previous chart instance if it exists to avoid duplication
+                if (window.gaugeChart) {
+                    window.gaugeChart.destroy();
+                }
+
+                // Create the Chart.js Doughnut chart
+                const ctx = document.getElementById("chart_gauge").getContext("2d");
+                window.gaugeChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        aspecRatio: 2,
+                        responsive: true,
+                        cutout: "80%", // Hollow center
+                        rotation: 270, // Start angle for the gauge
+                        circumference: 180, // Draw a half-circle gauge
+                        plugins: {
+                            tooltip: { enabled: false }, // Disable tooltips
+                            legend: { display: false } // Disable legend
+                        },
+                        // Custom plugin to draw the "pin" indicator
+                        plugins: [{
+                            afterDraw: chart => {
+                                const { ctx, chartArea: { width, height } } = chart;
+                                const centerX = width / 2;
+                                const centerY = height / 1.25;
+
+                                // Convert consumption percentage into an angle for the pin
+                                const angle = (consumptionPercentage / 100) * 180; // Degree on the 180-degree scale
+                                const radians = (angle + 270) * (Math.PI / 180); // Convert to radians starting from the bottom center
+
+                                // Calculate pin position
+                                const pinLength = width / 2.3; // Length of the pin
+                                const pinX = centerX + Math.cos(radians) * pinLength;
+                                const pinY = centerY + Math.sin(radians) * pinLength;
+
+                                // Draw the pin
+                                ctx.save();
+                                ctx.beginPath();
+                                ctx.moveTo(centerX, centerY);
+                                ctx.lineTo(pinX, pinY);
+                                ctx.lineWidth = 4;
+                                ctx.strokeStyle = '#333';
+                                ctx.stroke();
+
+                                // Draw a circle at the end of the pin
+                                ctx.beginPath();
+                                ctx.arc(pinX, pinY, 8, 0, 2 * Math.PI);
+                                ctx.fillStyle = '#333';
+                                ctx.fill();
+
+                                // Draw the percentage text in the center
+                                ctx.font = "bold 16px Arial";
+                                ctx.fillStyle = '#333';
+                                ctx.textAlign = "center";
+                                ctx.textBaseline = "middle";
+                                ctx.fillText(`${Math.round(consumptionPercentage)}%`, centerX, centerY);
+                                ctx.restore();
+                            }
+                        }]
+                    }
+                });
+            }
+
         });
     </script>
 
 }
 
 @section sidebar{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
 }
 @section mobilenav{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
 }
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <!--row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly-->
-        <div class="row mb-3">
-            <div class="col-12 ">
-                <div class="container border border-2 p-2 rounded shadow-sm">
-                    <div class="row">
-                        <div class="col-9">
-                            <h5 class="fw-bold text-muted p-2 mb-3 flex-grow-1">Water Consumption Analytics</h5>
-                        </div>
-                        <div class="col-3">
-                            <select class="form-control text-center" id="select_year">
-                                <option value="2024" selected>2024</option>
-                                <option value="2025">2025</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="border border-1 mb-3"></div>
-                    <div class="chart-container" style="width: 95%; height:200px; margin: 20px auto;">
-                        <canvas id="myChart" class="backgroundgray rounded p-2"></canvas>
+<!--ROW 1-->
+<div class="row mb-3">
+    <div class="col-12 col-lg-4">
+        <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm" style="height:100px;">
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3 text-center">Monthly Water Consumption</h5>
 
-                    </div>
-                    <!-- This div will display the insights -->
-                    <div class="border border-2 rounded shadow-sm mt-3 backgroundgray">
-                        <div class="d-flex flex-column border border-2 rounded bg-white" id="show_ingsight">
-                            <h5 class="fw-bold text-muted">Insight</h5>
-                            <i class="fa-solid fa-caret-down"></i>
-                        </div>
+            <div class="row">
+                <div class="col-12">
+                </div>
+            </div>
+        </div>
 
-                        <div class="border p-2 graph_insight bg-white table-responsive" id="insightContainer">
-                            <table class="table insight_table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Jan</th>
-                                        <th scope="col">Feb</th>
-                                        <th scope="col">Mar</th>
-                                        <th scope="col">Apr</th>
-                                        <th scope="col">May</th>
-                                        <th scope="col">Jun</th>
-                                        <th scope="col">Jul</th>
-                                        <th scope="col">Aug</th>
-                                        <th scope="col">Sep</th>
-                                        <th scope="col">Oct</th>
-                                        <th scope="col">Nov</th>
-                                        <th scope="col">Dec</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Data will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm" style="">
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3 text-center">Average Water Consumption / Month</h5>
 
+            <canvas id="chart_bar" width="600" height="200"></canvas>
+        </div>
+
+    </div>
+</div>
+
+<!--row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly-->
+<div class="row mb-3">
+    <div class="col-12 ">
+        <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm">
+            <div class="row">
+                <div class="col-9">
+                    <h5 class="fw-bold text-muted p-2 mb-3 flex-grow-1">Water Consumption Analytics</h5>
+                </div>
+                <div class="col-3">
+                    <select class="form-control text-center" id="select_year">
+                        <option value="2024" selected>2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+            </div>
+            <div class="border border-1 mb-3"></div>
+            <div class="chart-container" style="width: 95%; height:150px; margin: 20px auto;">
+                <canvas id="myChart" class="backgroundgray rounded p-2"></canvas>
+
+            </div>
+            <!-- This div will display the insights -->
+            <div class="border border-2 rounded shadow-sm mt-3 backgroundgray">
+                <div class="d-flex flex-column border border-2 rounded bg-white" id="show_ingsight">
+                    <h5 class="fw-bold text-muted">Insight</h5>
+                    <i class="fa-solid fa-caret-down"></i>
+                </div>
+
+                <div class="border p-2 graph_insight bg-white table-responsive" id="insightContainer">
+                    <table class="table insight_table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Jan</th>
+                                <th scope="col">Feb</th>
+                                <th scope="col">Mar</th>
+                                <th scope="col">Apr</th>
+                                <th scope="col">May</th>
+                                <th scope="col">Jun</th>
+                                <th scope="col">Jul</th>
+                                <th scope="col">Aug</th>
+                                <th scope="col">Sep</th>
+                                <th scope="col">Oct</th>
+                                <th scope="col">Nov</th>
+                                <th scope="col">Dec</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            
         </div>
+    </div>
 
-        <!--ROW 2-->
+
+</div>
+
+<!--ROW 3-->
+<div class="row">
+    <div class="col-xl-8">
         <div class="row">
-            <div class="col-xl-5">
-                <div class="container border border-2 p-2 rounded shadow-sm">
-                    <div class="row">
-                        <div class="col-12">
-                            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recent register address</h5>
-                        </div>
-                    </div>
-                    <div class="container">
+            <div class="col-12 mb-3">
+                <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm container_dashboard">
+                    <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recent register address</h5>
+
+                    <div class="container-fluid container_data">
                         <div class="table-responsive">
-                            <table class="table" id="table_address">
+                            <table class="table table-borderless table-striped" id="table_address">
                                 <thead>
                                     <tr>
                                         <th scope="col">Name</th>
@@ -517,7 +904,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @{ 
+                                    @{
                                         if (Model.ResidentAddress != null)
                                         {
                                             if (Model.ResidentAddress.Count > 0)
@@ -548,14 +935,66 @@
                 </div>
             </div>
 
-            <div class="col-xl-4">
-                <div class="container border border-2 p-2 rounded shadow-sm">
-                    <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Task</h5>
-                    <div class="header-border"></div>
-                    <!--EVO CALENDAR-->
-                    <div id="calendar"></div>
+            <div class="col">
+                <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm container_dashboard">
+                    <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recently Paid</h5>
+
+                    <div class="container-fluid container_data">
+                        <div class="table-responsive">
+                            <table class="table table-borderless table-striped" id="table_payment">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Address</th>
+                                        <th scope="col">Method</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Occupancy</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        if (Model.PaymentList != null)
+                                        {
+                                            if (Model.PaymentList.Count > 0)
+                                            {
+                                                foreach (var item in Model.PaymentList)
+                                                {
+                                                    var occupancy = item.Is_Owner ? "Owner" : "Renter";
+                                                    <tr data-address="@item.Payment_ID">
+                                                        <td data-res="@item.Resident_ID">@item.Paid_By</td>
+                                                        <td>Blk @item.Block Lot @item.Lot @item.Street St. </td>
+                                                        <td>@item.Payment_Method</td>
+                                                        <td>@item.Payment_Status</td>
+                                                        <td>@item.Payment_Date</td>
+                                                        <td>@occupancy</td>
+                                                    </tr>
+                                                }
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6" class="text-center">No Data Found.</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm">
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Task</h5>
+            <div class="header-border"></div>
+            <!--EVO CALENDAR-->
+            <div id="calendar"></div>
         </div>
     </div>
 </div>

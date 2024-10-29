@@ -10,11 +10,13 @@ namespace KVHAI.Controllers.Staff.Admin
     {
         private readonly ForecastingRepo _forecasting;
         private readonly AddressRepository _addressRepository;
+        private readonly PaymentRepository _paymentRepository;
 
-        public AdminDashboardController(ForecastingRepo forecasting, AddressRepository addressRepository)
+        public AdminDashboardController(ForecastingRepo forecasting, AddressRepository addressRepository, PaymentRepository paymentRepository)
         {
             _forecasting = forecasting;
             _addressRepository = addressRepository;
+            _paymentRepository = paymentRepository;
         }
 
         [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "admin")]
@@ -40,6 +42,22 @@ namespace KVHAI.Controllers.Staff.Admin
                 ResidentAddress = model
             };
 
+            //return Json(model);
+            return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPayments()
+        {
+            var payment = await _paymentRepository.GetNewPayment();
+            var modelBinding = new ModelBinding
+            {
+                PaymentList = payment,
+            };
+            if (payment == null)
+            {
+                return BadRequest("Null");
+            }
             //return Json(model);
             return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
         }

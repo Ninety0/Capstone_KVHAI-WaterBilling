@@ -3,6 +3,49 @@
     ViewBag.Title = "Resident Address";
 }
 
+@section sidebar{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
+}
+@section mobilenav{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
+}
+
 @section head{
     <link href="/lib/just-select/justselect.css" rel="stylesheet" />
     <link href="/css/custom-search.css" rel="stylesheet" />
@@ -50,8 +93,9 @@
 
         #lblSwitch {
             padding: 5px;
-            color: white;
-            background-color: #ef4444;
+            color: #ef4444;
+            background-color: white;
+            outline: 1px solid #ef4444;
             border-radius: 6px;
         }
 
@@ -80,10 +124,10 @@
             cursor: pointer;
         }
 
-        .tableContents:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+            .tableContents:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
 
         .details-section {
             font-size: .8rem;
@@ -115,7 +159,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="image-container d-flex">
+                <div class="image-container-fluid d-flex">
                     <img id="modalImage" alt="Resident Image">
                 </div>
             </div>
@@ -127,11 +171,11 @@
 <div class="card shadow-sm">
     <div class="card-body">
         <div class="p-3 account-header">
-            <div class="container d-flex">
+            <div class="container-fluid d-flex">
                 <span><a class="link-header active" href="#resident">Resident</a></span>
             </div>
         </div>
-        <div class="container shadow-lg">
+        <div class="container-fluid border shadow-sm rounded-bottom">
             <!-- STAFF SECTION -->
             <section id="staff" class="">
                 <div class="row d-flex align-items-center pb-3 mb-3">
@@ -156,7 +200,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="container-fluid" id="res-tableData">
+                <div class="" id="res-tableData">
                     @foreach (var item in Model.ModelList)
                     {
                         <div class="tableContents table-responsive p-3 mb-4 shadow-sm rounded">
@@ -191,7 +235,7 @@
                             </div>
 
                             <div class="details-section mt-3">
-                                <div class="container p-3 rounded border-light bg-light">
+                                <div class="container-fluid p-3 rounded border-light bg-light">
                                     <div class="fw-bold text-uppercase text-primary mb-2">Address</div>
                                     @for (int i = 0; i < item.AddressID?.Count; i++)
                                     {
@@ -254,4 +298,4 @@
 
     </div>
 </div>
-        
+

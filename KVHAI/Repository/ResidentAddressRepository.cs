@@ -8,52 +8,58 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         private readonly InputSanitize _sanitize;
+        private readonly ListRepository _listRepository;
 
-        public ResidentAddressRepository(DBConnect dBConnect, InputSanitize inputSanitize)
+        public ResidentAddressRepository(DBConnect dBConnect, InputSanitize inputSanitize, ListRepository listRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
+            _listRepository = listRepository;
         }
 
-        public async Task<List<ResidentAddress>> GetRentalApplication(string resident_id = "")
+        public async Task<List<ResidentAddress>> GetRentalApplication(string address_id = "")
         {
             try
             {
+                var residentAddress = new List<ResidentAddress>();
                 /// STATUS -  0 (Pending), 1 (Accepted), 2 (Rejected)
-                var addressRequest = new List<ResidentAddress>();
-                string query = string.IsNullOrEmpty(resident_id) ?
-                    "Select * From resident_address_tb WHERE is_owner = 'false'" :
-                    "Select * From resident_address_tb WHERE res_id = @res AND is_owner = 'false'";
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand(query, connection))
+                    using (var command = new SqlCommand(@"
+                        Select ra.*,lname,fname,mname,phone,email, block,lot,st_name From resident_address_tb ra
+                        JOIN resident_tb r ON ra.res_id = r.res_id
+                        JOIN address_tb a ON ra.addr_id = a.addr_id
+                        JOIN street_tb s ON s.st_id = a.st_id
+                        WHERE a.addr_id = @id AND is_owner = 0 AND status = 0", connection))
                     {
-                        if (!string.IsNullOrEmpty(resident_id))
-                        {
-                            command.Parameters.AddWithValue("res", resident_id);
-                        }
-
+                        command.Parameters.AddWithValue("@id", address_id);
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
                             {
-                                var residentAddress = new ResidentAddress
+                                var ra = new ResidentAddress
                                 {
                                     Resident_Address_ID = reader.GetInt32(0),
                                     Resident_ID = reader.GetInt32(1),
                                     Address_ID = reader.GetInt32(2),
-                                    Is_Owner = reader.GetInt32(3),
-                                    Status = reader.GetInt32(4),
-                                    Request_Date = reader.GetDateTime(5),
-                                    Decision_Date = reader.GetDateTime(6)
+                                    Is_Owner = reader.GetBoolean(3) ? 1 : 0,
+                                    Status = reader.IsDBNull(4) ? string.Empty : reader.GetInt32(4).ToString(),
+                                    Request_Date = reader.IsDBNull(5) ? string.Empty : reader.GetDateTime(5).ToString("yyyy-MM-dd HH:mm:ss"),
+                                    Decision_Date = reader.IsDBNull(6) ? string.Empty : reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm:ss"),
+                                    Name = string.Join(", ", reader.GetString(7), reader.GetString(8), reader.GetString(9)),
+                                    Phone = reader.GetString(10),
+                                    Email = reader.GetString(11),
+                                    Block = reader.GetString(12),
+                                    Lot = reader.GetString(13),
+                                    Street = reader.GetString(14)
                                 };
 
-                                addressRequest.Add(residentAddress);
+                                residentAddress.Add(ra);
                             }
                         }
                     }
                 }
-                return addressRequest;
+                return residentAddress;
             }
             catch (Exception)
             {
@@ -94,8 +100,8 @@ namespace KVHAI.Repository
                                     Lot = reader.GetString(5),
                                     Street = reader.GetString(6),
                                     Is_Owner = reader.GetInt32(7),
-                                    Status = reader.GetInt32(8),
-                                    Request_Date = reader.GetDateTime(9),
+                                    Status = reader.GetString(8),
+                                    Request_Date = reader.GetDateTime(9).ToString("yyyy-MM-dd HH:mm:ss"),
                                 };
 
                                 addressRequest.Add(residentAddress);

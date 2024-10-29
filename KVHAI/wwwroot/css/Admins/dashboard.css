@@ -1,0 +1,26 @@
+﻿.container_dashboard {
+    /*height: auto;
+    max-height:500px;*/
+}
+.container_data {
+    height: auto;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Large Devices */
+@media (min-width: 992px) {
+    .container_dashboard {
+        height: 240px;
+    }
+}
+
+/* Extra Large Devices */
+@media (min-width: 1200px) {
+    
+}
+
+/* Extra Extra Large Devices */
+@media(min-width:1400px) {
+    /* Further customizations for very large screens */
+}

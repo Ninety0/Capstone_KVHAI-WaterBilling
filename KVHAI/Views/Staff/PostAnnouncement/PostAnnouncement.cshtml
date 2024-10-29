@@ -1,18 +1,128 @@
-﻿@{ 
+﻿@{
     ViewBag.Title = "Announcement";
 }
 
-@section head{ 
-    <link href="/lib/datetimepicker/jquery.datetimepicker.min.css" rel="stylesheet" />
+@section sidebar{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
 }
-@section scripts{ 
+@section mobilenav{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
+}
+
+@section head{
+    <link href="/lib/datetimepicker/jquery.datetimepicker.min.css" rel="stylesheet" />
+    <style>
+        .text-truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        .container-fluid {
+            margin-top: 20px;
+        }
+    </style>
+}
+@section scripts{
     <script src="~/lib/datetimepicker/jquery.datetimepicker.full.min.js"></script>
     <script>
         $(document).ready(function () {
+            //GLOBAL VARIABLES
+            var announcement_id = 0;
+            var modalValues = [];
+            GetAnnouncement();
+
             $('#Date_Expire').datetimepicker({
                 // options here
             });
 
+            $(document).on('click', '.announce_pagination', function (event) {
+                event.preventDefault();
+                var page = parseInt($(this).data('announce_pagination'), 10);
+                announce_pagination(page);
+            });
+
+
+            $(document).on('click','#btn_edit',function(){
+                // var id = $(this).parent().find('[data-announcement]').data('announcement')
+                announcement_id = $(this).closest('tr').data('announcement');
+                console.log(announcement_id);
+
+                // Get the closest `tr` element
+                var $tr = $(this).closest('tr');
+
+                // Extract values from all `td` elements within the `tr`
+                var values = [];
+                $tr.find('td').each(function() {
+                    values.push($(this).text());
+                });
+                modalValues = values;    
+                console.log(modalValues);
+
+                $.ajax({
+                    type:'GET',
+                    url:'/PostAnnouncement/GetSingleData',
+                    data: {id: announcement_id},
+                    success:function(response){
+                        var result = response.announce
+                        $('#m_title').val(result.title);
+                        $('#m_content').val(result.contents);
+                        $('#m_id').val(announcement_id);
+
+                        var maxLength = $('#m_content').attr('maxlength');
+                        var currentLength = $('#m_content').val().length;
+                        console.log(`maxlength: ${maxLength} AND current:${currentLength}`)
+
+                        $('#charCounts').text(currentLength + '/' + maxLength + ' characters');
+                    },
+                    error:function(xhr){
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            });
+
+            //save announcement
             $(document).on('click', '#btn_save', function (e) {
                 e.preventDefault();
 
@@ -32,9 +142,10 @@
                     success: function (response) {
                         toastr.success(response);
                         $('#form_announce')[0].reset();
-                            //setTimeout(function () {
-                            //    window.location.href = '/kvhai/resident/verifyaccount/';
-                            //}, 3000);
+                        GetAnnouncement();
+                        //setTimeout(function () {
+                        //    window.location.href = '/kvhai/resident/verifyaccount/';
+                        //}, 3000);
                     },
                     error: function (xhr, status, error) {
                         //console.log(xhr.responseText);
@@ -42,6 +153,46 @@
                     }
                 });
             })
+
+            //update announcement in modal
+            $(document).on('click', '#btn_update', function (e) {
+                e.preventDefault();
+
+                console.log($('#m_id').val());
+
+                if (!validateForm()) {
+                    toastr.error('Please fill out all required fields correctly.');
+                    return;
+                }
+
+                var formData = new FormData($('#form_edit_announce')[0]);
+
+                console.log(formData);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/PostAnnouncement/Update',
+                    contentType: false,
+                    processData: false,
+                    data: formData,
+                    success: function (response) {
+                        toastr.success(response);
+                        $('#form_edit_announce')[0].reset();
+                        GetAnnouncement();
+                        //setTimeout(function () {
+                        //    window.location.href = '/kvhai/resident/verifyaccount/';
+                        //}, 3000);
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            })
+
+            function SaveAnnouncement(formData){
+                
+            }
 
             $(document).on('click', '#btn_cancel', function (e) {
                 e.preventDefault();
@@ -55,11 +206,71 @@
                 $('#charCount').text(currentLength + '/' + maxLength + ' characters');
             });
 
+            $(document).on('input', '#m_content', function () {
+                var maxLength = $(this).attr('maxlength');
+                var currentLength = $(this).val().length;
+
+                $('#charCounts').text(currentLength + '/' + maxLength + ' characters');
+            });
+
+            function GetAnnouncement() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/PostAnnouncement/GetAnnouncement',
+                    success: function (response) {
+                        var result = $(response).find("#announcement_body").html();
+                        $('#announcement_body').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function announce_pagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
+                var array = {
+                    page_index: i
+                };
+
+                $.ajax({
+                    url: '/PostAnnouncement/GetAnnouncement',
+                    type: "GET",
+                    data: array,
+                    success: function (response) {
+                        var result = $(response).find("#announcement_body").html();
+                        $('#announcement_body').html(result);
+                    },
+                    error: function (xhr, status, error_m) {
+                        alert(status);
+                    }
+                });
+            }
+
             function validateCurrentTab() {
                 const form = $('#form_announce'); // jQuery
                 const inputs = form.find('input, textarea ');
                 let isValid = true;
-                
+
+                inputs.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    // Handle other inputs
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                });
+
+                return isValid;
+            }
+
+            function validateForm() {
+                const form = $('#form_edit_announce'); // jQuery
+                const inputs = form.find('input, textarea ');
+                let isValid = true;
+
                 inputs.each(function () {
                     const input = $(this); // Store jQuery object reference for `this`
                     // Handle other inputs
@@ -82,63 +293,138 @@
     </script>
 }
 
+<!-- Modal -->
+<div class="modal fade" id="modal_announcement" tabindex="-1" aria-labelledby="ModalAnnouncment" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="fw-bold text-muted">ANNOUNCEMENT</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form autocomplete="off" id="form_edit_announce" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    
+                    <input type="hidden" data-id="" name="Announcement_ID" id="m_id">
+
+                    <div class="row mb-3">
+                        <div class="col-12 mb-3">
+                            <label for="Title" class="form-label fw-bold">Title</label>
+                            <input type="text" maxlength="50" class="form-control" name="Title" id="m_title"  required>
+                            <div class="invalid-feedback">Required.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="Image_URL" class="form-label fw-bold">Upload Image <small>(Optional)</small></label>
+                            <input type="file" class="form-control" name="Images"  id="m_image" multiple>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Contents" class="form-label fw-bold">Contents</label>
+                        <textarea class="form-control" id="m_content" name="Contents" rows="3" maxlength="1500" required></textarea>
+                        <div class="invalid-feedback">Required.</div>
+                        <small id="charCounts" class="text-muted">0/1500 characters</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="btn_update" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card shadow-sm">
     <div class="card-body">
         <h5 class="fw-bold text-muted">POST ANNOUNCEMENT</h5>
         <hr />
-        <div class="container">
+
+        <!-- Announcements List Section -->
+        <div class="container-fluid mb-4 border rounded shadow-sm p-3">
+            <table class="table table-striped" >
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 5%;">#</th>
+                        <th scope="col" style="width: 15%;">Title</th>
+                        <th scope="col" style="width: 55%;">Content</th>
+                        <th scope="col" style="width: 15%;">Date Created</th>
+                        <th scope="col" style="width: 10%; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="announcement_body">
+                    @{
+                        if (Model.ModelList != null)
+                        {
+                            if (Model.ModelList.Count > 0)
+                            {   
+                                int indexx = Model.Index + 1;
+                                foreach (var item in Model.ModelList)
+                                {
+                                    <tr data-announcement="@item.Announcement_ID">
+                                        <th scope="row">@indexx</th>
+                                        <td>@item.Title</td>
+                                        <td class="text-truncate" style="max-width: 250px;">@item.Contents</td>
+                                        <td>@item.Date_Created</td>
+                                        <td class="text-end">
+                                            <button class="btn btn-outline-success btn-sm " id="btn_edit"  data-bs-toggle="modal" data-bs-target="#modal_announcement">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm ms-2 delete-btn" id="btn_delete"  data-bs-toggle="tooltip" data-bs-placement="right" title="Delete">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    indexx++;
+                                }
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="container mt-3">
+                                            @Model.Pagenation
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Announcement Form Section -->
+        <div class="container-fluid border rounded shadow-sm p-4">
             <form autocomplete="off" id="form_announce" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
 
-                <div class="row">
-                    <div class="col">
-                        <div class="form-check mb-3 ps-0">
-                            <label for="Title" class="form-label fw-bold fs-6">Title</label>
-                            <input type="text" maxlength="50" class="form-control" id="Title" name="Title" required>
-                            <div class="invalid-feedback">
-                                Required.
-                            </div>
-                        </div>
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="Title" class="form-label fw-bold">Title</label>
+                        <input type="text" maxlength="50" class="form-control" id="Title" name="Title" required>
+                        <div class="invalid-feedback">Required.</div>
                     </div>
 
-                    <div class="col">
-                        <div class="form-check mb-3 ps-0">
-                            <label for="Date_Expire" class="form-label fw-bold fs-6">Date Expiry</label>
-                            <input type="datetime" class="form-control" name="Date_Expire" id="Date_Expire" required>
-                            <div class="invalid-feedback">
-                                Required.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col">
-                        <div class="form-check mb-3 ps-0">
-                            <label for="Image_URL" class="form-label fw-bold fs-6">Upload Image <small class="fw-medium">(<i>Optional </i>)</small></label>
-                            <input type="file" class="form-control" name="Images" id="Image_URL" multiple>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-check mb-3 ps-0">
-                            <label for="Contents" class="form-label fw-bold fs-6">Contents</label>
-                            <textarea class="form-control" id="Contents" name="Contents" rows="3" maxlength="1500" required></textarea>
-                            <div class="invalid-feedback">
-                                Required.
-                            </div>
-                            <small id="charCount" class="text-muted">0/1500 characters</small>
-                        </div>
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <label for="Image_URL" class="form-label fw-bold">Upload Image <small>(Optional)</small></label>
+                        <input type="file" class="form-control" name="Images" id="Image_URL" multiple>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col mb-3">
-                        <button class="btn btn-danger" id="btn_cancel">Cancel</button>
-                        <button class="btn btn-primary" id="btn_save">Save</button>
-                    </div>
+                <div class="mb-3">
+                    <label for="Contents" class="form-label fw-bold">Contents</label>
+                    <textarea class="form-control" id="Contents" name="Contents" rows="3" maxlength="1500" required></textarea>
+                    <div class="invalid-feedback">Required.</div>
+                    <small id="charCount" class="text-muted">0/1500 characters</small>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-danger me-2" id="btn_cancel">Cancel</button>
+                    <button class="btn btn-primary" id="btn_save">Save</button>
                 </div>
             </form>
-
         </div>
-
     </div>
 </div>
+

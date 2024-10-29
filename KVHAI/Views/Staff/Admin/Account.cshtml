@@ -65,12 +65,10 @@
             transition: all 0.3s ease-in-out;
         }
 
-        .tableContents:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-
+            .tableContents:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
     </style>
 }
 
@@ -131,6 +129,49 @@
     <!-- PAGINATION -->
 }
 
+@section sidebar{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
+}
+@section mobilenav{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Request
+    </a>
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Streets
+    </a>
+
+}
+
 <div class="d-none border" id="loader">
     @await Html.PartialAsync("PartialView/_Preloader")
 </div>
@@ -153,14 +194,14 @@
 <div class="card">
     <div class="card-body">
         <div class="p-3 account-header">
-            <div class="container d-flex">
+            <div class="container-fluid d-flex">
                 <span><a class="link-header active" href="#staff">Staff</a></span>
                 <span><a class="link-header" href="#resident">Resident</a></span>
             </div>
         </div>
-        <div class="container shadow-lg">
+        <div class="container-fluid shadow-sm rounded-bottom">
             <!-- STAFF SECTION -->
-            <section id="staff" class="mt-3">
+            <section id="staff" class="pt-3">
                 <div class="row d-flex align-items-center">
                     <div class="col">
                         <div class="search-wrapper">
@@ -244,7 +285,7 @@
                             }
                             <tr>
                                 <td colspan="8">
-                                    <div class="container mt-3">
+                                    <div class="container-fluid mt-3">
                                         @Model.EmployeePagination.Pagenation
                                     </div>
                                 </td>
@@ -263,4 +304,4 @@
         </div>
     </div>
 </div>
-    
+

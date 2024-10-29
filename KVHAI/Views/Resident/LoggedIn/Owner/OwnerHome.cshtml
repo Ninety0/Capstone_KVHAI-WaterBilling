@@ -161,9 +161,65 @@
         <h5 class="fw-bold text-muted">Rental Applications</h5>
         <hr class="border border-black" />
 
-        <div class="container">
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-12 col-md-4">
+                    <select id="address" class="form-select" aria-label="Default select example">
+                        @{
+                            if(Model.ResidentAddress != null){
+                                if(Model.ResidentAddress.Count > 0){
+                                    foreach(var item in Model.ResidentAddress)
+                                    {
+                                        <option value="@item.Address_ID">Blk @item.Block Lot @item.Lot @item.Street St. </option>
+                                    }
+                                }
+                            }
+                        }
+                        <!-- <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                        <option value="2">Phase 1 (Blk 41 to  48)</option>
+                        <option value="3">Blk 24 to 40</option>
+                        <option value="4">Blk 7 to 23</option>
+                        <option value="">All</option> -->
+                    </select>
+                </div>
+            </div>
             <!-- Example of an application entry -->
-            <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData">
+            <div class="container-fluid" id="rent_application">
+                @{
+                    if (Model.RequestAddressList != null)
+                    {
+                        if (Model.RequestAddressList.Count > 0)
+                        {
+                            foreach (var item in Model.RequestAddressList)
+                            {
+                                <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData" data-raid="@item.Resident_Address_ID">
+                                    <div class="col-md-8">
+                                        <p class="mb-0 " data-res="@item.Resident_ID"><strong>@item.Name</strong></p>
+                                        <p class="mb-0 fw-bold text-muted" data-address="@item.Address_ID">Block @item.Block, Lot @item.Lot,  @item.Street St.</p>
+                                        <p class="mb-0 fw-bold text-muted">Phone: @item.Phone</p>
+                                        <p class="mb-0 fw-bold text-muted">Email: @item.Email</p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button class="btn btn-outline-success btn-sm me-2">Accept</button>
+                                        <button class="btn btn-outline-danger btn-sm">Reject</button>
+                                    </div>
+                                </div>
+                            }
+                            
+                        }
+                        else
+                        {
+                            <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData">
+                                <div class="col-md-12">
+                                    <p class="mb-0 p-5"><strong>No Data Found.</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                    }
+                }
+            </div>
+            <!-- <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData">
                 <div class="col-md-8">
                     <p class="mb-0 "><strong>John Doe</strong></p>
                     <p class="mb-0 fw-bold text-muted">Block 1, Lot 2, Street 5</p>
@@ -174,7 +230,7 @@
                     <button class="btn btn-outline-success btn-sm me-2">Accept</button>
                     <button class="btn btn-outline-danger btn-sm">Reject</button>
                 </div>
-            </div>
+            </div> -->
         </div>
 
         
@@ -217,5 +273,33 @@
                 $('#modalImage').attr('src', imageSrc);
             });
         });
+    </script>
+    <script>
+        $(document).ready(function () {
+            let _addrID = $('#address option:selected').val();
+            GetRequest(_addrID);
+
+            $(document).on('change', '#address', function () {
+                var addr_id = $(this).val();
+                GetRequest(addr_id);
+            })
+
+            function GetRequest(addressID) {
+                $.ajax({
+                    type: "Get",
+                    url: "/OwnerHome/GetRentalForOwner",
+                    data: { address_id: addressID },
+                    success: function (response) {
+                        var result = $(response).find('#rent_application').html();
+                        $('#rent_application').html(result);
+                        console.log(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+
+                });
+            }
+        })
     </script>
 }

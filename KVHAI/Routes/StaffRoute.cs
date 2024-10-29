@@ -60,6 +60,7 @@ namespace KVHAI.Routes
                 defaults: new { controller = "RequestPage", action = "Index" }
             );
             #endregion
+
             #region CLERK
             endpoint.MapControllerRoute(
                 name: "ReadingClerk",
@@ -86,6 +87,11 @@ namespace KVHAI.Routes
 
             ////////////////////////////////////////////////////////////////
             #region CASHIER OFF
+            endpoint.MapControllerRoute(
+                name: "CashierOfflinePayment",
+                pattern: "/kvhai/staff/offlinepayment/",
+                defaults: new { controller = "OfflinePayment", action = "Index" }
+            );
             #endregion
 
             ////////////////////////////////////////////////////////////////

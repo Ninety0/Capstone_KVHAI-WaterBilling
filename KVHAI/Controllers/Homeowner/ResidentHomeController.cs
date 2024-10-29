@@ -68,32 +68,7 @@ namespace KVHAI.Controllers.Homeowner
                 return View("~/Views/Resident/LoggedIn/Renter/RenterHome.cshtml", viewModel);
             }
             //owner
-            return RedirectToAction(nameof(OwnerHome));
-        }
-
-        [Authorize]
-        public async Task<IActionResult> OwnerHome()
-        {
-            var username = User.Identity.Name;
-            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var requestAddress = await _residentAddress.GetRentalApplication(residentID);
-
-
-            var notifList = await _notification.GetNotificationByResident(residentID);
-
-            var viewModel = new ModelBinding
-            {
-                Resident_ID = residentID,
-                Username = username,
-                Role = role,
-                NotificationResident = notifList,
-                RequestAddressList = requestAddress
-
-            };
-
-            //owner
-            return View("~/Views/Resident/LoggedIn/Owner/OwnerHome.cshtml", viewModel);
+            return RedirectToAction("OwnerHome", "OwnerHome");
         }
 
         [HttpPost]

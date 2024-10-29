@@ -71,6 +71,7 @@ builder.Services.AddScoped<HubConnectionRepository>();
 builder.Services.AddScoped<NotificationRepository>();
 builder.Services.AddScoped<ResidentAddressRepository>();
 builder.Services.AddScoped<PaymentRepository>();
+builder.Services.AddScoped<ListRepository>();
 
 var app = builder.Build();
 
