@@ -12,17 +12,15 @@ namespace KVHAI.SubscribeSqlDependency
         SqlTableDependency<Notification> tableDependency;
         NotificationHub notificationHub;
         private readonly IHubContext<NotificationHub> _hubContextNotification;
-        private readonly IHubContext<WaterBillingHub> _hubContextBilling;
         private readonly IHubContext<WaterReadingHub> _hubContextReading;
         private readonly HubConnectionRepository _connectionRepository;
 
 
-        public SubscribeNotificationTableDependency(NotificationHub notificationHub, IHubContext<NotificationHub> hubContext, HubConnectionRepository hubConnectionRepository, IHubContext<WaterBillingHub> hubContextBilling, IHubContext<WaterReadingHub> hubContextReading)
+        public SubscribeNotificationTableDependency(NotificationHub notificationHub, IHubContext<NotificationHub> hubContext, HubConnectionRepository hubConnectionRepository, IHubContext<WaterReadingHub> hubContextReading)
         {
             this.notificationHub = notificationHub;
             _hubContextNotification = hubContext;
             _connectionRepository = hubConnectionRepository;
-            _hubContextBilling = hubContextBilling;
             _hubContextReading = hubContextReading;
         }
 

@@ -52,7 +52,7 @@ namespace KVHAI.Repository
             //request.To = "dorojavince@gmail.com";
             request.Subject = "KVHAI verification code";
             request.Body = VerificationBody(request.To, code).ToString();
-            _emailService.SendEmail(request);
+            await _emailService.SendEmail(request);
         }
 
         public HtmlString VerificationBody(string email, string code)

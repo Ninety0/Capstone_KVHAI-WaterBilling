@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "admin")]
     public class AdminDashboardController : Controller
     {
         private readonly ForecastingRepo _forecasting;
@@ -19,7 +20,6 @@ namespace KVHAI.Controllers.Staff.Admin
             _paymentRepository = paymentRepository;
         }
 
-        [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "admin")]
         public IActionResult Index()
         {
             var modelBinding = new ModelBinding();

@@ -1,10 +1,12 @@
 ﻿using KVHAI.CustomClass;
 using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "admin")]
     public class ResidentAddressController : Controller
     {
         private readonly EmployeeRepository _employeeRepository;

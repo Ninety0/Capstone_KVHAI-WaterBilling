@@ -16,6 +16,8 @@ namespace KVHAI.CustomClass
         public double WaterRate { get; set; } = 18.0;
 
         public List<Notification>? NotificationResident { get; set; } = new List<Notification>();
+
+        public List<Notification>? NotificationStaff { get; set; } = new List<Notification>();
         public int CountNotificationResident { get; set; }
 
         public List<WaterBilling>? UnpaidWaterBill { get; set; } = new List<WaterBilling>();
@@ -180,8 +182,12 @@ namespace KVHAI.CustomClass
 
             var yearList = new List<string>();
 
+            // 9
             for (int i = 1; i < sortedReadings.Count; i++)
             {
+                if(i < sortedReadings.Count ){
+
+                }
                 var currentReading = sortedReadings[i];
                 var previousReading = sortedReadings[i - 1];
                 string month = "";

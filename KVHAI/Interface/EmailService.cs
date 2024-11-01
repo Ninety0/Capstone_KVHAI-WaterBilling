@@ -1,8 +1,7 @@
 ﻿using KVHAI.Models;
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
-using MimeKit.Text;
+using System.Net;
+using System.Net.Mail;
+
 namespace KVHAI.Interface
 {
     public class EmailService : IEmailSender
@@ -14,19 +13,66 @@ namespace KVHAI.Interface
             _config = config;
         }
 
-        public void SendEmail(EmailDto request)
+        public async Task SendEmail(EmailDto request)
         {
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse(_config.GetSection("EmailUsername").Value));
-            email.To.Add(MailboxAddress.Parse(request.To));
-            email.Subject = request.Subject;
-            email.Body = new TextPart(TextFormat.Html) { Text = request.Body };
+            try 
+            {
+                var fromEmail = _config["Gmail:Username"];
+                var appPassword = _config["Gmail:AppPassword"];
+                
+                // Validate configuration
+                if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(appPassword))
+                {
+                    throw new InvalidOperationException("Gmail configuration is missing");
+                }
 
-            using var smtp = new SmtpClient();
-            smtp.Connect(_config.GetSection("EmailHost").Value, 587, SecureSocketOptions.StartTls);
-            smtp.Authenticate(_config.GetSection("EmailUsername").Value, _config.GetSection("EmailPassword").Value);
-            smtp.Send(email);
-            smtp.Disconnect(true);
+                using (var mail = new MailMessage())
+                using (var client = new SmtpClient("smtp.gmail.com", 587))
+                {
+                    // Validate request
+                    if (string.IsNullOrEmpty(request.To))
+                    {
+                        throw new ArgumentException("Recipient email is required");
+                    }
+
+                    mail.From = new MailAddress(fromEmail);
+                    mail.To.Add(request.To);
+                    mail.Subject = request.Subject ?? ""; // Handle null subject
+                    mail.Body = request.Body ?? ""; // Handle null body
+                    mail.IsBodyHtml = true;
+                    
+                    client.Port = 587;
+                    client.Host = "smtp.gmail.com";
+                    client.EnableSsl = true;
+                    client.UseDefaultCredentials = false;
+                    client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    client.Credentials = new NetworkCredential(fromEmail, appPassword);
+                    
+                    try
+                    {
+                        await client.SendMailAsync(mail);
+                    }
+                    catch (SmtpException smtpEx)
+                    {
+                        if (smtpEx.Message.Contains("5.7.0")) // Authentication error
+                        {
+                            throw new Exception("Email authentication failed. Please check your app password.", smtpEx);
+                        }
+                        throw;
+                    }
+                }
+            }
+            catch (SmtpException ex)
+            {
+                // Log the error details
+                throw new Exception($"SMTP error while sending email: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                // Log the error details
+                throw new Exception($"Failed to send email: {ex.Message}", ex);
+            }
         }
+        
     }
 }

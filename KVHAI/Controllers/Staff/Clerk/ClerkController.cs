@@ -1,10 +1,13 @@
-﻿using KVHAI.CustomClass;
+﻿using System.Security.Claims;
+using KVHAI.CustomClass;
 using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KVHAI.Controllers.Staff.Clerk
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "clerk")]
     public class ClerkController : Controller
     {
         private readonly WaterReadingRepository _waterReadingRepository;
@@ -33,6 +36,12 @@ namespace KVHAI.Controllers.Staff.Clerk
             //};
 
             //await _waterBilling.WaterReadingFunction("1");
+            var username = User.Identity.Name;
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var notifs = await _notificationRepository.GetNotificationByStaff(role);
+            _waterBilling.NotificationStaff = notifs;
             await _waterBilling.WaterReading(location: "1");
 
             return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
@@ -41,6 +50,19 @@ namespace KVHAI.Controllers.Staff.Clerk
         public async Task<IActionResult> Dashboard()
         {
             return View("~/Views/Staff/Clerk/ClerkDashboard.cshtml");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetNotification()
+        {
+            var username = User.Identity.Name;
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var notifs = await _notificationRepository.GetNotificationByStaff(role);
+            _waterBilling.NotificationStaff = notifs;
+            
+            return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
         }
 
         [HttpGet]

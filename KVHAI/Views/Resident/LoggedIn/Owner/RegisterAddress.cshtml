@@ -275,7 +275,7 @@
             //streets.forEach(street => {
             //    formData.append('streets[]', street); // append each street value as an array
             //});
-            $('#btn_Register').on('click', function (e) {
+            $(document).on('click', '#btn_Register', function (e) {
                 e.preventDefault()
                 //var formData = new FormData($('#myForm')[0]);
 
@@ -295,7 +295,7 @@
                         var street = $(element).find('#' + id).val();
                         var fileInput = $(element).find('.file_upload')[0];
 
-                        var addressData = { block: block, lot: lot, street: street };
+                        var addressData = { block: block, lot: lot, street_name: street };
                         addressesData.push(addressData);
 
                         if (fileInput.files.length > 0) {
@@ -326,7 +326,7 @@
                             toastr.info(response);
                             if (response.includes("Successful")) {
                                 setTimeout(function () {
-                                    location.reload();
+                                    $('#myForm')[0].reset();
                                 }, 5000);
                             }
 

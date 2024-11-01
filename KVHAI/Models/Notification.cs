@@ -12,7 +12,7 @@ namespace KVHAI.Models
         public string Title { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
-        public string Created_At { get; set; } = string.Empty;
+        public DateTime Created_At { get; set; }
         public string Message_Type { get; set; } = string.Empty;
         public Boolean Is_Read { get; set; }
 

@@ -71,11 +71,12 @@ namespace KVHAI.Controllers.Staff
             }
             else if (role == "clerk")
             {
-                return Ok(new { redirectUrl = "/kvhai/staff/clerk/home" });
+                return Ok(new { redirectUrl = "/kvhai/staff/water-reading/" });
+                //return Ok(new { redirectUrl = "/kvhai/staff/clerk/home" });
             }
             else if (role == "cashier1")
             {
-                return Ok(new { redirectUrl = "/kvhai/staff/cashier-offline/home" });
+                return Ok(new { redirectUrl = "/kvhai/staff/offlinepayment/" });
             }
             else if (role == "cashier2")
             {
@@ -83,10 +84,18 @@ namespace KVHAI.Controllers.Staff
             }
             else if (role == "waterworks")
             {
-                return Ok(new { redirectUrl = "/kvhai/staff/waterworks/home" });
+                return Ok(new { redirectUrl = "/kvhai/staff/waterwork/home" });
             }
 
             return Ok(new { redirectUrl = "/kvhai/staff/error" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync("AdminCookieAuth");
+            //Response.Redirect("/kvhai/resident/login");
+            return Ok("Account will be logged out");
         }
 
     }

@@ -1,12 +1,14 @@
 ﻿using AspNetCore.Reporting;
 using KVHAI.CustomClass;
 using KVHAI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Mime;
 
 namespace KVHAI.Controllers.Staff.Clerk
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "clerk")]
     public class ClerkWaterBillingController : Controller
     {
         private readonly WaterBillingFunction _waterBilling;

@@ -87,6 +87,44 @@ namespace KVHAI.Repository
             }
         }
 
+        public async Task<List<Notification>> NotificationList()
+        {
+            try
+            {
+                var notifications = new List<Notification>();
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"select * from notification_tb", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                
+                                var announce = new Notification
+                                {
+                                    Notification_ID = reader.GetInt32(reader.GetOrdinal("notif_id")),
+                                    Resident_ID = reader.GetString(reader.GetOrdinal("res_id")),
+                                    Title = reader.GetString(reader.GetOrdinal("title")),
+                                    Message = reader.GetString(reader.GetOrdinal("message")),
+                                    Url = reader.IsDBNull(reader.GetOrdinal("url")) ? null : reader.GetString(reader.GetOrdinal("url")),
+                                    Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
+                                    Message_Type = reader.GetString(reader.GetOrdinal("message_type")),
+                                    Is_Read = reader.GetBoolean(reader.GetOrdinal("is_read")),
+                                };
+                                notifications.Add(announce);
+                            }
+                        }
+                    }
+                }
+                return notifications;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public async Task<List<ResidentAddress>> ResidentAddressList()
         {
             try
@@ -299,7 +337,7 @@ namespace KVHAI.Repository
                                 var st = new Streets
                                 {
                                     Street_ID = reader.GetInt32(0).ToString(),
-                                    Street_Name = reader.GetString(0),
+                                    Street_Name = reader.GetString(1),
                                 };
                                 streets.Add(st);
                             }
@@ -308,8 +346,9 @@ namespace KVHAI.Repository
                 }
                 return streets;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return null;
             }
         }

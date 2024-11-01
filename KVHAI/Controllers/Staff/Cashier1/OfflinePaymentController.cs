@@ -1,11 +1,14 @@
 ﻿using AspNetCore.Reporting;
 using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
 namespace KVHAI.Controllers.Staff.Cashier1
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "cashier1")]
+
     public class OfflinePaymentController : Controller
     {
         private readonly StreetRepository _streetRepository;

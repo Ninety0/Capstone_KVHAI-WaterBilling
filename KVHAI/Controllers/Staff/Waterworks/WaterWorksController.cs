@@ -1,11 +1,14 @@
 ﻿using KVHAI.Hubs;
 using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
 namespace KVHAI.Controllers.Staff.Waterworks
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "waterworks")]
+
     public class WaterWorksController : Controller
     {
         private readonly AddressRepository _addressRepository;
@@ -13,14 +16,18 @@ namespace KVHAI.Controllers.Staff.Waterworks
         private readonly StreetRepository _streetRepository;
         private readonly NotificationRepository _notificationRepository;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHubContext<StaffNotificationHub> _staffhubContext;
 
-        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository, StreetRepository streetRepository, NotificationRepository notificationRepository, IHubContext<NotificationHub> hubContext)
+        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository, 
+        StreetRepository streetRepository, NotificationRepository notificationRepository, 
+        IHubContext<NotificationHub> hubContext, IHubContext<StaffNotificationHub> staffhubContext)
         {
             _addressRepository = addressRepository;
             _waterReadingRepository = waterReadingRepository;
             _streetRepository = streetRepository;
             _notificationRepository = notificationRepository;
             _hubContext = hubContext;
+            _staffhubContext = staffhubContext;
         }
         public async Task<IActionResult> Index()
         {
@@ -61,6 +68,19 @@ namespace KVHAI.Controllers.Staff.Waterworks
                     Message_Type = "Personal"
                 };
                 var notificationResult = await _notificationRepository.InsertNotificationPersonal(notif);
+
+                var notifStaff = new Notification
+                {
+                    Resident_ID = waterReading.Resident_ID,
+                    Title = "Water Reading",
+                    Message = "New water reading",
+                    Url = "/kvhai/staff/water-reading/",
+                    Message_Type = "clerk"
+                };
+
+                var notificationAdminResult = await _notificationRepository.SendNotificationAdminToAdmin(notif);
+                await _staffhubContext.Clients.All.SendAsync("ReceivedWaterReading");
+
 
                 return Ok("Submit successfully");
                 //ViewData["Message"] = "Reading submit successfully!";

@@ -382,7 +382,7 @@ namespace KVHAI.Repository
                     {
                         var streetResult = await _streetRepository.GetStreetID(addressess);
 
-                        if (streetResult != null || streetResult.Count > 0)
+                        if (streetResult?.Any() == true)
                         {
                             var modelAddressList = new List<Address>();//create new model address list
                             for (int i = 0; i < addressess.Count; i++)//loop them to combine
@@ -427,7 +427,7 @@ namespace KVHAI.Repository
                         }
                         else
                         {
-                            throw new Exception("Error Fetching the Street ID");
+                            throw new Exception();
                         }
 
 

@@ -89,9 +89,23 @@ body {
 }
 
 /* Mobile NAv Styles */
-#navbarNav{
+#navbarNav, .user_section{
     display:none;
 }
+
+.user_section {
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    margin-top: 15px;
+}
+
+.username-display {
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .mobile_nav_container {
     width: 100%;
     background-color: #052771;

@@ -50,6 +50,7 @@ builder.Services.AddScoped<SubscribeNotificationTableDependency>();
 builder.Services.AddTransient<StreetHub>();
 builder.Services.AddTransient<NotificationHub>();
 builder.Services.AddTransient<AnnouncementHub>();
+builder.Services.AddTransient<StaffNotificationHub>();
 builder.Services.AddTransient<LoginRepository>();
 builder.Services.AddTransient<InputSanitize>();
 builder.Services.AddTransient<WaterBillingFunction>();

@@ -2,11 +2,13 @@
 using KVHAI.Hubs;
 using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "admin")]
     public class StreetController : Controller
     {
         private readonly StreetRepository _streetRepository;

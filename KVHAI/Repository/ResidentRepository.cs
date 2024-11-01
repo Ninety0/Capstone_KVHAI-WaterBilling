@@ -443,9 +443,10 @@ namespace KVHAI.Repository
 
                 return 0; // Fail (no rows updated)
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Consider logging the exception here
+                Console.WriteLine(ex.Message);
                 return 0; // Fail
             }
         }

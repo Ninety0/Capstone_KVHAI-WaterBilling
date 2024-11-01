@@ -27,185 +27,7 @@
 
 }
 
-@section scripts{
-    <script src="~/js/signalr.min.js"></script>
-    <script defer>
-        $(document).ready(function () {
 
-            //CODE FOR SIGNALR
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/kvhai/staff/readinghub")
-                .build();
-
-            connection.on("ReceiveReading", function () {
-                //toastr.success(`Street ${streetName} has been added.`);
-                updateReadingTable(); // Custom function to refresh the table
-            });
-
-            connection.on("ReceiveWaterBillNo", function () {
-                toastr.success("Receive na");
-            })
-
-
-            connection.start().then(function () {
-                alert('Connected to waterreadinghub');
-
-            }).catch(function (err) {
-                return console.error(err.toString());
-            });
-
-            //END SIGNAL R
-
-            //EVENT LISTENERS
-            $(document).on('change', '#location', GetWaterReadingByLocation);
-
-            $(document).on('click', '#btnGenerate', InsertWaterBill);
-
-            $(document).on('change', '#waterReadingSelect', GetWaterReadingByDateRange);
-            $('#dateCoverage').text("PERIOD COVER DATE " +$('#waterReadingSelect').val());
-
-            //FUNCTIONS
-            function updateReadingTable() {
-                var array = {
-                    location: ""
-                };
-                $.ajax({
-                    url: "/Clerk/WaterReadLocation", // Your endpoint to fetch the updated list
-                    type: "GET",
-                    data: array,
-                    success: function (response) {
-                        var result = $(response).find("#tableData").html();
-                        $('#tableData').html(result);
-                    },
-                    error: function (xhr, status, error) {
-                        console.error("Error fetching updated data:", error);
-                    }
-                });
-            }
-
-            //var reading = Html.Raw(Json.Serialize(Model.PreviousReading.Count));
-            //populatePrevReadings(reading);
-            //populateCurrentReadings();
-
-            function GetWaterReadingByLocation() {
-                var _location = $('#location').val();
-
-                var select = $('#waterReadingSelect').find('option:selected');
-                var dateFrom = select.data('datefrom').trim();
-                var dateTo = select.data('dateto').trim();
-
-                //alert(dateFrom+" To "+dateTo);
-
-                var formData = {
-                    location: _location,
-                    fromDate: dateFrom,
-                    toDate: dateTo
-                };
-
-                $.ajax({
-                    type: 'GET',
-                    url: '/Clerk/WaterReadLocation',
-                    data: formData,
-                    success: function (response) {
-
-                        var btnContent = $(response).find('#btngenerate_container').html();
-                        $('#btngenerate_container').html(btnContent);
-
-                        console.log(btnContent);
-                        var result = $(response).find('#tableData').html();
-                        $('#tableData').html(result);
-                        console.log(result);
-
-
-                        //reading = Html.Raw(Json.Serialize(Model.PreviousReading.Count));
-                        //populatePrevReadings(reading);
-                        //populateCurrentReadings();
-                    },
-                    error: function (xhr, status, err_m) {
-                        toastr.error(xhr.responseText);
-                    }
-                });
-            }
-
-            function InsertWaterBill() {
-                var _date = $('#lblDate').data('date')
-                var dateFrom = $('#waterReadingSelect option:selected').data('datefrom');
-                var rowData = $('.rowData')
-                var billingData = [];
-
-                rowData.each(function () {
-                    var addressID= parseInt($(this).find('[data-reading]').data("reading"),10);
-                    var _amount = $(this).find('[data-bill]').data("bill");
-                    var _cubic = $(this).find('[data-cubic]').data("cubic");
-                    var previous = $(this).find('[data-prev]').data("prev");
-                    var current = $(this).find('[data-current]').data("current");
-
-                    billingData.push({
-                        Address_ID: addressID,
-                        Previous_Reading: previous,
-                        Current_Reading: current,
-                        Cubic_Meter: _cubic,
-                        Amount: _amount,
-                        Bill_For: dateFrom
-                        //date: _date
-                    });
-                });
-                var formData = {
-                    waterBilling: billingData,
-                };
-
-                $.ajax({
-                    type: 'POST',
-                    url: '/Clerk/CreateWaterBilling',
-                    data: formData,
-                    success: function (result) {
-                        console.log(result);
-                        toastr.success(result);
-                    },
-                    error: function (xhr, status, err_m) {
-                        toastr.error(xhr.responseText);
-                    }
-                });
-            }
-
-            function GetWaterReadingByDateRange() {
-                var select = $('#waterReadingSelect').find('option:selected');
-                var dateFrom = select.data('datefrom').trim();
-                var dateTo = select.data('dateto').trim();
-                //var _location = $('#location').val();
-
-                var data = {
-                    fromDate : dateFrom,
-                    toDate: dateTo,
-                    //location : _location
-                };
-
-                console.log(data);
-                $.ajax({
-                    type: 'GET',
-                    url: '/Clerk/WaterReadingByMonth',
-                    data: data,
-                    success: function (response) {
-                        //var result = $(response).find('#tableData').html();
-                        //$('#tableData').html(result);
-
-                        //var btnContent = $(response).find('#btnGenerate').html();
-                        //$('#btnGenerate').html(btnContent);
-                        console.log(response);
-                        var res = $(response).find('#tableView').html();
-                        $('#tableView').html(res);
-
-                        $('#dateCoverage').text("PERIOD COVER DATE " + $('#waterReadingSelect').val());
-                    },
-                    error: function (xhr, status, err_m) {
-                        toastr.error(xhr.responseText);
-                    }
-                });
-            }
-
-        });
-    </script>
-}
 
 <div class="card shadow-sm">
     <div class="card-body" id="waterReadingView">
@@ -353,3 +175,185 @@
 </div>
 <div class="content-container p-3" >
 </div>
+
+@section scripts{
+    <script defer>
+        $(document).ready(function () {
+
+            //CODE FOR SIGNALR
+            const readingConnection = setupSignalRConnection("/kvhai/staff/reading", "Reading Hub");
+
+            readingConnection.on("ReceivedWaterReading", function () {
+                updateReadingTable();
+                toastr.info("New water reading.");
+            });
+            //END SIGNAL R
+            
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            //EVENT LISTENERS
+            $(document).on('change', '#location', GetWaterReadingByLocation);
+
+            $(document).on('click', '#btnGenerate', InsertWaterBill);
+
+            $(document).on('change', '#waterReadingSelect', GetWaterReadingByDateRange);
+            $('#dateCoverage').text("PERIOD COVER DATE " +$('#waterReadingSelect').val());
+
+            //FUNCTIONS
+            function updateReadingTable() {
+                var array = {
+                    location: ""
+                };
+                $.ajax({
+                    url: "/Clerk/WaterReadLocation", // Your endpoint to fetch the updated list
+                    type: "GET",
+                    data: array,
+                    success: function (response) {
+                        console.log(response);
+                        var result = $(response);
+                        $('#tableData').html(result.find("#tableData").html());
+                        $('#waterReadingSelect').html(result.find("#waterReadingSelect").html());
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching updated data:", error);
+                    }
+                });
+            }
+
+            function updateNotification() {
+                $.ajax({
+                    url: "/Clerk/WaterReadLocation", // Your endpoint to fetch the updated list
+                    type: "GET",
+                    success: function (response) {
+                        var result = $(response).find("#tableData").html();
+                        $('#tableData').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching updated data:", error);
+                    }
+                });
+            }
+
+            //var reading = Html.Raw(Json.Serialize(Model.PreviousReading.Count));
+            //populatePrevReadings(reading);
+            //populateCurrentReadings();
+
+            function GetWaterReadingByLocation() {
+                var _location = $('#location').val();
+
+                var select = $('#waterReadingSelect').find('option:selected');
+                var dateFrom = select.data('datefrom').trim();
+                var dateTo = select.data('dateto').trim();
+
+                //alert(dateFrom+" To "+dateTo);
+
+                var formData = {
+                    location: _location,
+                    fromDate: dateFrom,
+                    toDate: dateTo
+                };
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/Clerk/WaterReadLocation',
+                    data: formData,
+                    success: function (response) {
+
+                        var btnContent = $(response).find('#btngenerate_container').html();
+                        $('#btngenerate_container').html(btnContent);
+
+                        console.log(btnContent);
+                        var result = $(response).find('#tableData').html();
+                        $('#tableData').html(result);
+                        console.log(result);
+
+
+                        //reading = Html.Raw(Json.Serialize(Model.PreviousReading.Count));
+                        //populatePrevReadings(reading);
+                        //populateCurrentReadings();
+                    },
+                    error: function (xhr, status, err_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function InsertWaterBill() {
+                var _date = $('#lblDate').data('date')
+                var dateFrom = $('#waterReadingSelect option:selected').data('datefrom');
+                var rowData = $('.rowData')
+                var billingData = [];
+
+                rowData.each(function () {
+                    var addressID= parseInt($(this).find('[data-reading]').data("reading"),10);
+                    var _amount = $(this).find('[data-bill]').data("bill");
+                    var _cubic = $(this).find('[data-cubic]').data("cubic");
+                    var previous = $(this).find('[data-prev]').data("prev");
+                    var current = $(this).find('[data-current]').data("current");
+
+                    billingData.push({
+                        Address_ID: addressID,
+                        Previous_Reading: previous,
+                        Current_Reading: current,
+                        Cubic_Meter: _cubic,
+                        Amount: _amount,
+                        Bill_For: dateFrom
+                        //date: _date
+                    });
+                });
+                var formData = {
+                    waterBilling: billingData,
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Clerk/CreateWaterBilling',
+                    data: formData,
+                    success: function (result) {
+                        console.log(result);
+                        toastr.success(result);
+                    },
+                    error: function (xhr, status, err_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function GetWaterReadingByDateRange() {
+                var select = $('#waterReadingSelect').find('option:selected');
+                var dateFrom = select.data('datefrom').trim();
+                var dateTo = select.data('dateto').trim();
+                //var _location = $('#location').val();
+
+                var data = {
+                    fromDate : dateFrom,
+                    toDate: dateTo,
+                    //location : _location
+                };
+
+                console.log(data);
+                $.ajax({
+                    type: 'GET',
+                    url: '/Clerk/WaterReadingByMonth',
+                    data: data,
+                    success: function (response) {
+                        //var result = $(response).find('#tableData').html();
+                        //$('#tableData').html(result);
+
+                        //var btnContent = $(response).find('#btnGenerate').html();
+                        //$('#btnGenerate').html(btnContent);
+                        console.log(response);
+                        var res = $(response).find('#tableView').html();
+                        $('#tableView').html(res);
+
+                        $('#dateCoverage').text("PERIOD COVER DATE " + $('#waterReadingSelect').val());
+                    },
+                    error: function (xhr, status, err_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+        });
+    </script>
+}

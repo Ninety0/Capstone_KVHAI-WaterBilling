@@ -10,13 +10,16 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHubContext<StaffNotificationHub> _staffHubContext;
+
         private readonly HubConnectionRepository _connectionRepository;
         private readonly ListRepository _listRepo;
 
-        public NotificationRepository(DBConnect dBConnect, IHubContext<NotificationHub> hubContext, HubConnectionRepository connectionRepository, ListRepository listRepo)
+        public NotificationRepository(DBConnect dBConnect, IHubContext<NotificationHub> hubContext,IHubContext<StaffNotificationHub> staffHubContext, HubConnectionRepository connectionRepository, ListRepository listRepo)
         {
             _dbConnect = dBConnect;
             _hubContext = hubContext;
+            _staffHubContext = staffHubContext;
             _connectionRepository = connectionRepository;
             _listRepo = listRepo;
         }
@@ -205,7 +208,7 @@ namespace KVHAI.Repository
                                     Title = reader.GetString(reader.GetOrdinal("title")),
                                     Message = reader.GetString(reader.GetOrdinal("message")),
                                     Is_Read = reader.GetBoolean(reader.GetOrdinal("is_read")),
-                                    Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")).ToString("dd MMM yyyy HH:mm:ss"),
+                                    Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
                                     Message_Type = reader.GetString(reader.GetOrdinal("message_type")),
                                     Url = reader.IsDBNull(reader.GetOrdinal("url")) ? null : reader.GetString(reader.GetOrdinal("url")),
                                     Hours = timeDiff
@@ -245,6 +248,92 @@ namespace KVHAI.Repository
             catch (Exception)
             {
                 return 0;
+            }
+        }
+
+        public async Task<int> SendNotificationAdminToAdmin(Notification notification)
+        {
+            try
+            {
+                int result = 0;
+                var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                var url = string.IsNullOrEmpty(notification.Url) ? DBNull.Value.ToString() : notification.Url;
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("INSERT INTO notification_tb(res_id,title,message,url,created_at,message_type) VALUES(@res_id,@title,@message,@url,@date,@type)", connection))
+                    {
+                        command.Parameters.AddWithValue("@res_id", notification.Resident_ID);
+                        command.Parameters.AddWithValue("@title", notification.Title);
+                        command.Parameters.AddWithValue("@message", notification.Message);
+                        command.Parameters.AddWithValue("@url", url);
+                        command.Parameters.AddWithValue("@date", date);
+                        command.Parameters.AddWithValue("@type", notification.Message_Type);
+
+                        result = await command.ExecuteNonQueryAsync();
+
+                        if (result > 0)
+                        {
+                            if (notification.Title.Contains("Water Reading"))
+                            {
+                                await _staffHubContext.Clients.All.SendAsync("ReceivedWaterReading");
+                            }
+                            else if (notification.Title.Contains("Water Billing"))
+                            {
+                                await _hubContext.Clients.All.SendAsync("ReceivedWaterBilling");
+                            }
+                            // else if (notification.Title.Contains("Register Address"))
+                            // {
+                            //     await _hubContext.Clients.All.SendAsync("ReceivedAddressNotificationToAdmin", notification.Title, notification.Resident_ID);
+                            // }
+                            // else if (notification.Title.Contains("Request Action"))
+                            // {
+                            //     await _hubContext.Clients.All.SendAsync("ReceivedRequestPageNotificationToAdmin", notification.Title, notification.Resident_ID);
+                            // }
+                        }
+
+                        return result;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        public async Task<List<Notification>> GetNotificationByStaff(string role)
+        {
+            try
+            {
+                var notifications = await _listRepo.NotificationList();
+
+                var notifList = new List<Notification>();
+
+                var filteredNotifications = notifications
+                    .Where(m => m.Message_Type.ToLower() == role && m.Is_Read == false)
+                    .ToList();
+
+                foreach (var n in filteredNotifications)
+                {
+                    notifList.Add(new Notification
+                    {
+                        Notification_ID = n.Notification_ID,
+                        Resident_ID = n.Resident_ID,
+                        Title = n.Title,
+                        Message = n.Message,
+                        Is_Read = n.Is_Read,
+                        Created_At = n.Created_At,
+                        Message_Type = n.Message_Type,
+                        Url = n.Url,
+                        Hours = await TimeDifference(n.Created_At) // Asynchronous call handled correctly here
+                    });
+                }
+
+                return notifList;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 

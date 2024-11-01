@@ -8,12 +8,14 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         private readonly InputSanitize _sanitizer;
+        private readonly ListRepository _listRepository;
 
 
-        public StreetRepository(DBConnect dBConnect, InputSanitize sanitizer)
+        public StreetRepository(DBConnect dBConnect, InputSanitize sanitizer, ListRepository listRepository)
         {
             _dbConnect = dBConnect;
             _sanitizer = sanitizer;
+            _listRepository = listRepository;
         }
 
         //CREATE
@@ -264,41 +266,43 @@ namespace KVHAI.Repository
         }
 
         //RETURN ID OF STREET
-        public async Task<List<Address>> GetStreetID(List<Address> street)
+        public async Task<List<Address>> GetStreetID(List<Address> streetList)
         {
             try
             {
-                var result = 0;
+                // Retrieve list of all streets once
+                var st_list = await _listRepository.StreetList();
                 var st_IDS = new List<Address>();
-                using (var connection = await _dbConnect.GetOpenConnectionAsync())
-                {
-                    foreach (var st in street)
-                    {
-                        using (var command = new SqlCommand("SELECT * FROM street_tb WHERE st_name like @name", connection))
-                        {
-                            command.Parameters.AddWithValue("@name", "%" + st.Street_Name + "%");
-                            using (var reader = await command.ExecuteReaderAsync())
-                            {
-                                if (await reader.ReadAsync())
-                                {
-                                    var address = new Address
-                                    {
-                                        Street_ID = Convert.ToInt32(reader["st_id"].ToString())
-                                    };
+                if(st_list.Count > 0){
 
-                                    st_IDS.Add(address);
-                                }
-                            }
+                    foreach (var st in streetList)
+                    {
+                        // Find matching street ID in `st_list`
+                        var st_id = st_list
+                            .Where(s => s.Street_Name == st.Street_Name)
+                            .Select(i => i.Street_ID)
+                            .FirstOrDefault();
+
+                        // Only add if an ID was found
+                        if (!string.IsNullOrEmpty(st_id))
+                        {
+                            st_IDS.Add(new Address
+                            {
+                                Street_ID = Convert.ToInt32(st_id)
+                            });
                         }
                     }
                 }
+                
+
                 return st_IDS;
             }
             catch (Exception ex)
             {
-                return null;
+                return null;  // Consider logging the exception for debugging purposes
             }
         }
+
 
         //RETURN ID OF STREET
         public async Task<int> GetStreetID(ResidentAddress street)

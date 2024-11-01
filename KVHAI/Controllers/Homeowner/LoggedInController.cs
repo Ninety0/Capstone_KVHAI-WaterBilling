@@ -133,6 +133,7 @@ namespace KVHAI.Controllers.Homeowner
             {
                 var resID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+                var addressData = JsonConvert.DeserializeObject(addresses);
                 var addressDataList = JsonConvert.DeserializeObject<List<Address>>(addresses);
                 var modelAddressList = new List<Address>();
 
@@ -163,6 +164,7 @@ namespace KVHAI.Controllers.Homeowner
                 {
                     return Ok("Address already registered.");
                 }
+
                 return Ok("Registration Successful.");
             }
             catch (Exception)

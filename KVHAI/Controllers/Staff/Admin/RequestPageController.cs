@@ -1,9 +1,11 @@
 ﻿using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "admin")]
     public class RequestPageController : Controller
     {
         private readonly AddressRepository _addressRepository;

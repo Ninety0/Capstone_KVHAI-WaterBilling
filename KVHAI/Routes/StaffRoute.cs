@@ -74,11 +74,7 @@ namespace KVHAI.Routes
                 defaults: new { controller = "ClerkWaterBilling", action = "Index" }
             );
 
-            endpoint.MapControllerRoute(
-                name: "WaterWorks",
-                pattern: "kvhai/staff/waterwork/",
-                defaults: new { controller = "WaterWorks", action = "Index" }
-            );
+            
             #endregion
 
             /////////////////////////////////////////////////////////////////
@@ -97,12 +93,21 @@ namespace KVHAI.Routes
             ////////////////////////////////////////////////////////////////
 
             #region WATER WORKS
+            endpoint.MapControllerRoute(
+                name: "WaterWorks",
+                pattern: "kvhai/staff/waterwork/home",
+                defaults: new { controller = "WaterWorks", action = "Index" }
+            );
             #endregion
 
             #region FOR SIGNALR MAPS
             endpoint.MapHub<StreetHub>("/kvhai/staff/admin/streethub");
 
             endpoint.MapHub<WaterReadingHub>("/kvhai/staff/readinghub");
+
+            endpoint.MapHub<StaffNotificationHub>("/kvhai/staff/reading");
+
+            endpoint.MapHub<StaffNotificationHub>("/staff/notification");
 
             #endregion
         }
