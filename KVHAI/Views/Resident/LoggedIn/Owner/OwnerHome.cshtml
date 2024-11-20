@@ -1,6 +1,10 @@
-﻿@{
+﻿@using System.Security.Claims;
+
+@{
     Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
-    ViewBag.Title = "Home";
+    ViewBag.Title = "Rental Application";
+    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
 }
 
 @section head{
@@ -8,28 +12,19 @@
         #rowData {
             background-color: #f1f5f9;
             transition: all 0.3s ease-in-out;
-            cursor:pointer;
+            cursor: pointer;
         }
-        #rowData:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+
+            #rowData:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
     </style>
 }
 
 
 @section sidebar{
-    <a href="/kvhai/resident/home" class="nav_sidebar active mb-3 ">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-house nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                Home
-            </div>
 
-        </div>
-    </a>
     <a href="/kvhai/resident/announcement" class="nav_sidebar  mb-3 ">
         <div class="row">
             <div class="col-4  d-flex justify-content-center">
@@ -52,18 +47,8 @@
 
         </div>
     </a>
-    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-crosshairs nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                My Address
-            </div>
 
-        </div>
-    </a>
-    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3">
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3">
         <div class="row">
             <div class="col-4  d-flex justify-content-center">
                 <i class="fa-solid fa-gauge nav_icon"></i>
@@ -84,18 +69,63 @@
         </div>
     </a>
 
+    @if (role == "1")
+    {
+        <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    My Address
+                </div>
+
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental-application" class="nav_sidebar active mb-3 ">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Rental
+                </div>
+
+            </div>
+        </a>
+    }
+    else
+    {
+        <a href="/kvhai/resident/renter-address" class="nav_sidebar mb-3">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    My Address
+                </div>
+
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental/home" class="nav_sidebar active mb-3 ">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Rental
+                </div>
+
+            </div>
+        </a>
+    }
+
 }
 
 @section mobilenav{
-    <a href="/kvhai/resident/home" class="nav_sidebar mb-3 active ps-3">
-        <div class="d-flex">
-            <i class="fa-solid fa-house nav_icon"></i>
-            <span class="ms-3">
-                Home
-            </span>
 
-        </div>
-    </a>
     <a href="/kvhai/resident/announcement" class="nav_sidebar  mb-3 ps-3">
         <div class="d-flex">
             <i class="fa-solid fa-bullhorn"></i>
@@ -114,15 +144,8 @@
 
         </div>
     </a>
-    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
-        <div class=" d-flex">
-            <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
-            <span class="ms-3">
-                My Address
-            </span>
-        </div>
-    </a>
-    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 ps-3">
+
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3 ps-3">
         <div class="d-flex">
             <i class="fa-solid fa-gauge mobile_nav_icon"></i>
             <span class="ms-3">
@@ -138,7 +161,53 @@
             </span>
         </div>
     </a>
+
+    @if (role == "1") // owner
+    {
+        <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+                <span class="ms-3">
+                    My Address
+                </span>
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental-application" class="nav_sidebar active mb-3  ps-3">
+            <div class="d-flex">
+                <i class="fa-solid fa-house nav_icon"></i>
+                <span class="ms-3">
+                    Rental Application
+                </span>
+
+            </div>
+        </a>
+    }
+    else //renter
+    {
+        <a href="/kvhai/resident/renter-address" class="nav_sidebar mb-3 ps-3">
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+                <span class="ms-3">
+                    My Address
+                </span>
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental/home" class="nav_sidebar active mb-3  ps-3">
+            <div class="d-flex">
+                <i class="fa-solid fa-house nav_icon"></i>
+                <span class="ms-3">
+                    Rental Application
+                </span>
+
+            </div>
+        </a>
+    }
+
 }
+
+
 
 
 
@@ -156,9 +225,82 @@
 
 
 <!-- BODY -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="container-fluid d-flex">
+            <h5 class="fw-bold text-muted">Renter</h5>
+        </div>
+        <hr class="border border-black" />
+
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-12 col-md-4">
+                    <select id="address_renter" class="form-select" aria-label="Default select example">
+                        @{
+                            if (Model.ResidentAddress != null)
+                            {
+                                if (Model.ResidentAddress.Count > 0)
+                                {
+                                    foreach (var item in Model.ResidentAddress)
+                                    {
+                                        <option value="@item.Address_ID">Blk @item.Block Lot @item.Lot @item.Street St. </option>
+                                    }
+                                }
+                            }
+                        }
+                        <!-- <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                        <option value="2">Phase 1 (Blk 41 to  48)</option>
+                        <option value="3">Blk 24 to 40</option>
+                        <option value="4">Blk 7 to 23</option>
+                        <option value="">All</option> -->
+                    </select>
+                </div>
+            </div>
+            <div class="container-fluid" id="renter">
+                @{
+                    if (Model.RequestAddressList != null)
+                    {
+                        if (Model.RequestAddressList.Count > 0)
+                        {
+                            foreach (var item in Model.RequestAddressList)
+                            {
+                                <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData" data-raid="@item.Resident_Address_ID">
+                                    <div class="col-8">
+                                        <p class="mb-0 " data-res="@item.Resident_ID"><strong>@item.Name</strong></p>
+                                        <p class="mb-0 fw-bold text-muted">Phone: @item.Phone</p>
+                                        <p class="mb-0 fw-bold text-muted">Email: @item.Email</p>
+                                        <p class="mb-0 fw-bold text-muted">Date: @item.Decision_Date</p>
+                                    </div>
+                                    <div class="col-4 d-flex justify-content-end">
+                                        <button id="btn_delete" class="btn btn-outline-danger btn-sm">Delete</button>
+                                    </div>
+                                </div>
+                            }
+
+                        }
+                        else
+                        {
+                            <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData">
+                                <div class="col-md-12">
+                                    <p class="mb-0 p-5"><strong>No Data Found.</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                    }
+                }
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
 <div class="card shadow-sm">
     <div class="card-body">
-        <h5 class="fw-bold text-muted">Rental Applications</h5>
+        <div class="container-fluid d-flex">
+            <h5 class="fw-bold text-muted">Applications</h5>
+        </div>
         <hr class="border border-black" />
 
         <div class="container-fluid">
@@ -166,9 +308,11 @@
                 <div class="col-12 col-md-4">
                     <select id="address" class="form-select" aria-label="Default select example">
                         @{
-                            if(Model.ResidentAddress != null){
-                                if(Model.ResidentAddress.Count > 0){
-                                    foreach(var item in Model.ResidentAddress)
+                            if (Model.ResidentAddress != null)
+                            {
+                                if (Model.ResidentAddress.Count > 0)
+                                {
+                                    foreach (var item in Model.ResidentAddress)
                                     {
                                         <option value="@item.Address_ID">Blk @item.Block Lot @item.Lot @item.Street St. </option>
                                     }
@@ -193,19 +337,19 @@
                             foreach (var item in Model.RequestAddressList)
                             {
                                 <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData" data-raid="@item.Resident_Address_ID">
-                                    <div class="col-md-8">
+                                    <div class="col-8">
                                         <p class="mb-0 " data-res="@item.Resident_ID"><strong>@item.Name</strong></p>
                                         <p class="mb-0 fw-bold text-muted" data-address="@item.Address_ID">Block @item.Block, Lot @item.Lot,  @item.Street St.</p>
                                         <p class="mb-0 fw-bold text-muted">Phone: @item.Phone</p>
                                         <p class="mb-0 fw-bold text-muted">Email: @item.Email</p>
                                     </div>
-                                    <div class="col-md-4 text-end">
-                                        <button class="btn btn-outline-success btn-sm me-2">Accept</button>
-                                        <button class="btn btn-outline-danger btn-sm">Reject</button>
+                                    <div class="col-4 d-flex justify-content-end">
+                                        <button id="btn_accept" class="btn btn-outline-success btn-sm me-2">Accept</button>
+                                        <button id="btn_reject" class="btn btn-outline-danger btn-sm">Reject</button>
                                     </div>
                                 </div>
                             }
-                            
+
                         }
                         else
                         {
@@ -233,7 +377,7 @@
             </div> -->
         </div>
 
-        
+
     </div>
 </div>
 
@@ -276,13 +420,92 @@
     </script>
     <script>
         $(document).ready(function () {
+            let _addrIDRenter = $('#address_renter option:selected').val();
             let _addrID = $('#address option:selected').val();
             GetRequest(_addrID);
+            GetRenter(_addrIDRenter)
+
+            $(document).on('click', '#btn_accept', function () {
+                var rowdata = $(this).closest('#rowData');
+                var status = "1";
+                var ra_id = rowdata.data('raid');
+                var res_id = rowdata.find('[data-res]').data('res');
+                var addr_id = rowdata.find('[data-address]').data('address');
+
+                UpdateStatus(ra_id, addr_id, res_id, status);
+            });
+
+            $(document).on('click', '#btn_reject', function () {
+                var rowdata = $(this).closest('#rowData');
+                var status = "2";
+                var ra_id = rowdata.data('raid');
+                var res_id = rowdata.find('[data-res]').data('res');
+                var addr_id = rowdata.find('[data-address]').data('address');
+
+                //console.log(_addrID);
+                UpdateStatus(ra_id, addr_id, res_id, status);
+            });
+
+            $(document).on('change', '#address_renter', function () {
+                var id = $(this).val();
+                GetRenter(id);
+            });
 
             $(document).on('change', '#address', function () {
-                var addr_id = $(this).val();
-                GetRequest(addr_id);
+                var id = $(this).val();
+                GetRequest(id);
+            });
+
+            $(document).on('click', '#btn_delete', function () {
+                var raid = $(this).closest('#renter').find('[data-raid]').data('raid');
+
+                console.log(raid);
+
+                toastr.info(
+                    'Are you sure you want to delete it?<br /><br />' +
+                    '<button type="button" class="btn btn-success clear">Yes</button> ' +
+                    '<button type="button" class="btn btn-danger clear">No</button>',
+                    '<h5 class="fw-bold">Confirm Delete</h5>',
+                    {
+                        allowHtml: true
+                    }
+                );
+
+                // Handle Yes button click
+                $('.toast .btn-success').click(function () {
+                    // Perform delete action
+                    $.ajax({
+                        type: 'POST',
+                        url: '/ResidentHome/CancelRequest',
+                        data: { resident_address: raid },
+                        success: function (response) {
+                            toastr.success(response);
+                            GetRenter(_addrIDRenter);
+                        },
+                        error: function (xhr) {
+                            toastr.error(xhr.responseText);
+                        }
+                    });
+                });
+                
             })
+
+            function GetRenter(addressID) {
+                $.ajax({
+                    type: "Get",
+                    url: "/OwnerHome/GetRenter",
+                    data: { address_id: addressID },
+                    success: function (response) {
+                        var result = $(response).find('#renter').html();
+                        $('#renter').html(result);
+                        console.log(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+
+                });
+            }
 
             function GetRequest(addressID) {
                 $.ajax({
@@ -300,6 +523,37 @@
 
                 });
             }
+
+            function UpdateStatus(ra_id, addr_id, res_id, _status) {
+                var formData = {
+                    residentAddress_id: ra_id,
+                    address_id: addr_id,
+                    resident_id: res_id,
+                    status: _status
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/OwnerHome/UpdateStatus',
+                    data: formData,
+                    success: function (response) {
+                        if (_status == "1") {
+                            toastr.success("The application was accepted.");
+                            GetRequest(_addrID);
+                            GetRenter(_addrIDRenter)
+                        }
+                        else {
+                            toastr.success("The application was rejected.");
+                            GetRequest(_addrID);
+                            GetRenter(_addrIDRenter)
+                        }
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
         })
     </script>
 }

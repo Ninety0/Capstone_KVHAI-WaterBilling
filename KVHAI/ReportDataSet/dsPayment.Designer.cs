@@ -293,6 +293,8 @@ namespace KVHAI.ReportDataSet {
             
             private global::System.Data.DataColumn columnstreet;
             
+            private global::System.Data.DataColumn columnmethod;
+            
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public paymentDataTable() {
@@ -384,6 +386,14 @@ namespace KVHAI.ReportDataSet {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public global::System.Data.DataColumn methodColumn {
+                get {
+                    return this.columnmethod;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -419,7 +429,7 @@ namespace KVHAI.ReportDataSet {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public paymentRow AddpaymentRow(string name, string block, string lot, string payment, string bill, string date, string street) {
+            public paymentRow AddpaymentRow(string name, string block, string lot, string payment, string bill, string date, string street, string method) {
                 paymentRow rowpaymentRow = ((paymentRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         name,
@@ -428,7 +438,8 @@ namespace KVHAI.ReportDataSet {
                         payment,
                         bill,
                         date,
-                        street};
+                        street,
+                        method};
                 rowpaymentRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowpaymentRow);
                 return rowpaymentRow;
@@ -458,6 +469,7 @@ namespace KVHAI.ReportDataSet {
                 this.columnbill = base.Columns["bill"];
                 this.columndate = base.Columns["date"];
                 this.columnstreet = base.Columns["street"];
+                this.columnmethod = base.Columns["method"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -477,6 +489,8 @@ namespace KVHAI.ReportDataSet {
                 base.Columns.Add(this.columndate);
                 this.columnstreet = new global::System.Data.DataColumn("street", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnstreet);
+                this.columnmethod = new global::System.Data.DataColumn("method", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnmethod);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -731,6 +745,22 @@ namespace KVHAI.ReportDataSet {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public string method {
+                get {
+                    try {
+                        return ((string)(this[this.tablepayment.methodColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'method\' in table \'payment\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tablepayment.methodColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public bool IsnameNull() {
                 return this.IsNull(this.tablepayment.nameColumn);
             }
@@ -811,6 +841,18 @@ namespace KVHAI.ReportDataSet {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public void SetstreetNull() {
                 this[this.tablepayment.streetColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public bool IsmethodNull() {
+                return this.IsNull(this.tablepayment.methodColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public void SetmethodNull() {
+                this[this.tablepayment.methodColumn] = global::System.Convert.DBNull;
             }
         }
         

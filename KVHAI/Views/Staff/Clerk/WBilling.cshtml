@@ -3,7 +3,7 @@
 }
 
 @section sidebar{
-    <a href="#" class="nav-link text-light mb-2 d-flex align-items-center ">
+    <a href="/kvhai/staff/clerkhome/" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-house-door me-2"></i> Dashboard
     </a>
     <a href="/kvhai/staff/water-reading/" class="nav-link text-light mb-2 d-flex align-items-center ">
@@ -15,7 +15,7 @@
     
 }
 @section mobilenav{
-    <a href="#" class="nav-link text-light mb-2 d-flex align-items-center ">
+    <a href="/kvhai/staff/clerkhome/" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-house-door me-2"></i> Dashboard
     </a>
     <a href="/kvhai/staff/water-reading/" class="nav-link text-light mb-2 d-flex align-items-center ">
@@ -230,11 +230,11 @@
                         },
                         error: function (xhr, status, err_m) {
                             if (xhr.responseText != null || xhr.responseText != "") {
-                                alert(xhr.responseText);
+                                toastr.error(xhr.responseText);
                             } else {
 
                             }
-                            alert("An error occurred while processing your request.");
+                            toastr.error("An error occurred while processing your request.");
                         }/*,
                         xhrFields: {
                             responseType: 'blob' // Ensure the response is treated as binary data

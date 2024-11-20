@@ -10,13 +10,15 @@ namespace KVHAI.Repository
         private readonly InputSanitize _sanitize;
         private readonly StreetRepository _streetRepository;
         private readonly NotificationRepository _notificationRepository;
+        private readonly ResidentAddressRepository _residentAddressRepository;
 
-        public RequestDetailsRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, NotificationRepository notificationRepository)
+        public RequestDetailsRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, NotificationRepository notificationRepository, ResidentAddressRepository residentAddressRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
             _streetRepository = streetRepository;
             _notificationRepository = notificationRepository;
+            _residentAddressRepository = residentAddressRepository;
         }
 
         public async Task<int> GetRequestID(string addresID, string residentID)
@@ -162,6 +164,8 @@ namespace KVHAI.Repository
             try
             {
                 int result = 0;
+                string message = "";
+
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var transaction = connection.BeginTransaction())
@@ -187,6 +191,7 @@ namespace KVHAI.Repository
                                     {
                                         int confirmRequest = await ConfirmRequestAction(request, connection, transaction);
 
+                                        message = "Your address was removed.";
                                         if (confirmRequest < 1)
                                         {
                                             throw new Exception();
@@ -196,6 +201,7 @@ namespace KVHAI.Repository
                                     else if (request.Status == 2 && request.RequestType.Contains("Removal of address"))
                                     {
                                         var rejectStatus = await RejectRequest(request, connection, transaction);
+                                        message = "Your request was rejected.";
 
                                         if (rejectStatus < 1)
                                         {
@@ -204,16 +210,8 @@ namespace KVHAI.Repository
                                     }
                                 }
 
-                                var notif = new Notification
-                                {
-                                    Resident_ID = request.Resident_ID.ToString(),
-                                    Title = "Request Action",
-                                    Message = "Your address was removed!",
-                                    Url = "/kvhai/resident/my-address",
-                                    Message_Type = "Personal"
-                                };
 
-                                await _notificationRepository.InsertNotificationPersonal(notif);
+
                                 // Commit the transaction only if everything succeeded
                                 transaction.Commit();
                             }
@@ -227,6 +225,21 @@ namespace KVHAI.Repository
                         }
                     }
                 }
+
+                var residentIDS = await _residentAddressRepository.GetResidentID(request.Address_ID.ToString());
+
+                var notif = new Notification
+                {
+                    Address_ID = request.Address_ID.ToString(),
+                    Resident_ID = request.Resident_ID.ToString(),
+                    Title = "Request Action",
+                    Message = message,
+                    Url = "/kvhai/resident/my-address",
+                    Message_Type = "Personal",
+                    ListResident_ID = residentIDS
+                };
+
+                await _notificationRepository.InsertNotificationPersonal(notif);
                 return result;
             }
             catch (Exception)
@@ -241,6 +254,8 @@ namespace KVHAI.Repository
             try
             {
                 int deleteImg = 0;
+                int raRequestResult = 0;
+                int requestResult = 0;
                 if (request.Status == 1) // REQUEST APPROVE DELETE
                 {
                     using (var deleteCommand = new SqlCommand("DELETE FROM proof_img_tb WHERE addr_id = @aid", connection, transaction))
@@ -251,15 +266,42 @@ namespace KVHAI.Repository
 
                     if (deleteImg > 0)
                     {
+                        using (var deleteCommand = new SqlCommand("DELETE FROM resident_address_tb WHERE addr_id = @aid AND res_id = @rid", connection, transaction))
+                        {
+                            deleteCommand.Parameters.AddWithValue("@aid", request.Address_ID);
+                            deleteCommand.Parameters.AddWithValue("@rid", request.Resident_ID);
+
+                            raRequestResult = await deleteCommand.ExecuteNonQueryAsync();
+                        }
+                    }
+
+                    if (raRequestResult > 0 && deleteImg > 0)
+                    {
                         using (var deleteCommand = new SqlCommand("DELETE FROM address_tb WHERE addr_id = @aid AND res_id = @rid", connection, transaction))
                         {
                             deleteCommand.Parameters.AddWithValue("@aid", request.Address_ID);
                             deleteCommand.Parameters.AddWithValue("@rid", request.Resident_ID);
 
-                            var requestResult = await deleteCommand.ExecuteNonQueryAsync();
+                            requestResult = await deleteCommand.ExecuteNonQueryAsync();
 
-                            return requestResult;
                         }
+
+
+
+                        //var notif = new Notification
+                        //{
+                        //    Address_ID = request.Address_ID.ToString(),
+                        //    Resident_ID = request.Resident_ID.ToString(),
+                        //    Title = "Request Action",
+                        //    Message = "Your address was removed!",
+                        //    Url = "/kvhai/resident/my-address",
+                        //    Message_Type = "Personal",
+                        //};
+
+                        //await _notificationRepository.InsertNotificationPersonal(notif);
+
+                        return requestResult;
+
                     }
 
                 }
@@ -389,6 +431,21 @@ namespace KVHAI.Repository
 
                     await updateRequestCommand.ExecuteNonQueryAsync();
                 }
+
+                //var residentIDS = await _residentAddressRepository.GetResidentID(request.Address_ID.ToString());
+
+                //var notif = new Notification
+                //{
+                //    Address_ID = request.Address_ID.ToString(),
+                //    Resident_ID = request.Resident_ID.ToString(),
+                //    Title = "Request Action",
+                //    Message = "Your requst was rejected.",
+                //    Url = "/kvhai/resident/my-address",
+                //    Message_Type = "Personal",
+                //    ListResident_ID = residentIDS
+                //};
+
+                //await _notificationRepository.InsertNotificationPersonalToUser(notif);
 
                 return 1;
             }

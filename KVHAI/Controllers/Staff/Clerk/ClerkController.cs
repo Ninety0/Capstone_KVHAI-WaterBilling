@@ -1,9 +1,9 @@
-﻿using System.Security.Claims;
-using KVHAI.CustomClass;
+﻿using KVHAI.CustomClass;
 using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace KVHAI.Controllers.Staff.Clerk
 {
@@ -14,12 +14,15 @@ namespace KVHAI.Controllers.Staff.Clerk
         private readonly WaterBillingFunction _waterBilling;
         private readonly WaterBillRepository _waterBillRepository;
         private readonly NotificationRepository _notificationRepository;
+        private readonly ResidentAddressRepository _residentAddressRepository;
 
-        public ClerkController(WaterBillingFunction waterBilling, WaterBillRepository waterBillRepository, NotificationRepository notificationRepository)//WaterReadingRepository waterReadingRepository
+        public ClerkController(WaterBillingFunction waterBilling, WaterBillRepository waterBillRepository, NotificationRepository notificationRepository, WaterReadingRepository waterReadingRepository, ResidentAddressRepository residentAddressRepository)//
         {
             _waterBilling = waterBilling;
             _waterBillRepository = waterBillRepository;
             _notificationRepository = notificationRepository;
+            _waterReadingRepository = waterReadingRepository;
+            _residentAddressRepository = residentAddressRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -49,7 +52,26 @@ namespace KVHAI.Controllers.Staff.Clerk
 
         public async Task<IActionResult> Dashboard()
         {
-            return View("~/Views/Staff/Clerk/ClerkDashboard.cshtml");
+            var username = User.Identity.Name;
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var notifs = await _notificationRepository.GetNotificationByStaff(role);
+            _waterBilling.NotificationStaff = notifs;
+
+            return View("~/Views/Staff/Clerk/ClerkDashboard.cshtml", _waterBilling);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPercent()
+        {
+            var username = User.Identity.Name;
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var percent = await _waterReadingRepository.GetDashboard();
+
+            return Ok(percent);
         }
 
         [HttpGet]
@@ -61,7 +83,7 @@ namespace KVHAI.Controllers.Staff.Clerk
 
             var notifs = await _notificationRepository.GetNotificationByStaff(role);
             _waterBilling.NotificationStaff = notifs;
-            
+
             return View("~/Views/Staff/Clerk/Index.cshtml", _waterBilling);
         }
 
@@ -116,6 +138,8 @@ namespace KVHAI.Controllers.Staff.Clerk
         {
             try
             {
+
+
                 if (waterBilling == null || waterBilling.Count < 1)
                 {
                     return BadRequest("There was an error generating the bill");
@@ -132,6 +156,8 @@ namespace KVHAI.Controllers.Staff.Clerk
                     //{
                     //    return BadRequest("There was an error processing the data.");
                     //}
+
+                    //var residentIDS = await _residentAddressRepository.GetResidentID(item.Address_ID);
 
                     var wb = new WaterBilling()
                     {
@@ -209,7 +235,9 @@ namespace KVHAI.Controllers.Staff.Clerk
                         Date_Issue_To = billing.Date_Issue_To,
                         Due_Date_From = due.Due_Date_From,
                         Due_Date_To = due.Due_Date_To,
-                        Status = status
+                        Status = status,
+                        Location = item.Location
+
                     };
 
                     if (string.IsNullOrEmpty(wb.Date_Issue_From) || string.IsNullOrEmpty(wb.Date_Issue_To) || string.IsNullOrEmpty(wb.Due_Date_From) || string.IsNullOrEmpty(wb.Due_Date_To))

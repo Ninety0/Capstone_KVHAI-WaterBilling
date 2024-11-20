@@ -28,7 +28,7 @@ namespace KVHAI.Controllers.Homeowner.Owner
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            var addresses = await _addressRepository.GetAddressById(residentID);
+            var addresses = await _addressRepository.GetAddressessByResId(residentID);
             var residentAddress = await _streetRepository.GetStreetNameList(addresses);
 
 
@@ -49,6 +49,20 @@ namespace KVHAI.Controllers.Homeowner.Owner
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetRenter(string address_id)
+        {
+            var requestAddress = await _residentAddress.GetRenter(address_id);
+
+            var viewModel = new ModelBinding
+            {
+                RequestAddressList = requestAddress
+
+            };
+            return View("~/Views/Resident/LoggedIn/Owner/OwnerHome.cshtml", viewModel);
+
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetRentalForOwner(string address_id)
         {
             var requestAddress = await _residentAddress.GetRentalApplication(address_id);
@@ -59,6 +73,20 @@ namespace KVHAI.Controllers.Homeowner.Owner
 
             };
             return View("~/Views/Resident/LoggedIn/Owner/OwnerHome.cshtml", viewModel);
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateStatus(string residentAddress_id, string address_id, string resident_id, string status)
+        {
+            var statusResult = await _residentAddress.UpdateStatus(residentAddress_id, address_id, resident_id, status);
+
+            if (statusResult < 1)
+            {
+                return BadRequest("There was an error processing the request.");
+            }
+
+            return Ok();
 
         }
     }

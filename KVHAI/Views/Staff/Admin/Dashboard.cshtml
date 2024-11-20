@@ -7,8 +7,38 @@
     <link href="/lib/evo-calendar/css/evo-calendar.css" rel="stylesheet" />
     <link href="/lib/evo-calendar/css/evo-calendar.midnight-blue.min.css" rel="stylesheet" />
     <link href="/lib/evo-calendar/css/evo-calendar.royal-navy.min.css" rel="stylesheet" />
+    <link href="/css/simple-calendar.css" rel="stylesheet" />
     <link href="/css/Admins/dashboard.css" rel="stylesheet" />
     <style>
+        /*ROW 1*/
+        .metric-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+            height: 100%;
+        }
+
+            .metric-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+            }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        /*END ROW 1*/
         .backgroundgray {
             background-color: #f1f5f9;
         }
@@ -96,8 +126,11 @@
 }
 
 @section Scripts{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/signalrSetupConnection.js"></script>
     <script src="~/lib/chartjs/chart.umd.min.js"></script>
     <script src="~/lib/evo-calendar/js/evo-calendar.min.js"></script>
+    <script src="~/js/jquery.simple-calendar.min.js"></script>
 
     <!--EVO CALENDAR SCRIPTS-->
     <script>
@@ -146,11 +179,27 @@
     <!--CHART JS SCRIPTS-->
     <script>
         $(document).ready(function () {
+            //SIGNAL R
+            const dashboardConnection = setupSignalRConnection("/staff/dashboard", "Accounts Hub");
+
+            dashboardConnection.on("ReceivedDataDashboard", function (message) {
+                toastr.success("New data added");
+
+                GetGraphData();
+                GetNewRegister();
+                GetNewPayment();
+                GetRequestToday();
+            });
+
             var myChart = null; // Declare the global variable
             GetGraphData();
             GetNewRegister();
             GetNewPayment();
+            GetRequestToday();
 
+            $(document).on('click', '#show_ingsight', function () {
+                $('#insightContainer').fadeToggle();
+            })
             $(document).on('change', '#select_year', function () {
                 var selectedYear = $(this).val(); // Get selected year from dropdown
                 GetGraphData(); // Call chartDataSets with the selected year
@@ -161,9 +210,43 @@
                     url: '/AdminDashboard/GetRegisterAddress',
                     type: 'GET',
                     success: function (response) {
-                        //console.log(response);
+                        console.log(response);
                         var result = $(response).find('#table_address').html();
+                        var resultNumber = $(response).find('#number_address').html();
                         $('#table_address').html(result);
+                        $('#number_address').html(resultNumber);
+
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function GetRequestToday() {
+                $.ajax({
+                    url: '/AdminDashboard/GetRequest',
+                    type: 'GET',
+                    success: function (response) {
+                        //console.log(response);
+                        var result = $(response).find('#number_request').html();
+                        $('#number_request').html(result);
+
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function GetRegistered() {
+                $.ajax({
+                    url: '/AdminDashboard/GetRequest',
+                    type: 'GET',
+                    success: function (response) {
+                        console.log(response);
+                        //var result = $(response).find('#number_request').html();
+                        //$('#number_request').html(result);
 
                     },
                     error: function (xhr) {
@@ -213,6 +296,16 @@
                             //yearDropdown.append(new Option(year, year));
                             insights = insights.concat(yearData.insights || []);
                         });
+
+                        console.log(yearsData);
+
+                        var selectedYear = $('#select_year').val();
+                        var yearData = yearsData[selectedYear]; // Get data for the selected year
+                        var actualData = yearData.actualData[yearData.actualData.length - 1];
+                        var avgData = yearData.forecastData[yearData.forecastData.length - 1];
+
+                        $('#current_data').text(actualData);
+                        $('#average_data').text(avgData);
 
                         chartDataSets(yearsData); // Call chartDataSets with the initial year
                     },
@@ -436,324 +529,164 @@
 
 
     </script>
-
     <script>
         $(document).ready(function () {
-            const averageConsumption = 1500;
-            const currentConsumption = 1000;
-            SetStackedBarChart(currentConsumption, averageConsumption);
-
-            //const average = 300; // Example forecasted average for the month
-            //const valuePercentage = Math.min(Math.max(((currentValue - forecastedValue) / forecastedValue) * 100, 0), 100);
-            //const currentValue = 280; // Example current consumption for the month
-
-            //createGaugeMeterWithPin(average, currentValue);
-
-            $(document).on('click', '#show_ingsight', function () {
-                $('#insightContainer').fadeToggle('fast');
+            var container = $("#calendars").simpleCalendar({
+                displayEvent: true,
+                displayYear: true,
+                disableEventDetails: false
             });
 
-            function SetStackedBarChart(currentValue, forecastedValue) {
-                // Calculate the percentage difference from the forecasted value
-                const valuePercentage = Math.abs((currentValue - forecastedValue) / forecastedValue) * 100;
+            var calendar = container.data('plugin_simpleCalendar');
 
-                // Define color segments based on forecasted value ranges
-                const barColors = [
-                    { range: [0, 5], color: '#C8E6C9', label: 'Good' },       // Green for normal range (±5%)
-                    { range: [5, 25], color: '#FFECB3', label: 'Warning' },   // Yellow for moderate increase (5-25%)
-                    { range: [25, 50], color: '#ff0019', label: 'High' },     // Red for high increase (25-50%)
-                    { range: [50, 100], color: '#b30012', label: 'Critical' } // Dark Red for critical (above 50%)
-                ];
+            function setWaterReadingEvents() {
+                try {
+                    const events = [];
+                    const currentDate = new Date();
 
-                // Determine the color based on valuePercentage
-                let actualColor = '#b30012'; // Default to dark red for safety
-                let legendLabel = 'Critical';
-                for (const colorInfo of barColors) {
-                    const [minRange, maxRange] = colorInfo.range;
-                    if (valuePercentage >= minRange && valuePercentage < maxRange) {
-                        actualColor = colorInfo.color;
-                        legendLabel = colorInfo.label;
-                        break;
-                    }
-                }
+                    for (let i = 0; i < 12; i++) {
+                        const year = currentDate.getFullYear() + Math.floor((currentDate.getMonth() + i) / 12);
+                        console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
+                        const month = (currentDate.getMonth() + i) % 12;
+                        console.log(month);
 
-                // Chart configuration
-                const config = {
-                    type: 'bar',
-                    data: {
-                        labels: ['Water Consumption'],
-                        datasets: [
-                            {
-                                label: 'Forecasted Consumption',
-                                data: [forecastedValue],
-                                backgroundColor: 'rgba(54, 162, 235, 0.5)',  // Light blue for forecasted
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 1,
-                                stack: 'Stack 0'
-                            },
-                            {
-                                label: 'Actual Consumption',
-                                data: [currentValue],
-                                backgroundColor: actualColor,   // Color based on the deviation
-                                borderColor: actualColor,
-                                borderWidth: 1,
-                                stack: 'Stack 0'
+
+                        for (let day = 3; day <= 24; day++) {
+                            const eventDate = new Date(year, month, day);
+                            if (day >= 3 && day <= 5) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Reading <br/> Phase 2 BLK 51 to 143 '
+                                });
                             }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        indexAxis: 'y',  // Make the chart horizontal
-                        scales: {
-                            x: {
-                                stacked: true,  // Stack the bars along the x-axis
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Cubic Meters'
-                                },
-                                ticks: {
-                                    callback: value => `${value} m³`
-                                }
-                            },
-                            y: {
-                                stacked: true,
+                            if (day >= 6 && day <= 8) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Reading <br/> Phase 1 BLK 41 to 48 '
+                                });
                             }
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    generateLabels: function (chart) {
-                                        const originalLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-                                        const customLegend = barColors.map(colorInfo => ({
-                                            text: `${colorInfo.label} (Range: ${colorInfo.range[0]}% - ${colorInfo.range[1]}%)`,
-                                            fillStyle: colorInfo.color,
-                                            strokeStyle: colorInfo.color,
-                                            hidden: false,
-                                            index: -1
-                                        }));
-                                        return [...originalLabels, ...customLegend];
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        return `${context.dataset.label}: ${context.raw} m³`;
-                                    }
-                                }
-                            },
-                            annotation: {
-                                annotations: {
-                                    increaseLine: {
-                                        type: 'line',
-                                        xMin: forecastedValue,
-                                        xMax: currentValue,
-                                        yMin: -0.5,
-                                        yMax: 0.5,
-                                        borderColor: 'black',
-                                        borderWidth: 2,
-                                        label: {
-                                            content: `${valuePercentage.toFixed(2)}% ${valuePercentage > 0 ? 'Increase' : 'Decrease'}`,
-                                            enabled: true,
-                                            position: 'center',
-                                            backgroundColor: 'rgba(0,0,0,0.8)',
-                                            color: 'white',
-                                            font: {
-                                                size: 12
-                                            }
-                                        }
-                                    }
-                                }
+                            if (day >= 19 && day <= 21) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Reading <br/> BLK 24 to 40 '
+                                });
                             }
+                            if (day >= 22 && day <= 24) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Reading <br/> BLK 7 to 23 '
+                                });
+                            }
+
+
                         }
                     }
-                };
 
-                // Render the chart
-                const ctx = document.getElementById('chart_bar');
-                if (ctx) {
-                    new Chart(ctx, config);
-                }
-            }
+                    for (let i = 0; i < 12; i++) {
+                        const year = currentDate.getFullYear() + Math.floor((currentDate.getMonth() + i) / 12);
+                        console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
+                        const month = (currentDate.getMonth() + i) % 12;
+                        console.log(month);
 
 
-
-
-
-
-
-            function SetChartJsGauge(currentValue, forecastedValue, maxValue = 100) {
-                // Convert currentValue into a percentage relative to forecastedValue
-                //const value = Math.min((currentValue / forecastedValue) * maxValue, maxValue);
-                const value = Math.min(((currentValue - forecastedValue) / forecastedValue) * maxValue, maxValue);
-                //(actualData - forecastData) / forecastData) * 100
-                // Custom plugin to add text and indicator
-                const gaugeChartText = {
-                    id: 'gaugeChartText',
-                    afterDatasetsDraw(chart, args, pluginOptions) {
-                        const { ctx, chartArea: { width, height } } = chart;
-                        const xCenter = width / 2;
-                        const yCenter = height / 1.15;
-                        const outerRadius = chart.getDatasetMeta(0).data[0].outerRadius - 6;
-
-                        // Adjust the angle to correctly position the needle within the 180° range
-                        const valueText = value < 0 ? 0 : value;
-                        const angle = value < 0 ? 0 / maxValue : (Math.PI * value) / maxValue;
-                        ctx.save();
-                        ctx.translate(xCenter, yCenter);
-
-                        // Draw the needle
-                        ctx.beginPath();
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(Math.cos(angle - Math.PI) * outerRadius, Math.sin(angle - Math.PI) * outerRadius);
-                        ctx.lineWidth = 3;
-                        ctx.strokeStyle = '#333';
-                        ctx.stroke();
-
-                        // Draw the needle base circle
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 6, 0, Math.PI * 2);
-                        ctx.fillStyle = '#333';
-                        ctx.fill();
-
-                        // Draw text at the center to show the percentage
-                        ctx.font = 'bold 16px Arial';
-                        ctx.fillStyle = '#333';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(`${Math.round(valueText)}%`, 0, -20);
-                        ctx.restore();
-                    }
-                };
-
-                // Calculate gauge colors based on percentage difference from forecastedValue
-                const getGradientColors = (currentValue, forecastedValue) => {
-                    const percentChange = ((currentValue - forecastedValue) / forecastedValue) * 100;
-                    console.log(percentChange);
-                    if (percentChange <= 5) return ['#C8E6C9'];       // Green (close to average)
-                    else if (percentChange <= 25) return ['#FFECB3'];  // Yellow (moderate increase)
-                    else if (percentChange <= 50) return ['#ff0019'];  // Red (high increase)
-                    else return ['#b30012'];                           // Dark Red (critical)
-                };
-                const colors = getGradientColors(currentValue, forecastedValue);
-
-                // Chart configuration
-                const config = {
-                    type: 'doughnut',
-                    data: {
-                        datasets: [{
-                            data: [value, maxValue - value],
-                            backgroundColor: [...colors, '#E0E0E0'], // Colors with grey for remainder
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        cutout: '85%',       // Smaller cutout for a better gauge look
-                        rotation: -90,       // Start from the bottom center
-                        circumference: 180,  // Draw a half-circle gauge
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { enabled: false }
-                        }
-                    },
-                    plugins: [gaugeChartText]
-                };
-
-                // Render the chart
-                const ctx = document.getElementById('chart_gauge');
-                if (ctx) {
-                    new Chart(ctx, config);
-                }
-            }
-
-
-
-
-
-            function createGaugeMeterWithPin(average, currentValue) {
-                // Predefined colors for different consumption levels
-                const gaugeColors = ['#4CAF50', '#FFC107', '#F44336']; // Green for average, Yellow for moderate, Red for critical
-
-                // Calculate the percentage of currentValue relative to average and normalize it to fit within the gauge
-                let consumptionPercentage = (currentValue / average) * 100;
-                if (consumptionPercentage > 100) consumptionPercentage = 100; // Cap at 100%
-
-                // Define chart data as segments of 33% each (representing green, yellow, red)
-                const data = {
-                    datasets: [{
-                        data: [33, 33, 34], // Splits the gauge into 3 equal parts
-                        backgroundColor: gaugeColors, // Segment colors
-                        borderWidth: 0 // Remove segment borders
-                    }]
-                };
-
-                // Destroy previous chart instance if it exists to avoid duplication
-                if (window.gaugeChart) {
-                    window.gaugeChart.destroy();
-                }
-
-                // Create the Chart.js Doughnut chart
-                const ctx = document.getElementById("chart_gauge").getContext("2d");
-                window.gaugeChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: data,
-                    options: {
-                        aspecRatio: 2,
-                        responsive: true,
-                        cutout: "80%", // Hollow center
-                        rotation: 270, // Start angle for the gauge
-                        circumference: 180, // Draw a half-circle gauge
-                        plugins: {
-                            tooltip: { enabled: false }, // Disable tooltips
-                            legend: { display: false } // Disable legend
-                        },
-                        // Custom plugin to draw the "pin" indicator
-                        plugins: [{
-                            afterDraw: chart => {
-                                const { ctx, chartArea: { width, height } } = chart;
-                                const centerX = width / 2;
-                                const centerY = height / 1.25;
-
-                                // Convert consumption percentage into an angle for the pin
-                                const angle = (consumptionPercentage / 100) * 180; // Degree on the 180-degree scale
-                                const radians = (angle + 270) * (Math.PI / 180); // Convert to radians starting from the bottom center
-
-                                // Calculate pin position
-                                const pinLength = width / 2.3; // Length of the pin
-                                const pinX = centerX + Math.cos(radians) * pinLength;
-                                const pinY = centerY + Math.sin(radians) * pinLength;
-
-                                // Draw the pin
-                                ctx.save();
-                                ctx.beginPath();
-                                ctx.moveTo(centerX, centerY);
-                                ctx.lineTo(pinX, pinY);
-                                ctx.lineWidth = 4;
-                                ctx.strokeStyle = '#333';
-                                ctx.stroke();
-
-                                // Draw a circle at the end of the pin
-                                ctx.beginPath();
-                                ctx.arc(pinX, pinY, 8, 0, 2 * Math.PI);
-                                ctx.fillStyle = '#333';
-                                ctx.fill();
-
-                                // Draw the percentage text in the center
-                                ctx.font = "bold 16px Arial";
-                                ctx.fillStyle = '#333';
-                                ctx.textAlign = "center";
-                                ctx.textBaseline = "middle";
-                                ctx.fillText(`${Math.round(consumptionPercentage)}%`, centerX, centerY);
-                                ctx.restore();
+                        for (let day = 6; day <= 28; day++) {
+                            const eventDate = new Date(year, month, day);
+                            if (day >= 6 && day <= 9) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Billing <br/> Phase 2 BLK 51 to 143 '
+                                });
                             }
-                        }]
+                            if (day > 9 && day <= 12) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Billing <br/> Phase 1 BLK 41 to 48 '
+                                });
+                            }
+                            if (day > 22 && day <= 25) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Billing <br/> BLK 24 to 40 '
+                                });
+                            }
+                            if (day > 25 && day <= 28) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Billing <br/> BLK 7 to 23 '
+                                });
+                            }
+
+
+                        }
                     }
-                });
+
+                    console.log("Events to be set:", events);
+
+                    // Try setting events directly in the options
+                    container.simpleCalendar({
+                        events: events,
+                        displayEvent: true,
+                        disableEventDetails: false
+                    });
+
+                    // Also try the setEvents method
+                    calendar.setEvents(events);
+                } catch (error) {
+                    console.error("Error in setWaterReadingEvents:", error);
+                }
             }
 
+            // Try setting events immediately and after a delay
+            setWaterReadingEvents();
+            setTimeout(setWaterReadingEvents, 500);
         });
     </script>
 
@@ -766,7 +699,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
@@ -787,7 +720,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
@@ -803,32 +736,81 @@
 }
 
 <!--ROW 1-->
-<div class="row mb-3">
-    <div class="col-12 col-lg-4">
-        <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm" style="height:100px;">
-            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3 text-center">Monthly Water Consumption</h5>
-
-            <div class="row">
-                <div class="col-12">
+<div class="row g-4 mb-3">
+    <!-- Water Consumption Card -->
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card metric-card shadow-sm ">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class=" text-muted mb-0">Monthly Water Consumption</h5>
+                    <div class="metric-icon bg-primary bg-opacity-10">
+                        <i class="bi bi-droplet-fill text-primary"></i>
+                    </div>
+                </div>
+                <div class="card-value text-dark mb-2" id="current_data">0</div>
+                <div class="text-muted small">
+                    Average: <span class="text-success" id="average_data">0</span>
                 </div>
             </div>
         </div>
-
     </div>
-    <div class="col-12 col-lg-8">
-        <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm" style="">
-            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3 text-center">Average Water Consumption / Month</h5>
 
-            <canvas id="chart_bar" width="600" height="200"></canvas>
+    <!-- Number of Requests Card -->
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card metric-card shadow-sm ">
+            <div class="card-body" id="number_request">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class=" text-muted mb-0">Number of Requests</h5>
+                    <div class="metric-icon bg-success bg-opacity-10">
+                        <i class="bi bi-chat-square-text-fill text-success"></i>
+                    </div>
+                </div>
+                @{
+                    if (Model.CountData != null)
+                    {
+                        <div class="card-value text-dark mb-2">0</div>
+                    }
+                    else
+                    {
+                        <div class="card-value text-dark mb-2">0</div>
+                    }
+                }
+                <a href="/kvhai/staff/request-page/" class="text-decoration-none small">View All</a>
+            </div>
         </div>
+    </div>
 
+    <!-- Registered Address Card -->
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card metric-card shadow-sm ">
+            <div class="card-body" id="number_address">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class=" text-muted mb-0">Number of Registered Address</h5>
+                    <div class="metric-icon bg-warning bg-opacity-10">
+                        <i class="bi bi-house-fill text-warning"></i>
+                    </div>
+                </div>
+                @{
+                    if (Model.CountData != null)
+                    {
+                        <div class="card-value text-dark mb-2">@Model.CountData</div>
+                    }
+                    else
+                    {
+                        <div class="card-value text-dark mb-2">0</div>
+                    }
+                }
+                <a href="/kvhai/staff/resident-address/" class="text-decoration-none small">View All</a>
+            </div>
+        </div>
     </div>
 </div>
 
 <!--row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly-->
+<!--Row 2-->
 <div class="row mb-3">
     <div class="col-12 ">
-        <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm">
+        <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm">
             <div class="row">
                 <div class="col-9">
                     <h5 class="fw-bold text-muted p-2 mb-3 flex-grow-1">Water Consumption Analytics</h5>
@@ -836,7 +818,6 @@
                 <div class="col-3">
                     <select class="form-control text-center" id="select_year">
                         <option value="2024" selected>2024</option>
-                        <option value="2025">2025</option>
                     </select>
                 </div>
             </div>
@@ -883,118 +864,119 @@
 
 </div>
 
+
+
 <!--ROW 3-->
-<div class="row">
-    <div class="col-xl-8">
-        <div class="row">
-            <div class="col-12 mb-3">
-                <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm container_dashboard">
-                    <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recent register address</h5>
+<!--ROW 3-->
+<div class="row align-items-stretch">
+    <div class="col-xl-7 d-flex flex-column">
+        <!--register address-->
+        <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard mb-3" style="height: 250px">
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recent register address</h5>
 
-                    <div class="container-fluid container_data">
-                        <div class="table-responsive">
-                            <table class="table table-borderless table-striped" id="table_address">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Name</th>
-                                        <th scope="col">Block</th>
-                                        <th scope="col">Lot</th>
-                                        <th scope="col">Street</th>
-                                        <th scope="col">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        if (Model.ResidentAddress != null)
+            <div class="container-fluid container_data">
+                <div class="table-responsive">
+                    <table class="table table-borderless table-striped" id="table_address">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Block</th>
+                                <th scope="col">Lot</th>
+                                <th scope="col">Street</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (Model.ResidentAddress != null)
+                                {
+                                    if (Model.ResidentAddress.Count > 0)
+                                    {
+                                        foreach (var item in Model.ResidentAddress)
                                         {
-                                            if (Model.ResidentAddress.Count > 0)
-                                            {
-                                                foreach (var item in Model.ResidentAddress)
-                                                {
-                                                    <tr data-address="@item.Address_ID">
-                                                        <td data-res="@item.Resident_ID">@item.Name</td>
-                                                        <td>@item.Block</td>
-                                                        <td>@item.Lot</td>
-                                                        <td data-st="@item.Street_ID">@item.Street</td>
-                                                        <td>@item.Register_At</td>
-                                                    </tr>
-                                                }
-                                            }
-                                            else
-                                            {
-                                                <tr>
-                                                    <td colspan="5">No Data Found.</td>
-                                                </tr>
-                                            }
-                                        }
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm container_dashboard">
-                    <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recently Paid</h5>
-
-                    <div class="container-fluid container_data">
-                        <div class="table-responsive">
-                            <table class="table table-borderless table-striped" id="table_payment">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Name</th>
-                                        <th scope="col">Address</th>
-                                        <th scope="col">Method</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col">Date</th>
-                                        <th scope="col">Occupancy</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        if (Model.PaymentList != null)
-                                        {
-                                            if (Model.PaymentList.Count > 0)
-                                            {
-                                                foreach (var item in Model.PaymentList)
-                                                {
-                                                    var occupancy = item.Is_Owner ? "Owner" : "Renter";
-                                                    <tr data-address="@item.Payment_ID">
-                                                        <td data-res="@item.Resident_ID">@item.Paid_By</td>
-                                                        <td>Blk @item.Block Lot @item.Lot @item.Street St. </td>
-                                                        <td>@item.Payment_Method</td>
-                                                        <td>@item.Payment_Status</td>
-                                                        <td>@item.Payment_Date</td>
-                                                        <td>@occupancy</td>
-                                                    </tr>
-                                                }
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            <tr>
-                                                <td colspan="6" class="text-center">No Data Found.</td>
+                                            <tr data-address="@item.Address_ID">
+                                                <td data-res="@item.Resident_ID">@item.Name</td>
+                                                <td>@item.Block</td>
+                                                <td>@item.Lot</td>
+                                                <td data-st="@item.Street_ID">@item.Street</td>
+                                                <td>@item.Register_At</td>
                                             </tr>
                                         }
                                     }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="5">No Data Found.</td>
+                                        </tr>
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+        <!--Recently Paid-->
+        <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard" style="height: 300px">
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recently Paid</h5>
+
+            <div class="container-fluid container_data">
+                <div class="table-responsive">
+                    <table class="table table-borderless table-striped" id="table_payment">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Method</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Occupancy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (Model.PaymentList != null)
+                                {
+                                    if (Model.PaymentList.Count > 0)
+                                    {
+                                        foreach (var item in Model.PaymentList)
+                                        {
+                                            var occupancy = item.Is_Owner ? "Owner" : "Renter";
+                                            <tr data-address="@item.Payment_ID">
+                                                <td data-res="@item.Resident_ID">@item.Paid_By</td>
+                                                <td>Blk @item.Block Lot @item.Lot @item.Street St. </td>
+                                                <td>@item.Payment_Method</td>
+                                                <td>@item.Payment_Status</td>
+                                                <td>@item.Payment_Date</td>
+                                                <td>@occupancy</td>
+                                            </tr>
+                                        }
+                                    }
+
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center">No Data Found.</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-xl-4">
-        <div class="container-fluid bg-light border border-2 p-2 rounded shadow-sm">
+    <div class="col-xl-5">
+        <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm w-100 h-100">
             <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Task</h5>
             <div class="header-border"></div>
             <!--EVO CALENDAR-->
-            <div id="calendar"></div>
+            <div id="calendars" style="height: calc(100% - 60px)"></div>
         </div>
     </div>
 </div>

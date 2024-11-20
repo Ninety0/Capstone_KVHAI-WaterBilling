@@ -13,11 +13,14 @@ namespace KVHAI.Repository
         private readonly ImageUploadRepository _uploadRepository;
         private readonly RequestDetailsRepository _requestDetailsRepository;
         private readonly NotificationRepository _notificationRepository;
+        private readonly ListRepository _listRepository;
+        private readonly ResidentAddressRepository _residentAddressRepository;
+
 
         private bool DataExist = false;
         private int CounterDataExistence = 0;
 
-        public AddressRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, ImageUploadRepository uploadRepository, RequestDetailsRepository requestDetailsRepository, NotificationRepository notificationRepository)
+        public AddressRepository(DBConnect dBConnect, InputSanitize inputSanitize, StreetRepository streetRepository, ImageUploadRepository uploadRepository, RequestDetailsRepository requestDetailsRepository, NotificationRepository notificationRepository, ListRepository listRepository, ResidentAddressRepository residentAddressRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
@@ -25,6 +28,8 @@ namespace KVHAI.Repository
             _uploadRepository = uploadRepository;
             _requestDetailsRepository = requestDetailsRepository;
             _notificationRepository = notificationRepository;
+            _listRepository = listRepository;
+            _residentAddressRepository = residentAddressRepository;
         }
 
         //READ
@@ -433,12 +438,16 @@ namespace KVHAI.Repository
 
                         //int location = residentValues["Location"];
                         // Create notification for the resident
+
+                        var emp = await _listRepository.EmployeeList();
+                        var emp_id = emp.Where(r => r.Role == "admin").Select(e => e.Emp_ID).ToList();
                         var notif = new Notification
                         {
                             Title = "Register Address",
                             Message = "New address need to verify",
                             Url = "/kvhai/staff/resident-address/",
-                            Message_Type = "Admin"
+                            Message_Type = "Admin",
+                            ListEmployee_ID = emp_id
                         };
 
                         await _notificationRepository.SendNotificationToAdmin(notif);
@@ -470,16 +479,20 @@ namespace KVHAI.Repository
                         command.Parameters.AddWithValue("@status", status);
 
                         int residentID = await GetResidentIdByAddressId(addresID.ToString());
+
+                        var residentIDS = await _residentAddressRepository.GetResidentID(addresID.ToString());
                         var notif = new Notification
                         {
+                            Address_ID = addresID.ToString(),
                             Resident_ID = residentID.ToString(),
                             Title = "My Address",
                             Message = "Your address was verified!",
                             Url = "/kvhai/resident/my-address",
-                            Message_Type = "Personal"
+                            Message_Type = "Personal",
+                            ListResident_ID = residentIDS
                         };
 
-                        await _notificationRepository.InsertNotificationPersonal(notif);
+                        await _notificationRepository.InsertNotificationPersonalToUser(notif);
                         return await command.ExecuteNonQueryAsync();
                     }
                 }
@@ -490,7 +503,7 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<List<Address>> GetAddressById(string resID)
+        public async Task<List<Address>> GetAddressessByResId(string resID)
         {
             try
             {
@@ -530,6 +543,39 @@ namespace KVHAI.Repository
             catch (Exception)
             {
                 return null;
+            }
+        }
+
+        public async Task<int> GetAddressIDByResidentID(string resident_id, string role)
+        {
+            try
+            {
+                var address_id = 0;
+                var address = await _listRepository.AddressList();
+                var resident_address = await _listRepository.ResidentAddressList();
+
+                if (role == "1")
+                {
+                    address_id = address
+                                .Where(ra => ra.Resident_ID.ToString() == resident_id)
+                                .Select(ra => ra.Address_ID)
+                                .FirstOrDefault();
+                }
+                else
+                {
+                    address_id = resident_address
+                                .Where(ra => ra.Resident_ID.ToString() == resident_id)
+                                .Select(ra => ra.Address_ID)
+                                .FirstOrDefault();
+                }
+
+                return address_id;
+            }
+            catch (Exception ex)
+            {
+                // Log exception for debugging
+                Console.WriteLine($"Error: {ex.Message}");
+                return 0; // Return false in case of an error
             }
         }
 

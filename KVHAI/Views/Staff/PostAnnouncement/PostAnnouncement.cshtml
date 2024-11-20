@@ -9,7 +9,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center active">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center active">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
@@ -30,7 +30,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center active">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center active">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
@@ -83,7 +83,7 @@
                 announce_pagination(page);
             });
 
-
+            //edit
             $(document).on('click','#btn_edit',function(){
                 // var id = $(this).parent().find('[data-announcement]').data('announcement')
                 announcement_id = $(this).closest('tr').data('announcement');
@@ -117,6 +117,36 @@
                         $('#charCounts').text(currentLength + '/' + maxLength + ' characters');
                     },
                     error:function(xhr){
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            });
+
+            //delete
+            $(document).on('click', '#btn_delete', function () {
+                // var id = $(this).parent().find('[data-announcement]').data('announcement')
+                announcement_id = $(this).closest('tr').data('announcement');
+                console.log(announcement_id);
+
+                // Get the closest `tr` element
+                var $tr = $(this).closest('tr');
+
+                // Extract values from all `td` elements within the `tr`
+                var values = [];
+                $tr.find('td').each(function () {
+                    values.push($(this).text());
+                });
+                modalValues = values;
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/PostAnnouncement/DeletePost',
+                    data: { announcement_id: announcement_id },
+                    success: function (response) {
+                        toastr.success(response);
+                        GetAnnouncement();
+                    },
+                    error: function (xhr) {
                         toastr.error(xhr.responseText);
                     }
                 });
@@ -356,12 +386,12 @@
                 </thead>
                 <tbody id="announcement_body">
                     @{
-                        if (Model.ModelList != null)
+                        if (Model.AnnouncementPagination.ModelList != null)
                         {
-                            if (Model.ModelList.Count > 0)
+                            if (Model.AnnouncementPagination.ModelList.Count > 0)
                             {   
-                                int indexx = Model.Index + 1;
-                                foreach (var item in Model.ModelList)
+                                int indexx = Model.AnnouncementPagination.Index + 1;
+                                foreach (var item in Model.AnnouncementPagination.ModelList)
                                 {
                                     <tr data-announcement="@item.Announcement_ID">
                                         <th scope="row">@indexx</th>
@@ -382,7 +412,7 @@
                                 <tr>
                                     <td colspan="5">
                                         <div class="container mt-3">
-                                            @Model.Pagenation
+                                            @Model.AnnouncementPagination.Pagenation
                                         </div>
                                     </td>
                                 </tr>

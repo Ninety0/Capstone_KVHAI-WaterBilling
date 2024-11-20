@@ -10,6 +10,7 @@
   <ItemGroup>
     <Content Remove="Views\Home\Print.cshtml" />
     <Content Remove="wwwroot\js\employeeSignup.js" />
+    <Content Remove="wwwroot\js\mini-event-calendar.min.js" />
     <Content Remove="wwwroot\js\notification.js" />
     <Content Remove="wwwroot\js\residentAccount.js" />
     <Content Remove="wwwroot\js\residentSignup.js" />
@@ -36,11 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Homeowner\Renter\" />
-    <Folder Include="Controllers\Staff\Cashier2\" />
     <Folder Include="Views\ClerkWaterBilling\" />
     <Folder Include="Views\Resident\Home\" />
-    <Folder Include="Views\Staff\Cashier2\" />
     <Folder Include="wwwroot\css\Resident\" />
     <Folder Include="wwwroot\GeneratedReports\" />
     <Folder Include="wwwroot\announcement_img\" />
@@ -52,6 +50,7 @@
     <None Include="wwwroot\js\notification.js" />
     <None Include="wwwroot\js\signalr.min.js" />
     <None Include="wwwroot\js\signalrSetupConnection.js" />
+    <None Include="wwwroot\js\mini-event-calendar.min.js" />
     <None Include="wwwroot\js\usableButTrahsRN.js" />
     <None Include="wwwroot\js\water-reading.js" />
     <None Include="wwwroot\js\staffAccount.js" />
@@ -97,6 +96,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Views\Resident\LoggedIn\NotificationMobile.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Views\Resident\LoggedIn\Renter\RenterAddress.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Update="Views\Resident\Reading\WaterConsumption.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

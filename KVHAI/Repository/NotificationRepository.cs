@@ -15,7 +15,7 @@ namespace KVHAI.Repository
         private readonly HubConnectionRepository _connectionRepository;
         private readonly ListRepository _listRepo;
 
-        public NotificationRepository(DBConnect dBConnect, IHubContext<NotificationHub> hubContext,IHubContext<StaffNotificationHub> staffHubContext, HubConnectionRepository connectionRepository, ListRepository listRepo)
+        public NotificationRepository(DBConnect dBConnect, IHubContext<NotificationHub> hubContext, IHubContext<StaffNotificationHub> staffHubContext, HubConnectionRepository connectionRepository, ListRepository listRepo)
         {
             _dbConnect = dBConnect;
             _hubContext = hubContext;
@@ -25,7 +25,7 @@ namespace KVHAI.Repository
         }
 
 
-
+        //MAYBE NEED TO MODIFIED
         public async Task<int> InsertNotificationPersonal(Notification notification)
         {
             try
@@ -35,9 +35,9 @@ namespace KVHAI.Repository
                 var url = string.IsNullOrEmpty(notification.Url) ? DBNull.Value.ToString() : notification.Url;
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO notification_tb(res_id,title,message,url,created_at,message_type) VALUES(@res_id,@title,@message,@url,@date,@type)", connection))
+                    using (var command = new SqlCommand("INSERT INTO notification_tb(uid,title,message,url,created_at,message_type) VALUES(@uid,@title,@message,@url,@date,@type)", connection))
                     {
-                        command.Parameters.AddWithValue("@res_id", notification.Resident_ID);
+                        command.Parameters.AddWithValue("@uid", notification.Resident_ID);
                         command.Parameters.AddWithValue("@title", notification.Title);
                         command.Parameters.AddWithValue("@message", notification.Message);
                         command.Parameters.AddWithValue("@url", url);
@@ -72,6 +72,23 @@ namespace KVHAI.Repository
                             {
                                 await _hubContext.Clients.All.SendAsync("ReceivedRequestPageNotificationToMyAddress", notification.Title, notification.Resident_ID);
                             }
+
+                            var hubConnections = await _connectionRepository.SelectHubConnection(notification.ListResident_ID);
+
+                            if (hubConnections != null && hubConnections.Count > 0)
+                            {
+                                var resIdList = notification.ListResident_ID;
+
+                                foreach (var hubConnection in hubConnections)
+                                {
+                                    foreach (var residentId in resIdList)
+                                    {
+                                        await _hubContext.Clients.Client(hubConnection.Connection_ID)
+                                            .SendAsync("ReceivedPersonalNotification", notification.Message, residentId);
+                                    }
+                                }
+                            }
+
                         }
 
                         return result;
@@ -84,6 +101,88 @@ namespace KVHAI.Repository
             }
         }
 
+        public async Task<int> InsertNotificationPersonalToUser(Notification notification)
+        {
+            try
+            {
+                int totalInserted = 0; // Accumulates the count of successful insertions
+                var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                var url = string.IsNullOrEmpty(notification.Url) ? DBNull.Value.ToString() : notification.Url;
+
+                var resIdList = notification.ListResident_ID;
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    foreach (var residentID in resIdList)
+                    {
+                        using (var command = new SqlCommand("INSERT INTO notification_tb(uid,title,message,url,created_at,message_type) VALUES(@uid,@title,@message,@url,@date,@type)", connection))
+                        {
+                            command.Parameters.AddWithValue("@uid", residentID);
+                            command.Parameters.AddWithValue("@title", notification.Title);
+                            command.Parameters.AddWithValue("@message", notification.Message);
+                            command.Parameters.AddWithValue("@url", url);
+                            command.Parameters.AddWithValue("@date", date);
+                            command.Parameters.AddWithValue("@type", notification.Message_Type);
+
+                            var result = await command.ExecuteNonQueryAsync();
+
+                            if (result > 0)
+                            {
+                                totalInserted++; // Increment count of successful inserts
+
+                                // Send notifications based on title content
+                                if (notification.Title.Contains("Announcement"))
+                                {
+                                    await _hubContext.Clients.All.SendAsync("ReceivedNotification", notification.Title, notification.Resident_ID);
+                                }
+                                else if (notification.Title.Contains("Water Reading"))
+                                {
+                                    await _hubContext.Clients.All.SendAsync("ReceivedReadingNotification", notification.Title, notification.Resident_ID);
+                                }
+                                else if (notification.Title.Contains("Water Billing"))
+                                {
+                                    await _hubContext.Clients.All.SendAsync("ReceivedBillingNotification", notification.Title, notification.Resident_ID);
+                                }
+                                else if (notification.Title.Contains("Register Address"))
+                                {
+                                    await _hubContext.Clients.All.SendAsync("ReceivedAddressNotification", notification.Title, notification.Resident_ID);
+                                }
+                                else if (notification.Title.Contains("My Address"))
+                                {
+                                    await _hubContext.Clients.All.SendAsync("ReceivedMyAddressNotification", notification.Title, notification.Resident_ID);
+                                }
+                                else if (notification.Title.Contains("Request Action"))
+                                {
+                                    await _hubContext.Clients.All.SendAsync("ReceivedRequestPageNotificationToMyAddress", notification.Title, notification.Resident_ID);
+                                }
+
+                                // Notify personal connections
+                                var hubConnections = await _connectionRepository.SelectHubConnection(residentID.ToString());
+
+                                if (hubConnections != null && hubConnections.Count > 0)
+                                {
+                                    foreach (var hubConnection in hubConnections)
+                                    {
+                                        await _hubContext.Clients.Client(hubConnection.Connection_ID)
+                                            .SendAsync("ReceivedPersonalNotification", notification.Message, residentID);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return totalInserted; // Return the total number of successful insertions
+            }
+            catch (Exception ex)
+            {
+                // Log exception (e.g., ILogger)
+                Console.WriteLine(ex.Message);
+                return 0; // Return 0 in case of failure
+            }
+        }
+
+
         //NOTIFICATION IN ADMIN END
         public async Task<int> SendNotificationToAdmin(Notification notification)
         {
@@ -94,9 +193,9 @@ namespace KVHAI.Repository
                 var url = string.IsNullOrEmpty(notification.Url) ? DBNull.Value.ToString() : notification.Url;
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO notification_tb(res_id,title,message,url,created_at,message_type) VALUES(@res_id,@title,@message,@url,@date,@type)", connection))
+                    using (var command = new SqlCommand("INSERT INTO notification_emp_tb(uid,title,message,url,created_at,message_type) VALUES(@uid,@title,@message,@url,@date,@type)", connection))
                     {
-                        command.Parameters.AddWithValue("@res_id", notification.Resident_ID);
+                        command.Parameters.AddWithValue("@uid", notification.Resident_ID);
                         command.Parameters.AddWithValue("@title", notification.Title);
                         command.Parameters.AddWithValue("@message", notification.Message);
                         command.Parameters.AddWithValue("@url", url);
@@ -113,61 +212,48 @@ namespace KVHAI.Repository
                             }
                             else if (notification.Title.Contains("Water Billing"))
                             {
-                                await _hubContext.Clients.All.SendAsync("ReceivedBillingNotification", notification.Title, notification.Resident_ID);
+                                await _staffHubContext.Clients.All.SendAsync("ReceiveOnlinePayment");
                             }
                             else if (notification.Title.Contains("Register Address"))
                             {
-                                await _hubContext.Clients.All.SendAsync("ReceivedAddressNotificationToAdmin", notification.Title, notification.Resident_ID);
+                                await _staffHubContext.Clients.All.SendAsync("ReceivedAddressNotificationToAdmin", notification.Title, notification.Resident_ID);
                             }
                             else if (notification.Title.Contains("Request Action"))
                             {
-                                await _hubContext.Clients.All.SendAsync("ReceivedRequestPageNotificationToAdmin", notification.Title, notification.Resident_ID);
+                                await _staffHubContext.Clients.All.SendAsync("ReceivedRequestPageNotificationToAdmin", notification.Title, notification.Resident_ID);
                             }
-                        }
+                            else if (notification.Title.Contains("Register Account"))
+                            {
+                                await _staffHubContext.Clients.All.SendAsync("ReceivedNewRegisterAccount", notification.Title, notification.Resident_ID);
+                            }
 
-                        return result;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                return 0;
-            }
-        }
+                            //TO REFRESH DATA IN DASHBOARD
+                            await _staffHubContext.Clients.All.SendAsync("ReceivedDataDashboard");
 
-        public async Task<int> SendNotificationPersonal(Notification notification)
-        {
-            try
-            {
-                int result = 0;
-                var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                var url = string.IsNullOrEmpty(notification.Url) ? DBNull.Value.ToString() : notification.Url;
-                using (var connection = await _dbConnect.GetOpenConnectionAsync())
-                {
-                    using (var command = new SqlCommand("INSERT INTO notification_tb(res_id,title,message,url,created_at,message_type) VALUES(@res_id,@title,@message,@url,@date,@type)", connection))
-                    {
-                        command.Parameters.AddWithValue("@res_id", notification.Resident_ID);
-                        command.Parameters.AddWithValue("@title", notification.Title);
-                        command.Parameters.AddWithValue("@message", notification.Message);
-                        command.Parameters.AddWithValue("@url", url);
-                        command.Parameters.AddWithValue("@date", date);
-                        command.Parameters.AddWithValue("@type", notification.Message_Type);
-
-                        result = await command.ExecuteNonQueryAsync();
-
-                        if (result > 0)
-                        {
-                            //await _hubContext.Clients.All.SendAsync("ReceivedPersonalNotification", notification.Title, notification.Resident_ID);
-
-                            var hubConnections = await _connectionRepository.SelectHubConnection(notification.Resident_ID);
+                            var hubConnections = await _connectionRepository.SelectHubConnectionEmployee(notification.ListEmployee_ID);
 
                             if (hubConnections != null && hubConnections.Count > 0)
                             {
+
                                 foreach (var hubConnection in hubConnections)
                                 {
-                                    int res_id = Convert.ToInt32(notification.Resident_ID);
+                                    await _staffHubContext.Clients.Client(hubConnection.Connection_ID)
+                                           .SendAsync("ReceivedPersonalNotification", notification.Message, notification.Resident_ID);
+                                }
+                            }
 
-                                    await _hubContext.Clients.Client(hubConnection.Connection_ID).SendAsync("ReceivedPersonalNotification", notification.Message, res_id);
+
+                            if (hubConnections != null && hubConnections.Count > 0)
+                            {
+                                var empIdList = notification.ListEmployee_ID;
+
+                                foreach (var hubConnection in hubConnections)
+                                {
+                                    foreach (var residentId in empIdList)
+                                    {
+                                        await _staffHubContext.Clients.Client(hubConnection.Connection_ID)
+                                            .SendAsync("ReceivedPersonalNotification", notification.Message, empIdList);
+                                    }
                                 }
                             }
                         }
@@ -182,7 +268,7 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<List<Notification>> GetNotificationByResident(string resident_id)
+        public async Task<List<Notification>> GetNotificationByResident(string residentID)
         {
             try
             {
@@ -192,9 +278,9 @@ namespace KVHAI.Repository
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                        SELECT * FROM notification_tb WHERE (res_id = @res_id OR message_type = 'all') AND is_read = 0", connection))
+                        SELECT * FROM notification_tb WHERE (uid = @uid OR message_type = 'all') AND is_read = 0", connection))
                     {
-                        command.Parameters.AddWithValue("@res_id", resident_id);
+                        command.Parameters.AddWithValue("@uid", residentID);
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
@@ -204,7 +290,7 @@ namespace KVHAI.Repository
                                 notifList.Add(new Notification
                                 {
                                     Notification_ID = reader.GetInt32(reader.GetOrdinal("notif_id")),
-                                    Resident_ID = reader.GetString(reader.GetOrdinal("res_id")),
+                                    Resident_ID = reader.GetString(reader.GetOrdinal("uid")),
                                     Title = reader.GetString(reader.GetOrdinal("title")),
                                     Message = reader.GetString(reader.GetOrdinal("message")),
                                     Is_Read = reader.GetBoolean(reader.GetOrdinal("is_read")),
@@ -251,6 +337,31 @@ namespace KVHAI.Repository
             }
         }
 
+        public async Task<int> UpdateReadNotificationEmployee(string notification_id)
+        {
+            try
+            {
+                int result = 0;
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("UPDATE notification_emp_tb SET is_read = @read WHERE notif_id = @notif_id", connection))
+                    {
+                        command.Parameters.AddWithValue("@notif_id", notification_id);
+                        command.Parameters.AddWithValue("@read", 1);
+
+                        result = await command.ExecuteNonQueryAsync();
+
+
+                        return result;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
         public async Task<int> SendNotificationAdminToAdmin(Notification notification)
         {
             try
@@ -260,9 +371,9 @@ namespace KVHAI.Repository
                 var url = string.IsNullOrEmpty(notification.Url) ? DBNull.Value.ToString() : notification.Url;
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("INSERT INTO notification_tb(res_id,title,message,url,created_at,message_type) VALUES(@res_id,@title,@message,@url,@date,@type)", connection))
+                    using (var command = new SqlCommand("INSERT INTO notification_emp_tb(uid,title,message,url,created_at,message_type) VALUES(@uid,@title,@message,@url,@date,@type)", connection))
                     {
-                        command.Parameters.AddWithValue("@res_id", notification.Resident_ID);
+                        command.Parameters.AddWithValue("@uid", notification.Resident_ID);
                         command.Parameters.AddWithValue("@title", notification.Title);
                         command.Parameters.AddWithValue("@message", notification.Message);
                         command.Parameters.AddWithValue("@url", url);
@@ -305,7 +416,7 @@ namespace KVHAI.Repository
         {
             try
             {
-                var notifications = await _listRepo.NotificationList();
+                var notifications = await _listRepo.NotificationListEmployee();
 
                 var notifList = new List<Notification>();
 

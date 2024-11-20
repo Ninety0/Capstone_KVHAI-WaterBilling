@@ -3,7 +3,7 @@
 }
 
 @section head{
-    
+
 }
 @section scripts{
     <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
@@ -46,18 +46,26 @@
 }
 
 @section sidebar{
-    <a href="/kvhai/staff/waterwork/home" class="nav-link text-light mb-2 d-flex align-items-center active">
-        <i class="bi bi-house-door me-2"></i> Reading
+    <a href="/kvhai/staff/waterwork/home" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Home
     </a>
-    
+    <a href="/kvhai/staff/waterwork/reading" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+    </a>
+
 }
 @section mobilenav{
-    <a href="/kvhai/staff/waterwork/home" class="nav-link text-light mb-2 d-flex align-items-center active">
-        <i class="bi bi-house-door me-2"></i> Reading
+    <a href="/kvhai/staff/waterwork/home" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Home
+    </a>
+
+    <a href="/kvhai/staff/waterwork/reading" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-pencil-square me-2"></i> Reading
     </a>
 }
+
 @{
-    if (Model.Count < 1)
+    if (Model.ListStreet.Count < 1)
     {
         <p>No Data Found!</p>
     }
@@ -108,7 +116,7 @@
                                     <span class="input-group-text" id="basic-addon1">Streets</span>
                                     <select id="select-street" class="form-select" name="Street" aria-label="Default select example" required>
                                         @{
-                                            foreach (var item in Model)
+                                            foreach (var item in Model.ListStreet)
                                             {
                                                 <option value="@item.Street_Name">@item.Street_Name</option>
                                             }

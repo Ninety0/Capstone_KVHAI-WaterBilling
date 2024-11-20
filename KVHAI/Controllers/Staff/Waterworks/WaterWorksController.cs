@@ -4,6 +4,8 @@ using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
+
 
 namespace KVHAI.Controllers.Staff.Waterworks
 {
@@ -17,10 +19,13 @@ namespace KVHAI.Controllers.Staff.Waterworks
         private readonly NotificationRepository _notificationRepository;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly IHubContext<StaffNotificationHub> _staffhubContext;
+        private readonly ResidentAddressRepository _residentAddressRepository;
+        private readonly NotificationRepository _notification;
 
-        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository, 
-        StreetRepository streetRepository, NotificationRepository notificationRepository, 
-        IHubContext<NotificationHub> hubContext, IHubContext<StaffNotificationHub> staffhubContext)
+
+        public WaterWorksController(AddressRepository addressRepository, WaterReadingRepository waterReadingRepository,
+        StreetRepository streetRepository, NotificationRepository notificationRepository,
+        IHubContext<NotificationHub> hubContext, IHubContext<StaffNotificationHub> staffhubContext, ResidentAddressRepository residentAddressRepository, NotificationRepository notification)
         {
             _addressRepository = addressRepository;
             _waterReadingRepository = waterReadingRepository;
@@ -28,14 +33,51 @@ namespace KVHAI.Controllers.Staff.Waterworks
             _notificationRepository = notificationRepository;
             _hubContext = hubContext;
             _staffhubContext = staffhubContext;
+            _residentAddressRepository = residentAddressRepository;
+            _notification = notification;
         }
         public async Task<IActionResult> Index()
         {
             try
             {
+                var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var username = User.Identity.Name;
+
+                var notifList = await _notification.GetNotificationByStaff(role);
+
                 var streets = await _streetRepository.GetAllStreets();
 
-                return View("~/Views/Staff/Waterworks/Index.cshtml", streets);
+                var viewmodel = new ModelBinding
+                {
+                    ListStreet = streets,
+                    NotificationStaff = notifList
+                };
+
+                return View("~/Views/Staff/Waterworks/Index.cshtml", viewmodel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        public async Task<IActionResult> Home()
+        {
+            try
+            {
+                var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var username = User.Identity.Name;
+
+                var notifList = await _notification.GetNotificationByStaff(role);
+
+                var viewmodel = new ModelBinding
+                {
+                    NotificationStaff = notifList
+                };
+
+                return View("~/Views/Staff/Waterworks/HomeWaterwork.cshtml", viewmodel);
             }
             catch (Exception ex)
             {
@@ -48,6 +90,8 @@ namespace KVHAI.Controllers.Staff.Waterworks
         {
             try
             {
+                var residentIDS = await _residentAddressRepository.GetResidentID(waterReading.Address_ID);
+
                 if (await _waterReadingRepository.CheckExistReading(waterReading.Address_ID))
                 {
                     return BadRequest("There is already existing reading for the address specified.");
@@ -61,24 +105,26 @@ namespace KVHAI.Controllers.Staff.Waterworks
 
                 var notif = new Notification
                 {
+                    Address_ID = waterReading.Address_ID,
                     Resident_ID = waterReading.Resident_ID,
                     Title = "Water Reading",
                     Message = "You have new water reading",
                     Url = "/kvhai/resident/water-consumption",
-                    Message_Type = "Personal"
+                    Message_Type = "Personal",
+                    ListResident_ID = residentIDS
                 };
-                var notificationResult = await _notificationRepository.InsertNotificationPersonal(notif);
+                var notificationResult = await _notificationRepository.InsertNotificationPersonalToUser(notif);
 
                 var notifStaff = new Notification
                 {
-                    Resident_ID = waterReading.Resident_ID,
+                    //Address_ID = waterReading.Address_ID,
                     Title = "Water Reading",
                     Message = "New water reading",
                     Url = "/kvhai/staff/water-reading/",
                     Message_Type = "clerk"
                 };
 
-                var notificationAdminResult = await _notificationRepository.SendNotificationAdminToAdmin(notif);
+                var notificationAdminResult = await _notificationRepository.SendNotificationAdminToAdmin(notifStaff);
                 await _staffhubContext.Clients.All.SendAsync("ReceivedWaterReading");
 
 

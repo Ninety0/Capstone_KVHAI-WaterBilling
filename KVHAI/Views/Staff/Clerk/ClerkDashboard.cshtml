@@ -1,99 +1,341 @@
-﻿@{ 
-    ViewBag.Title = "Clerk Dashboard";
+﻿@{
+    ViewBag.Title = "Dashboard";
 }
 
 @section head{
-    <link href="/lib/evo-calendar/css/evo-calendar.css" rel="stylesheet" />
-    <link href="/lib/evo-calendar/css/evo-calendar.midnight-blue.min.css" rel="stylesheet" />
-    <link href="/lib/evo-calendar/css/evo-calendar.royal-navy.min.css" rel="stylesheet" />
+    <link href="/css/simple-calendar.css" rel="stylesheet" />
+    <style>
+        .custom-progress {
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,.1);
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+            transition: all 0.5s ease-in-out;
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.5em 0.8em;
+        }
+
+        .progress-value {
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Progress bar color variations */
+        .progress-bar[data-value="0"] {
+            background-color: #6c757d;
+        }
+
+        .progress-bar[data-value="25"] {
+            background-color: #dc3545;
+        }
+
+        .progress-bar[data-value="50"] {
+            background-color: #ffc107;
+        }
+
+        .progress-bar[data-value="75"] {
+            background-color: #0dcaf0;
+        }
+
+        .progress-bar[data-value="100"] {
+            background-color: #198754;
+        }
+    </style>
 }
 
-@section Scripts{
-    <script src="~/lib/chartjs/chart.umd.min.js"></script>
-    <script src="~/lib/evo-calendar/js/evo-calendar.min.js"></script>
 
-    <!--CHART JS SCRIPTS-->
+@section sidebar{
+    <a href="/kvhai/staff/clerkhome/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/water-reading/" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-file-earmark-text me-2"></i> Reading
+    </a>
+    <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Billing
+    </a>
+
+}
+
+@section mobilenav{
+    <a href="/kvhai/staff/clerkhome/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/water-reading/" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-file-earmark-text me-2"></i> Reading
+    </a>
+    <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Billing
+    </a>
+
+}
+
+
+<div class="row d-flex align-items-stretch">
+    <div class="col-xl-5">
+        <div class="container-fluid h-100 bg-white border border-2 p-2 rounded shadow-sm">
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Task</h5>
+            <div class="header-border"></div>
+            <!--EVO CALENDAR-->
+            <div id="calendars"></div>
+        </div>
+    </div>
+    <div class="col-xl-7">
+        <div class="container-fluid h-100 bg-white border rounded shadow-sm p-2">
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Water Reading by Location</h5>
+
+            <!-- Location 1 -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-medium">Phase 2 BLK 51 to 143</span>
+                    <span class="badge bg-primary">Location 1</span>
+                </div>
+                <div class="progress" style="height: 15px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                         role="progressbar"
+                         data-location="location1"
+                         style="width: 0%"
+                         aria-valuenow="0"
+                         aria-valuemin="0"
+                         aria-valuemax="100">0%</div>
+                </div>
+            </div>
+
+            <!-- Location 2 -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-medium">Phase 1 BLK 41 to 48</span>
+                    <span class="badge bg-primary">Location 2</span>
+                </div>
+                <div class="progress" style="height: 15px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                         role="progressbar"
+                         data-location="location2"
+                         style="width: 0%"
+                         aria-valuenow="0"
+                         aria-valuemin="0"
+                         aria-valuemax="100">0%</div>
+                </div>
+            </div>
+
+            <!-- Location 3 -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-medium">BLK 24 to 40</span>
+                    <span class="badge bg-primary">Location 3</span>
+                </div>
+                <div class="progress" style="height: 15px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                         role="progressbar"
+                         data-location="location3"
+                         style="width: 0%"
+                         aria-valuenow="0"
+                         aria-valuemin="0"
+                         aria-valuemax="100">0%</div>
+                </div>
+            </div>
+
+            <!-- Location 4 -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-medium">BLK 7 to 23</span>
+                    <span class="badge bg-primary">Location 4</span>
+                </div>
+                <div class="progress" style="height: 15px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                         role="progressbar"
+                         data-location="location4"
+                         style="width: 0%"
+                         aria-valuenow="0"
+                         aria-valuemin="0"
+                         aria-valuemax="100">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/water-reading.js" defer></script>
+    <script src="~/js/jquery.simple-calendar.min.js"></script>
     <script>
-        const ctx = document.getElementById('myChart');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.1,
-                    borderColor: '#052771'
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+        $(document).ready(function () {
+            var container = $("#calendars").simpleCalendar({
+                displayEvent: true,
+                displayYear: true,
+                disableEventDetails: false
+            });
+
+            var calendar = container.data('plugin_simpleCalendar');
+
+            function setWaterReadingEvents() {
+                try {
+                    const events = [];
+                    const currentDate = new Date();
+
+                    for (let i = 0; i < 12; i++) {
+                        const year = currentDate.getFullYear() + Math.floor((currentDate.getMonth() + i) / 12);
+                        console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
+                        const month = (currentDate.getMonth() + i) % 12;
+                        console.log(month);
+
+
+                        for (let day = 6; day <= 28; day++) {
+                            const eventDate = new Date(year, month, day);
+                            if (day >= 6 && day <= 9) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Billing <br/> Phase 2 BLK 51 to 143 '
+                                });
+                            }
+                            if (day > 9 && day <= 12) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Billing <br/> Phase 1 BLK 41 to 48 '
+                                });
+                            }
+                            if (day > 22 && day <= 25) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Billing <br/> BLK 24 to 40 '
+                                });
+                            }
+                            if (day > 25 && day <= 28) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Billing <br/> BLK 7 to 23 '
+                                });
+                            }
+
+
+                        }
                     }
+
+                    console.log("Events to be set:", events);
+
+                    // Try setting events directly in the options
+                    container.simpleCalendar({
+                        events: events,
+                        displayEvent: true,
+                        disableEventDetails: false
+                    });
+
+                    // Also try the setEvents method
+                    calendar.setEvents(events);
+                } catch (error) {
+                    console.error("Error in setWaterReadingEvents:", error);
                 }
             }
-        });
 
-        const ctx1 = document.getElementById('water_reading');
-        new Chart(ctx1, {
-            type: 'doughnut',
-            data: {
-                labels: [
-                    'Green',
-                    'Red',
-                ],
-                datasets: [{
-                    label: 'My First Dataset',
-                    data: [300, 50],
-                    backgroundColor: [
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 99, 132)',
-                    ],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                circumference: 180,
-                rotation: -90,
-                borderWidth: 1
+            // Try setting events immediately and after a delay
+            setWaterReadingEvents();
+            setTimeout(setWaterReadingEvents, 500);
+        });
+    </script>
+    <script>
+        //$(document).ready(function () {
+        //    const connection = new signalR.HubConnectionBuilder()
+        //        .withUrl("/resident/water-consumption")
+        //        .withAutomaticReconnect([0, 2000, 10000, 30000]) // Retry after 0s, 2s, 10s, and 30s
+        //        .build();
+
+        //    connection.start().then(function () {
+        //        toastr.info("Connected to water-consumption hub");
+        //    }).catch(function (err) {
+        //        return console.error(err.toString());
+        //    });
+
+        //    // Optional: Log reconnection attempts
+        //    connection.onreconnecting((error) => {
+        //        toastr.warning('Reconnecting to water-consumption hub...');
+        //        console.log('Reconnecting...', error);
+        //    });
+
+        //    connection.onreconnected(() => {
+        //        toastr.success('Reconnected to water-consumption hub');
+        //    });
+
+        //    connection.onclose((error) => {
+        //        toastr.error('Disconnected from water-consumption hub. Will retry connection...');
+        //        console.log('Connection closed', error);
+        //    });
+
+        //});
+    </script>
+    <script>
+        $(document).ready(function () {
+            GetWaterReadingPercent();
+
+            function GetWaterReadingPercent() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/Clerk/GetPercent',
+                    success: function (response) {
+                        console.log(response);
+                        // Iterate through the response data
+                        $.each(response, function (index, data) {
+                            // Find the progress bar for each location using its data-location attribute
+                            const $progressBar = $(`.progress-bar[data-location='${data.location}']`);
+                            if ($progressBar.length) {
+                                // Update the progress bar width and aria-valuenow attribute
+                                $progressBar.css('width', `${data.percentage}%`)
+                                    .attr('aria-valuenow', data.percentage)
+                                    .text(`${data.percentage}%`);
+
+                                // Apply a color class based on the percentage
+                                $progressBar.removeClass('bg-secondary bg-danger bg-warning bg-info bg-success');
+                                if (data.percentage === 0) {
+                                    $progressBar.addClass('bg-secondary');
+                                } else if (data.percentage <= 25) {
+                                    $progressBar.addClass('bg-danger');
+                                } else if (data.percentage <= 50) {
+                                    $progressBar.addClass('bg-warning');
+                                } else if (data.percentage <= 75) {
+                                    $progressBar.addClass('bg-info');
+                                } else {
+                                    $progressBar.addClass('bg-success');
+                                }
+                            }
+                        });
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
             }
         });
     </script>
 
 }
-
-@section sidebar{
-    <button class="btn-navs active">Dashboard</button>
-    <button class="btn-navs ">TEST2</button>
-    <button class="btn-navs ">TEST3</button>
-}
-@section mobilenav{
-    <button class="btn-navs active">TEST1</button>
-    <button class="btn-navs ">TEST2</button>
-    <button class="btn-navs ">TEST3</button>
-}
-
-<div class="row row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly">
-    <div class="col-xl-7 content-container">
-        <div class="p-2">
-            <span class="content-header">Water Consumption Analytics</span>
-        </div>
-        <div class="header-border"></div>
-        <div class="container">
-            <canvas id="myChart"></canvas>
-        </div>
-    </div>
-    <div class="col-xl-4 content-container">
-        <div class="p-2">
-            <span class="content-header">Task</span>
-        </div>
-        <div class="header-border"></div>
-        <div class="container">
-            <canvas id="water_reading"></canvas>
-        </div>
-    </div>
-</div>
-

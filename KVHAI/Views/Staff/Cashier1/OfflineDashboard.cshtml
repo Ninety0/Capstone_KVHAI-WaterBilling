@@ -1,0 +1,260 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+}
+
+@section head{
+    <link href="/css/simple-calendar.css" rel="stylesheet" />
+}
+
+
+@section sidebar{
+    <a href="/kvhai/staff/offlinepayment/home" class="nav-link text-light mb-2 d-flex align-items-center active ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/offlinepayment/" class="nav-link text-light mb-2 d-flex align-items-center  ">
+        <i class="bi bi-wallet2 me-2"></i> Payment
+    </a>
+
+}
+
+@section mobilenav{
+    <a href="/kvhai/staff/offlinepayment/home" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/offlinepayment/" class="nav-link text-light mb-2 d-flex align-items-center  ">
+        <i class="bi bi-wallet2 me-2"></i> Payment
+    </a>
+
+}
+
+
+<div class="row d-flex align-items-stretch">
+    <div class="col-12">
+        <div class="container-fluid h-100 bg-white border border-2 p-2 rounded shadow-sm">
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Payment History</h5>
+            <div class="header-border"></div>
+            <!--EVO CALENDAR-->
+
+            <table class="table" id="payment_table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Payment ID</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Bill</th>
+                        <th scope="col">Paid By</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Method</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+
+                        if (Model.PaymentPagination.ModelList != null)
+                        {
+                            if (Model.PaymentPagination.NumberOfData < 1)
+                            {
+                                <tr>
+                                    <td class="text-center text-uppercase p-5" colspan="14"><strong>No Data Found!</strong></td>
+                                </tr>
+                            }
+                            else
+                            {
+
+                                foreach (var item in Model.PaymentPagination.ModelList)
+                                {
+                                    var address = string.Join(" ", $"Blk {item.Block}", $"Lot {item.Lot}", $"{item.Street} St.");
+                                    int indexx = Model.PaymentPagination.Index + 1;
+                                    <tr id="payment_row">
+                                        <td>@indexx</td>
+                                        <td>@item.Payment_ID</td>
+                                        <td data-addr="@item.Address_ID"
+                                            data-blk="@item.Block"
+                                            data-lot="@item.Lot"
+                                            data-st="@item.Street">
+                                            @address
+                                        </td>
+                                        <td>@item.Paid_Amount</td>
+                                        <td>@item.Bill</td>
+                                        <td data-res="@item.Resident_ID">@item.Paid_By</td>
+                                        <td>@item.Payment_Status</td>
+                                        <td>@item.Payment_Date</td>
+                                        <td>@item.Payment_Method</td>
+                                        <td>
+                                            <div class="">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    ...
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" data-fileType="pdf" id="btnPdf" href="#">PDF</a></li>
+                                                    <li><a class="dropdown-item" data-fileType="excel" id="btnExcel" href="#">EXCEL</a></li>
+                                                    <li><a class="dropdown-item" data-fileType="doc" id="btnDocument" href="#">DOCUMENT</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    indexx++;
+                                }
+                            }
+                        }
+                    }
+
+                    <tr>
+                        <td colspan="13">
+                            <div class="container-fluid mt-3">
+                                @Model.PaymentPagination.Pagenation
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/water-reading.js" defer></script>
+    <script src="~/js/jquery.simple-calendar.min.js"></script>
+    <script>
+        //$(document).ready(function () {
+        //    const connection = new signalR.HubConnectionBuilder()
+        //        .withUrl("/resident/water-consumption")
+        //        .withAutomaticReconnect([0, 2000, 10000, 30000]) // Retry after 0s, 2s, 10s, and 30s
+        //        .build();
+
+        //    connection.start().then(function () {
+        //        toastr.info("Connected to water-consumption hub");
+        //    }).catch(function (err) {
+        //        return console.error(err.toString());
+        //    });
+
+        //    // Optional: Log reconnection attempts
+        //    connection.onreconnecting((error) => {
+        //        toastr.warning('Reconnecting to water-consumption hub...');
+        //        console.log('Reconnecting...', error);
+        //    });
+
+        //    connection.onreconnected(() => {
+        //        toastr.success('Reconnected to water-consumption hub');
+        //    });
+
+        //    connection.onclose((error) => {
+        //        toastr.error('Disconnected from water-consumption hub. Will retry connection...');
+        //        console.log('Connection closed', error);
+        //    });
+
+        //});
+    </script>
+    <script>
+        $(document).ready(function () {
+
+            $(document).on('click', '.dropdown-item', function () {
+                var _fileType = $(this).data('filetype'); // Get the file type from the clicked item
+                var tr = $(this).closest('#payment_row'); // Get the file type from the clicked item
+
+                console.log(_fileType);
+
+                var payment = {
+                    Payment_ID: tr.find('td:eq(1)').text(),
+                    Paid_By: tr.find('td:eq(5)').text(),
+                    Block: parseInt(tr.find('td:eq(2)').data('blk')),
+                    Lot: parseInt(tr.find('td:eq(2)').data('lot')),
+                    Street: tr.find('td:eq(2)').data('st'),
+                    Paid_Amount: parseFloat(tr.find('td:eq(3)').text()).toFixed(2),  // convert to decimal
+                    Bill: parseFloat(tr.find('td:eq(4)').text()).toFixed(2),         // convert to decimal
+                    Payment_Method: 'offline payment',
+                    Payment_Date: tr.find('td:eq(7)').text()
+                };
+
+                console.log(Object.keys(payment).length);
+
+                if (Object.keys(payment).length > 0) {
+                    var formData = {
+                        Payment: payment,
+                        FileType: _fileType
+                    };
+
+                    var formData1 = {
+                        payment: payment,
+                        fileType: _fileType
+                    };
+
+                    console.log(JSON.stringify(formData))
+
+                    $.ajax({
+                        url: '/OfflinePayment/SaveAs',
+                        type: 'POST',
+                        data: formData1,
+                        //data: JSON.stringify(formData),
+                        //contentType: 'application/json; charset=utf-8',
+                        xhrFields: {
+                            responseType: 'blob' // This is crucial for handling binary data from the server
+                        },
+                        success: function (data, status, xhr) {
+                            var blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
+                            var link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            var fileName = xhr.getResponseHeader('Content-Disposition').split(';')[1].split('=')[1].trim();
+                            link.download = fileName;
+                            link.click();
+
+                            toastr.success("The file was downloaded");
+                        },
+                        error: function (xhr, status, err_m) {
+                            if (xhr.responseText) {
+                                console.log(xhr.responseText);
+                            } else {
+                                console.log("An error occurred while processing your request.");
+                            }
+                        }
+                    });
+                } else {
+                    alert("Please select at least one item to save.");
+                }
+            });
+
+            function onpagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
+
+                var array = {
+                    page_index: i
+                };
+
+
+                $.ajax({
+                    url: '/OnlinePayment/OnlinePaymentPagination',
+                    type: "POST",
+                    data: array,
+                    success: function (response) {
+                        var result = $(response).find("#payment_table").html();
+                        console.log(result);
+                        $('#payment_table').html(result)
+
+                        //var btnEdit = $('.btn-res-edit');
+                        //var btnDelete = $('.btn-res-delete');
+
+                        //if (_isActive) {
+                        //    $('.btn-res-edit').addClass('disabled');
+                        //    $('.btn-res-delete').addClass('disabled');
+
+                        //}
+                        //else {
+                        //    $('.btn-res-edit').removeClass('disabled');
+                        //    $('.btn-res-delete').removeClass('disabled');
+                        //}
+                    },
+                    error: function (xhr, status, error_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+    </script>
+
+}

@@ -8,7 +8,7 @@ namespace KVHAI.Routes
         {
             endpoint.MapControllerRoute(
                 name: "StaffLogin",
-                pattern: "kvhai/staff/login",
+                pattern: "/kvhai/staff/login",
                 defaults: new { controller = "AdminLogin", action = "Index" }
             );
 
@@ -20,7 +20,7 @@ namespace KVHAI.Routes
 
             endpoint.MapControllerRoute(
                 name: "StaffForgotPass",
-                pattern: "kvhai/staff/login/forgot-password",
+                pattern: "/kvhai/staff/login/forgot-password",
                 defaults: new { controller = "AdminLogin", action = "Forgot" }
             );
 
@@ -45,7 +45,7 @@ namespace KVHAI.Routes
 
             endpoint.MapControllerRoute(
                name: "PostAnnouncement",
-               pattern: "kvhai/staff/announcment/",
+               pattern: "kvhai/staff/announcement/",
                defaults: new { controller = "PostAnnouncement", action = "Index" }
            );
 
@@ -63,6 +63,12 @@ namespace KVHAI.Routes
 
             #region CLERK
             endpoint.MapControllerRoute(
+                name: "ClerkDashboard",
+                pattern: "kvhai/staff/clerkhome/",
+                defaults: new { controller = "Clerk", action = "Dashboard" }
+            );
+
+            endpoint.MapControllerRoute(
                 name: "ReadingClerk",
                 pattern: "kvhai/staff/water-reading/",
                 defaults: new { controller = "Clerk", action = "Index" }
@@ -74,15 +80,26 @@ namespace KVHAI.Routes
                 defaults: new { controller = "ClerkWaterBilling", action = "Index" }
             );
 
-            
+
             #endregion
 
             /////////////////////////////////////////////////////////////////
             #region CASHIER ON
+            endpoint.MapControllerRoute(
+               name: "CashierOnlinePayment",
+               pattern: "/kvhai/staff/onlinepayment/home",
+               defaults: new { controller = "OnlinePayment", action = "Index" }
+           );
             #endregion
 
             ////////////////////////////////////////////////////////////////
             #region CASHIER OFF
+            endpoint.MapControllerRoute(
+               name: "CashierOfflinePaymentHistory",
+               pattern: "/kvhai/staff/offlinepayment/home",
+               defaults: new { controller = "OfflinePayment", action = "History" }
+           );
+
             endpoint.MapControllerRoute(
                 name: "CashierOfflinePayment",
                 pattern: "/kvhai/staff/offlinepayment/",
@@ -94,8 +111,14 @@ namespace KVHAI.Routes
 
             #region WATER WORKS
             endpoint.MapControllerRoute(
-                name: "WaterWorks",
+                name: "WaterWorksHome",
                 pattern: "kvhai/staff/waterwork/home",
+                defaults: new { controller = "WaterWorks", action = "Home" }
+            );
+
+            endpoint.MapControllerRoute(
+                name: "WaterWorks",
+                pattern: "kvhai/staff/waterwork/reading",
                 defaults: new { controller = "WaterWorks", action = "Index" }
             );
             #endregion
@@ -108,6 +131,11 @@ namespace KVHAI.Routes
             endpoint.MapHub<StaffNotificationHub>("/kvhai/staff/reading");
 
             endpoint.MapHub<StaffNotificationHub>("/staff/notification");
+            endpoint.MapHub<StaffNotificationHub>("/staff/account");
+            endpoint.MapHub<StaffNotificationHub>("/staff/register-address");
+            endpoint.MapHub<StaffNotificationHub>("/staff/my-address");
+            endpoint.MapHub<StaffNotificationHub>("/staff/waterbilling");
+            endpoint.MapHub<StaffNotificationHub>("/staff/dashboard");
 
             #endregion
         }

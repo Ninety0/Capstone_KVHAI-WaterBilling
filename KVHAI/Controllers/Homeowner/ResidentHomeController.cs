@@ -29,7 +29,7 @@ namespace KVHAI.Controllers.Homeowner
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             var streets = await _streetRepository.GetAllStreets();
-            var notifList = await _notification.GetNotificationByResident("1");
+            var notifList = await _notification.GetNotificationByResident(residentID);
 
 
 
@@ -46,21 +46,16 @@ namespace KVHAI.Controllers.Homeowner
         public async Task<IActionResult> Index()
         {
             var username = User.Identity.Name;
-            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var res_id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var requestAddress = await _residentAddress.GetRentalApplicationForRenter(residentID);
-
-
-            var notifList = await _notification.GetNotificationByResident(residentID);
+            var notifList = await _notification.GetNotificationByResident(res_id);
 
             var viewModel = new ModelBinding
             {
-                Resident_ID = residentID,
+                Resident_ID = res_id,
                 Username = username,
                 Role = role,
                 NotificationResident = notifList,
-                RequestAddressList = requestAddress
-
             };
             //await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
             if (role == "2")//renter
@@ -99,6 +94,44 @@ namespace KVHAI.Controllers.Homeowner
             }
 
             return Ok("Address added successfully. Please wait for tenant approve your application.");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApplication(string resident_address_tb)
+        {
+            var res_id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var requestAddress = await _residentAddress.GetRentalApplicationForRenter(res_id);
+
+            var viewModel = new ModelBinding
+            {
+                RequestAddressList = requestAddress
+
+            };
+            //await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
+            if (role == "2")//renter
+            {
+                return View("~/Views/Resident/LoggedIn/Renter/RenterHome.cshtml", viewModel);
+            }
+            else
+            {
+                return BadRequest("There was an error fetching the application.");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CancelRequest(string resident_address)
+        {
+            var cancelResult = await _residentAddress.CancelRequest(resident_address);
+
+            if (cancelResult < 1)
+            {
+                return BadRequest("There was an error processing your request. Please try again later.");
+            }
+
+            return Ok("Your application was canceled.");
+
         }
     }
 }

@@ -94,11 +94,11 @@ namespace KVHAI.Controllers.Homeowner
             var role = authCredentials.Role;
             if (role == "1")
             {
-                return Ok(new { redirectUrl = "/kvhai/resident/home" });
+                return Ok(new { redirectUrl = "/kvhai/resident/announcement" });
             }
             else
             {
-                return Ok(new { redirectUrl = "/kvhai/resident/rental/home" });
+                return Ok(new { redirectUrl = "/kvhai/resident/announcement" });
             }
             //return Ok(new { redirectUrl = Url.Action("LoggedIn", "LoggedIn") });
             //ViewData["Username"] = credentials.Username;

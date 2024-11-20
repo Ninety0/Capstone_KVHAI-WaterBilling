@@ -3,6 +3,7 @@ using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
@@ -13,17 +14,26 @@ namespace KVHAI.Controllers.Staff.Admin
         private readonly ResidentRepository _residentRepository;
         private readonly AddressRepository _addressRepository;
         private readonly IWebHostEnvironment _environment;
+        private readonly NotificationRepository _notification;
 
-        public AdminAccountController(EmployeeRepository employeeRepository, ResidentRepository residentRepository, AddressRepository addressRepository, IWebHostEnvironment environment)
+
+        public AdminAccountController(EmployeeRepository employeeRepository, ResidentRepository residentRepository, AddressRepository addressRepository, IWebHostEnvironment environment, NotificationRepository notification)
         {
             _employeeRepository = employeeRepository;
             _residentRepository = residentRepository;
             _addressRepository = addressRepository;
             _environment = environment;
+            _notification = notification;
         }
 
         public async Task<IActionResult> Index()
         {
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
             //EMPLOYEE
             var pagination1 = new Pagination<Employee>
             {
@@ -36,7 +46,7 @@ namespace KVHAI.Controllers.Staff.Admin
             //RESIDENT
             var pagination2 = new Pagination<AddressWithResident>
             {
-                ModelList = await _residentRepository.GetAllResidentAsync(0, 10),
+                ModelList = await _residentRepository.GetAllResidentAsyncAccount(0, 10),
                 NumberOfData = await _residentRepository.CountResidentData("false"),
                 ScriptName = "respagination"
             };
@@ -45,7 +55,8 @@ namespace KVHAI.Controllers.Staff.Admin
             var viewmodel = new ModelBinding
             {
                 EmployeePagination = pagination1,
-                ResidentPagination = pagination2
+                ResidentPagination = pagination2,
+                NotificationStaff = notifList
             };
             return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
         }
@@ -107,11 +118,11 @@ namespace KVHAI.Controllers.Staff.Admin
 
                 var pagination2 = new Pagination<AddressWithResident>
                 {
-                    NumberOfData = await _residentRepository.CountResidentData(is_verified, category, resSearch),
+                    NumberOfData = await _residentRepository.CountResidentDataAccount(category, resSearch),
                     ScriptName = "respagination"
                 };
                 pagination2.set(10, 5, page_index);
-                pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10, is_verified, category, resSearch);
+                pagination2.ModelList = await _residentRepository.GetAllResidentAsyncAccount(pagination2.Offset, 10, category, resSearch);
 
                 var viewmodel = new ModelBinding
                 {

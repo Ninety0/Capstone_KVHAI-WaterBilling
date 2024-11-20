@@ -2,11 +2,15 @@
 using KVHAI.Hubs;
 using KVHAI.Models;
 using KVHAI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
+
 
 namespace KVHAI.Controllers.Staff
 {
+    [Authorize(AuthenticationSchemes = "AdminCookieAuth", Roles = "admin")]
     public class PostAnnouncementController : Controller
     {
         private readonly DBConnect _dBConnect;
@@ -14,7 +18,6 @@ namespace KVHAI.Controllers.Staff
         private readonly IHubContext<AnnouncementHub> _hubContext;
         private readonly NotificationRepository _notification;
         private readonly Pagination<Announcement> _pagination;
-
 
 
         public PostAnnouncementController(AnnouncementRepository announcementRepository, DBConnect dBConnect, IHubContext<AnnouncementHub> hubContext, NotificationRepository notification, Pagination<Announcement> pagination)
@@ -27,13 +30,29 @@ namespace KVHAI.Controllers.Staff
         }
         public async Task<IActionResult> Index()
         {
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
             var pagination = new Pagination<Announcement>();
-            return View("~/Views/Staff/PostAnnouncement/PostAnnouncement.cshtml", pagination);
+
+            var viewmodel = new ModelBinding
+            {
+                AnnouncementPagination = pagination,
+                NotificationStaff = notifList
+            };
+            return View("~/Views/Staff/PostAnnouncement/PostAnnouncement.cshtml", viewmodel);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAnnouncement(int page_index = 1)
         {
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
 
             var pagination = new Pagination<Announcement>
             {
@@ -43,7 +62,14 @@ namespace KVHAI.Controllers.Staff
             };
             pagination.set(10, 5, page_index);
             pagination.ModelList = await _announcementRepository.GetAllAnnouncement(pagination.Offset, 10);
-            return View("~/Views/Staff/PostAnnouncement/PostAnnouncement.cshtml", pagination);
+
+            var viewmodel = new ModelBinding
+            {
+                AnnouncementPagination = pagination,
+                NotificationStaff = notifList
+            };
+
+            return View("~/Views/Staff/PostAnnouncement/PostAnnouncement.cshtml", viewmodel);
         }
 
         [HttpGet]
@@ -58,7 +84,7 @@ namespace KVHAI.Controllers.Staff
 
             var announce = announcements.FirstOrDefault();
 
-            return Ok(new {announce});
+            return Ok(new { announce });
         }
 
         [AutoValidateAntiforgeryToken]
@@ -91,7 +117,7 @@ namespace KVHAI.Controllers.Staff
             {
                 Title = "Announcement",
                 Message = "New announcement was posted!",
-                Url = "/kvhai/resident/home/",
+                Url = "/kvhai/resident/announcement",
                 Message_Type = "All"
             };
 
@@ -130,7 +156,22 @@ namespace KVHAI.Controllers.Staff
                 }
             }
 
+            await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
             return Ok("The announcement was updated successfully.");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeletePost(string announcement_id)
+        {
+            var result = await _announcementRepository.DeleteAnnouncement(announcement_id);
+
+            if (result < 1)
+            {
+                return BadRequest("There was an error deleting the announcement. Please try again later.");
+            }
+
+            await _hubContext.Clients.All.SendAsync("ShowAnnouncement");
+            return Ok("The announcement was deleted successfully.");
         }
 
 

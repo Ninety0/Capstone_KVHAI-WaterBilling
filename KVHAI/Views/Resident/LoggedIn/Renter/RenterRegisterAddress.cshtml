@@ -22,19 +22,8 @@
     </style>
 }
 
-
 @section sidebar{
-    <a href="/kvhai/resident/home" class="nav_sidebar  mb-3 ">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-house nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                Home
-            </div>
 
-        </div>
-    </a>
     <a href="/kvhai/resident/announcement" class="nav_sidebar  mb-3 ">
         <div class="row">
             <div class="col-4  d-flex justify-content-center">
@@ -57,18 +46,8 @@
 
         </div>
     </a>
-    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-crosshairs nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                My Address
-            </div>
 
-        </div>
-    </a>
-    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3">
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3">
         <div class="row">
             <div class="col-4  d-flex justify-content-center">
                 <i class="fa-solid fa-gauge nav_icon"></i>
@@ -89,18 +68,63 @@
         </div>
     </a>
 
+    @if (role == "1")
+    {
+        <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    My Address
+                </div>
+
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental-application" class="nav_sidebar  mb-3 ">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Rental
+                </div>
+
+            </div>
+        </a>
+    }
+    else
+    {
+        <a href="/kvhai/resident/renter-address" class="nav_sidebar mb-3">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    My Address
+                </div>
+
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental/home" class="nav_sidebar  mb-3 ">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Rental
+                </div>
+
+            </div>
+        </a>
+    }
+
 }
 
 @section mobilenav{
-    <a href="/kvhai/resident/home" class="nav_sidebar mb-3  ps-3">
-        <div class="d-flex">
-            <i class="fa-solid fa-house nav_icon"></i>
-            <span class="ms-3">
-                Home
-            </span>
 
-        </div>
-    </a>
     <a href="/kvhai/resident/announcement" class="nav_sidebar  mb-3 ps-3">
         <div class="d-flex">
             <i class="fa-solid fa-bullhorn"></i>
@@ -119,15 +143,8 @@
 
         </div>
     </a>
-    <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
-        <div class=" d-flex">
-            <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
-            <span class="ms-3">
-                My Address
-            </span>
-        </div>
-    </a>
-    <a href="/kvhai/resident/water-consumption" class="nav_sidebar mb-3 ps-3">
+
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3 ps-3">
         <div class="d-flex">
             <i class="fa-solid fa-gauge mobile_nav_icon"></i>
             <span class="ms-3">
@@ -143,7 +160,53 @@
             </span>
         </div>
     </a>
+
+    @if (role == "1") // owner
+    {
+        <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+                <span class="ms-3">
+                    My Address
+                </span>
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental-application" class="nav_sidebar mb-3  ps-3">
+            <div class="d-flex">
+                <i class="fa-solid fa-house nav_icon"></i>
+                <span class="ms-3">
+                    Rental Application
+                </span>
+
+            </div>
+        </a>
+    }
+    else //renter
+    {
+        <a href="/kvhai/resident/renter-address" class="nav_sidebar mb-3 ps-3">
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+                <span class="ms-3">
+                    My Address
+                </span>
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental/home" class="nav_sidebar mb-3  ps-3">
+            <div class="d-flex">
+                <i class="fa-solid fa-house nav_icon"></i>
+                <span class="ms-3">
+                    Rental Application
+                </span>
+
+            </div>
+        </a>
+    }
+
+    
 }
+
 
 
 <!-- Modal -->

@@ -13,11 +13,17 @@ namespace KVHAI.Models
         public List<Resident>? ResidentsAddress { get; set; }
         public List<Announcement>? AnnouncementList { get; set; }
         public List<Notification>? NotificationResident { get; set; }
+        public List<Notification>? NotificationStaff { get; set; }
         public int CountNotificationResident { get; set; }
+        public int CountData { get; set; }
         public List<WaterBillWithAddress>? UnpaidResidentWaterBilling { get; set; }
+        public List<WaterBillWithAddress>? PaidResidentWaterBilling { get; set; }
 
         public Pagination<Employee>? EmployeePagination { get; set; }
+        public Pagination<Announcement>? AnnouncementPagination { get; set; }
+        public Pagination<Streets>? StreetPagination { get; set; }
         public Pagination<AddressWithResident>? ResidentPagination { get; set; }
+        public Pagination<Payment>? PaymentPagination { get; set; }
 
         public List<WaterReading>? PreviousReading { get; set; }
         public List<WaterReading>? CurrentReading { get; set; }
@@ -29,6 +35,8 @@ namespace KVHAI.Models
         public string Date { get; set; } = string.Empty;
 
         public List<ReportWaterBilling>? Items { get; set; } = new List<ReportWaterBilling>();
+        public List<Payment>? ItemPayment { get; set; } = new List<Payment>();
+        public Payment Payment { get; set; }
         public string FileType { get; set; } = string.Empty;
 
         public List<Streets>? ListStreet { get; set; }
@@ -38,6 +46,7 @@ namespace KVHAI.Models
 
         public List<WaterReading>? AllWaterConsumptionByResident { get; set; }
         public List<ResidentAddress> RequestAddressList { get; set; }
+        public List<RequestDetails> RequestDetailList { get; set; }
 
 
     }

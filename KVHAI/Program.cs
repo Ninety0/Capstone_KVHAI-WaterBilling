@@ -6,6 +6,7 @@ using KVHAI.Models;
 using KVHAI.Repository;
 using KVHAI.Routes;
 using KVHAI.SubscribeSqlDependency;
+using Microsoft.Extensions.Options;
 
 AppContext.SetSwitch("System.Drawing.EnableUnixSupport", true);
 
@@ -23,6 +24,14 @@ builder.Services.AddAuthentication("MyCookieAuth").AddCookie("MyCookieAuth", opt
     options.Cookie.Name = "AdminLoginCookie";
     options.LoginPath = "/kvhai/staff/login";
     options.AccessDeniedPath = "/kvhai/admin/error";
+});
+
+//paypal
+builder.Services.Configure<PayPalSettings>(builder.Configuration.GetSection("PayPal"));
+builder.Services.AddHttpClient<PayPalService>((sp, client) =>
+{
+    var settings = sp.GetRequiredService<IOptions<PayPalSettings>>().Value;
+    client.BaseAddress = new Uri(settings.BaseUrl);
 });
 
 

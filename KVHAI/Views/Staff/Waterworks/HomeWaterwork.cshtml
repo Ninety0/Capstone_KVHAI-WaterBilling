@@ -1,0 +1,167 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+
+@section head{
+    <link href="/css/simple-calendar.css" rel="stylesheet" />
+}
+
+
+@section sidebar{
+    <a href="/kvhai/staff/waterwork/home" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Home
+    </a>
+    <a href="/kvhai/staff/waterwork/reading" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+    </a>
+
+}
+@section mobilenav{
+    <a href="/kvhai/staff/waterwork/home" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-house-door me-2"></i> Home
+    </a>
+    
+    <a href="/kvhai/staff/waterwork/reading" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+    </a>
+}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div id="calendars"></div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/water-reading.js" defer></script>
+    <script src="~/js/jquery.simple-calendar.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var container = $("#calendars").simpleCalendar({
+                displayEvent: true,
+                displayYear: true,
+                disableEventDetails: false
+            });
+
+            var calendar = container.data('plugin_simpleCalendar');
+
+            function setWaterReadingEvents() {
+                try {
+                    const events = [];
+                    const currentDate = new Date();
+
+                    for (let i = 0; i < 12; i++) {
+                        const year = currentDate.getFullYear() + Math.floor((currentDate.getMonth() + i) / 12);
+                        console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
+                        const month = (currentDate.getMonth() + i) % 12;
+                        console.log(month);
+
+
+                        for (let day = 3; day <= 24; day++) {
+                            const eventDate = new Date(year, month, day);
+                            if (day >= 3 && day <= 5) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Reading <br/> Phase 2 BLK 51 to 143 '
+                                });
+                            }
+                            if (day >= 6 && day <= 8) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Reading <br/> Phase 1 BLK 41 to 48 '
+                                });
+                            }
+                            if (day >= 19 && day <= 21) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Reading <br/> BLK 24 to 40 '
+                                });
+                            }
+                            if (day >= 22 && day <= 24) {
+                                events.push({
+                                    // Format 1: ISO String
+                                    startDate: eventDate.toISOString(),
+                                    // Format 2: If above doesn't work, try this
+                                    // startDate: eventDate.getTime(),
+                                    // Format 3: Or try this
+                                    // startDate: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                                    endDate: eventDate.toISOString(), // Some plugins require an endDate
+                                    summary: 'Water Reading <br/> BLK 7 to 23 '
+                                });
+                            }
+
+
+                        }
+                    }
+
+                    console.log("Events to be set:", events);
+
+                    // Try setting events directly in the options
+                    container.simpleCalendar({
+                        events: events,
+                        displayEvent: true,
+                        disableEventDetails: false
+                    });
+
+                    // Also try the setEvents method
+                    calendar.setEvents(events);
+                } catch (error) {
+                    console.error("Error in setWaterReadingEvents:", error);
+                }
+            }
+
+            // Try setting events immediately and after a delay
+            setWaterReadingEvents();
+            setTimeout(setWaterReadingEvents, 500);
+        });
+    </script>
+    <script>
+        //$(document).ready(function () {
+        //    const connection = new signalR.HubConnectionBuilder()
+        //        .withUrl("/resident/water-consumption")
+        //        .withAutomaticReconnect([0, 2000, 10000, 30000]) // Retry after 0s, 2s, 10s, and 30s
+        //        .build();
+
+        //    connection.start().then(function () {
+        //        toastr.info("Connected to water-consumption hub");
+        //    }).catch(function (err) {
+        //        return console.error(err.toString());
+        //    });
+
+        //    // Optional: Log reconnection attempts
+        //    connection.onreconnecting((error) => {
+        //        toastr.warning('Reconnecting to water-consumption hub...');
+        //        console.log('Reconnecting...', error);
+        //    });
+
+        //    connection.onreconnected(() => {
+        //        toastr.success('Reconnected to water-consumption hub');
+        //    });
+
+        //    connection.onclose((error) => {
+        //        toastr.error('Disconnected from water-consumption hub. Will retry connection...');
+        //        console.log('Connection closed', error);
+        //    });
+
+        //});
+    </script>
+
+}

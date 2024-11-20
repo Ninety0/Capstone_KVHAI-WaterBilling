@@ -1,5 +1,7 @@
 ﻿using KVHAI.CustomClass;
+using KVHAI.Hubs;
 using KVHAI.Models;
+using Microsoft.AspNetCore.SignalR;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,8 +17,10 @@ namespace KVHAI.Repository
         private readonly StreetRepository _streetRepository;
         private readonly AddressRepository _addressRepository;
         private readonly LoginRepository _loginRepository;
+        private readonly IHubContext<StaffNotificationHub> _staffhubContext;
+        private readonly NotificationRepository _notificationRepository;
 
-        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize, ImageUploadRepository uploadRepository, StreetRepository streetRepository, AddressRepository addressRepository, LoginRepository loginRepository)
+        public ResidentRepository(DBConnect dbconn, Hashing hash, InputSanitize sanitize, ImageUploadRepository uploadRepository, StreetRepository streetRepository, AddressRepository addressRepository, LoginRepository loginRepository, NotificationRepository notificationRepository, IHubContext<StaffNotificationHub> hubContext)
         {
             _dbConnect = dbconn;
             _hash = hash;
@@ -25,6 +29,8 @@ namespace KVHAI.Repository
             _streetRepository = streetRepository;
             _addressRepository = addressRepository;
             _loginRepository = loginRepository;
+            _notificationRepository = notificationRepository;
+            _staffhubContext = hubContext;
         }
 
         public async Task<List<Resident>> GetAllResidentAsync()
@@ -495,6 +501,18 @@ namespace KVHAI.Repository
                                                 clearCommand.Parameters.AddWithValue("@expire", DBNull.Value);
                                                 clearCommand.Parameters.AddWithValue("@email", email);
                                                 await clearCommand.ExecuteNonQueryAsync();
+
+                                                var notifStaff = new Notification
+                                                {
+                                                    //Address_ID = waterReading.Address_ID,
+                                                    Title = "Register Account",
+                                                    Message = "New account registered.",
+                                                    Url = "/kvhai/staff/admin/accounts",
+                                                    Message_Type = "admin"
+                                                };
+
+                                                var notificationAdminResult = await _notificationRepository.SendNotificationToAdmin(notifStaff);
+                                                await _staffhubContext.Clients.All.SendAsync("ReceivedNewRegisterAccount");
                                                 return 1; // Success
                                             }
                                         }
@@ -654,7 +672,7 @@ namespace KVHAI.Repository
             formData.Password = _sanitize.HTMLSanitizer(formData.Password);
             formData.Occupancy = _sanitize.HTMLSanitizer(formData.Occupancy);
         }
-
+        #region Resident Address
         //WITHOUT SEARCH
         public async Task<List<AddressWithResident>> GetAllResidentAsync(int offset, int limit, string verified = "true")
         {
@@ -827,6 +845,152 @@ namespace KVHAI.Repository
 
             return residents;
         }
+        #endregion
+
+        #region Accounts
+        //WITHOUT SEARCH
+        public async Task<List<AddressWithResident>> GetAllResidentAsyncAccount(int offset, int limit)
+        {
+            var residents = new List<AddressWithResident>();
+            var resID = "";
+            var streetID = "";
+
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand($@"
+                    SELECT r.res_id, r.lname, r.fname, r.mname, r.phone, r.email, r.username, r.password, r.occupancy, r.verified_at from resident_tb r 
+                    WHERE occupancy = 1 AND verified_at IS NOT NULL
+                    ORDER BY res_id
+                    OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                // Create a new resident object and add the first address details
+                                var _resident = new AddressWithResident
+                                {
+                                    Res_ID = reader["res_id"]?.ToString() ?? string.Empty,
+                                    Lname = reader["lname"]?.ToString() ?? string.Empty,
+                                    Fname = reader["fname"]?.ToString() ?? string.Empty,
+                                    Mname = reader["mname"]?.ToString() ?? string.Empty,
+                                    Phone = reader["phone"]?.ToString() ?? string.Empty,
+                                    Email = reader["email"]?.ToString() ?? string.Empty,
+                                    Username = reader["username"]?.ToString() ?? string.Empty,
+                                    Password = reader["password"]?.ToString() ?? string.Empty,
+                                    Occupancy = Convert.ToInt32(reader["occupancy"]) == 1 ? "Owner" : "Renter",
+                                };
+
+                                residents.Add(_resident);
+                            }
+                        }
+                    }
+                }
+
+                return residents;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return null;
+            }
+        }
+
+
+        //WITH SEARCH
+        public async Task<List<AddressWithResident>> GetAllResidentAsyncAccount(int offset, int limit, string category, string? search = "")
+        {
+            //var residents = new List<Resident>();
+            string query = "";
+            var residents = new List<AddressWithResident>();
+            var resID = "";
+            var streetID = "";
+
+            if (category == "name")
+            {
+                query = $@"
+                    SELECT r.res_id, r.lname, r.fname, r.mname, r.phone, r.email, r.username, r.password, r.occupancy, r.verified_at
+                    FROM resident_tb r
+                    WHERE  occupancy = 1 AND r.verified_at IS NOT NULL AND concat(r.lname,' ',fname,' ',mname) like @search
+                    ORDER BY r.res_id 
+                    OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
+            }
+
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(query, connection))
+                {
+
+                    command.Parameters.AddWithValue("@search", "%" + search + "%");
+                    command.Parameters.AddWithValue("@offset", offset);
+                    command.Parameters.AddWithValue("@limit", limit);
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            // Create a new resident object and add the first address details
+                            var _resident = new AddressWithResident
+                            {
+                                Res_ID = reader["res_id"]?.ToString() ?? string.Empty,
+                                Lname = reader["lname"]?.ToString() ?? string.Empty,
+                                Fname = reader["fname"]?.ToString() ?? string.Empty,
+                                Mname = reader["mname"]?.ToString() ?? string.Empty,
+                                Phone = reader["phone"]?.ToString() ?? string.Empty,
+                                Email = reader["email"]?.ToString() ?? string.Empty,
+                                Username = reader["username"]?.ToString() ?? string.Empty,
+                                Password = reader["password"]?.ToString() ?? string.Empty,
+                                Occupancy = Convert.ToInt32(reader["occupancy"]) == 1 ? "Owner" : "Renter",
+                            };
+
+                            residents.Add(_resident);
+                        }
+                    }
+                }
+            }
+
+            return residents;
+        }
+
+        //COUNT DATA W/ SEARCH
+        public async Task<int> CountResidentDataAccount(string category, string search = "")
+        {
+            int result = 0;
+
+            string query = "";
+            if (category == "name")
+            {
+                /*
+                 * SELECT COUNT(*) FROM resident_tb 
+                    WHERE(lname like @search OR fname like @search OR mname like @search) AND activated = @active"
+
+                SELECT COUNT(*) FROM resident_tb 
+                    WHERE concat(block,' ',lot) like @search AND activated = @active
+
+                 */
+                query = $@"
+                     SELECT Count(*)
+                    FROM resident_tb r
+                    WHERE occupancy = 1 AND r.verified_at IS NOT NULL AND concat(r.lname,' ',fname,' ',mname) like @search";
+            }
+
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(query, connection))
+                {
+
+                    command.Parameters.AddWithValue("@search", "%" + search + "%");
+                    var count = await command.ExecuteScalarAsync();
+
+                    return Convert.ToInt32(count);
+                }
+            }
+        }
+
+        #endregion
 
         //COUNT RESIDENT W/O Search
         public async Task<int> CountResidentData(string active)

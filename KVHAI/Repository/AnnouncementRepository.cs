@@ -25,7 +25,7 @@ namespace KVHAI.Repository
             {
                 // Retrieve the list of announcements from the repository
                 var announcements = await _listRepo.AnnouncementList();
-                
+
                 if (string.IsNullOrEmpty(id))
                 {
                     return announcements
@@ -39,7 +39,7 @@ namespace KVHAI.Repository
                         .OrderByDescending(a => a.Date_Created)
                         .ToList();
                 }
-                
+
                 return announcements
                     .Where(a => a.Announcement_ID.ToString() == id)
                     .Select(a => new Announcement
@@ -121,7 +121,7 @@ namespace KVHAI.Repository
 
                         if (id < 1)
                         {
-                           throw new Exception();
+                            throw new Exception();
                         }
 
                         // Save the images (if any)
@@ -188,7 +188,7 @@ namespace KVHAI.Repository
                     command.Parameters.AddWithValue("@title", await _sanitize.HTMLSanitizerAsync(announcement.Title));
                     command.Parameters.AddWithValue("@content", await _sanitize.HTMLSanitizerAsync(announcement.Contents));
                     command.Parameters.AddWithValue("@date", date);
-                    command.Parameters.AddWithValue("@id", announcement.Announcement_ID); 
+                    command.Parameters.AddWithValue("@id", announcement.Announcement_ID);
 
                     int result = await command.ExecuteNonQueryAsync();
                     return result;
@@ -229,6 +229,66 @@ namespace KVHAI.Repository
                 return 0; // 0 indicates failure
             }
         }
+
+        public async Task<int> DeleteAnnouncement(string announcement_id)
+        {
+            try
+            {
+                int result = 0;
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    // Start a transaction to ensure atomicity
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Check if there are images associated with the announcement
+                            using (var command = new SqlCommand("SELECT COUNT(*) FROM announcement_img_tb WHERE announcement_id = @id", connection, transaction))
+                            {
+                                command.Parameters.AddWithValue("@id", announcement_id);
+                                var imgCount = (int)await command.ExecuteScalarAsync();
+
+                                // Delete images if they exist
+                                if (imgCount > 0)
+                                {
+                                    using (var imgDeleteCommand = new SqlCommand("DELETE FROM announcement_img_tb WHERE announcement_id = @id", connection, transaction))
+                                    {
+                                        imgDeleteCommand.Parameters.AddWithValue("@id", announcement_id);
+                                        await imgDeleteCommand.ExecuteNonQueryAsync();
+                                    }
+                                }
+                            }
+
+                            // Delete the announcement
+                            using (var announcementDeleteCommand = new SqlCommand("DELETE FROM announcement_tb WHERE announcement_id = @id", connection, transaction))
+                            {
+                                announcementDeleteCommand.Parameters.AddWithValue("@id", announcement_id);
+                                result = await announcementDeleteCommand.ExecuteNonQueryAsync();
+                            }
+
+                            // Commit transaction if all operations succeed
+                            transaction.Commit();
+                        }
+                        catch
+                        {
+                            // Rollback transaction in case of error
+                            transaction.Rollback();
+                            throw; // Rethrow to handle in the outer catch
+                        }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (replace Console.WriteLine with proper logging)
+                Console.WriteLine($"Error deleting announcement: {ex.Message}");
+                return 0;
+            }
+        }
+
 
 
         public async Task<List<Announcement>> ShowAnnouncement()

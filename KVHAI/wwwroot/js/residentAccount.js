@@ -1,9 +1,9 @@
 ﻿$(document).ready(function () {
 
     //SIGNALR SETUP
-    const registerConnection = setupSignalRConnection("/resident/register-address", "Register Address Hub");
+    const registerConnection = setupSignalRConnection("/staff/register-address", "Register Address Hub");
 
-    registerConnection.on("ReceivedAddressNotificationToAdmin", function (message, resident_id) {
+    registerConnection.on("ReceivedAddressNotificationToAdmin", function () {
         alert("may request");
         GetRequestAddress();
     });
@@ -66,6 +66,8 @@
 
     $(document).on('click', '.btn-res-edit', function () {
         var addresID = $(this).data('id');
+        var resId = $(this).closest('#res-tableData').find('[data-res]').data('res');
+        alert(resId);
         var _status = "true";
         var _data = { addrID: addresID, status:_status };
         if (addresID) {

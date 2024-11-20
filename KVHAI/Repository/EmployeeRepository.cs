@@ -10,12 +10,14 @@ namespace KVHAI.Repository
         private readonly DBConnect _dbConnect;
         private readonly Hashing _hash;
         private readonly InputSanitize _sanitize;
+        private readonly ListRepository _listRepository;
 
-        public EmployeeRepository(DBConnect dbConnect, Hashing hash, InputSanitize sanitize)
+        public EmployeeRepository(DBConnect dbConnect, Hashing hash, InputSanitize sanitize, ListRepository listRepository)
         {
             _dbConnect = dbConnect;
             _hash = hash;
             _sanitize = sanitize;
+            _listRepository = listRepository;
         }
 
         public async Task<List<Employee>> EmployeeList()
@@ -58,6 +60,7 @@ namespace KVHAI.Repository
                 return null;
             }
         }
+
 
         public async Task<bool> ValidatePassword(string username, string password)
         {

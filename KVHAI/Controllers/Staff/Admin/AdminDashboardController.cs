@@ -3,6 +3,7 @@ using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
@@ -12,18 +13,34 @@ namespace KVHAI.Controllers.Staff.Admin
         private readonly ForecastingRepo _forecasting;
         private readonly AddressRepository _addressRepository;
         private readonly PaymentRepository _paymentRepository;
+        private readonly RequestDetailsRepository _requestDetailsRepository;
+        private readonly NotificationRepository _notification;
 
-        public AdminDashboardController(ForecastingRepo forecasting, AddressRepository addressRepository, PaymentRepository paymentRepository)
+
+
+        public AdminDashboardController(ForecastingRepo forecasting, AddressRepository addressRepository, PaymentRepository paymentRepository, RequestDetailsRepository requestDetailsRepository, NotificationRepository notification)
         {
             _forecasting = forecasting;
             _addressRepository = addressRepository;
             _paymentRepository = paymentRepository;
+            _requestDetailsRepository = requestDetailsRepository;
+            _notification = notification;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var modelBinding = new ModelBinding();
-            return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
+            var viewmodel = new ModelBinding
+            {
+                NotificationStaff = notifList
+            };
+
+            return View("~/Views/Staff/Admin/Dashboard.cshtml", viewmodel);
         }
 
         [HttpGet]
@@ -37,11 +54,28 @@ namespace KVHAI.Controllers.Staff.Admin
         public async Task<IActionResult> GetRegisterAddress()
         {
             var model = await _addressRepository.GetNewRegisteringAddress();
+            int count = model.Count;
             var modelBinding = new ModelBinding
             {
-                ResidentAddress = model
+                ResidentAddress = model,
+                CountData = count
+
             };
 
+            //return Json(model);
+            return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRequest()
+        {
+            var model = await _requestDetailsRepository.GetPendingRemovalRequests();
+            int count = model.Count;
+            var modelBinding = new ModelBinding
+            {
+                CountData = count
+
+            };
             //return Json(model);
             return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
         }
@@ -61,5 +95,6 @@ namespace KVHAI.Controllers.Staff.Admin
             //return Json(model);
             return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
         }
+
     }
 }

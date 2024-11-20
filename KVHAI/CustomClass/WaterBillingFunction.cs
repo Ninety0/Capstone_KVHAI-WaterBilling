@@ -37,6 +37,7 @@ namespace KVHAI.CustomClass
         //FOR WATER READING
         public List<WaterReading>? AllWaterReadingByResident { get; set; } = new List<WaterReading>();
         public List<Address>? AddressList { get; set; } = new List<Address>();
+        public List<LocationPercentage>? LocationPercentage { get; set; } = new List<LocationPercentage>();
         public List<int> YearList { get; set; }
         public List<WaterReading>? GraphData { get; set; } = new List<WaterReading>();
         public List<string>? GraphYear { get; set; } = new List<string>();
@@ -109,14 +110,14 @@ namespace KVHAI.CustomClass
             var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
             var currentReading = await _waterReadingRepository.GetCurrentReading(location, dateTo);
 
-            if (!string.IsNullOrEmpty(addressID) && !string.IsNullOrEmpty(residentID))
+            if (!string.IsNullOrEmpty(addressID))
             {
-                var allReadingResident = await _waterReadingRepository.GetAllReadingByResident(addressID, residentID);
+                var allReadingResident = await _waterReadingRepository.GetAllReadingByResident(addressID);
 
-                var address = await _addressRepository.GetAddressById(residentID);
+                //var address = await _addressRepository.GetAddressById(residentID);
 
                 this.AllWaterReadingByResident = allReadingResident.AllWaterConsumptionByResident;
-                this.AddressList = address;
+                //this.AddressList = address;
 
                 var yearLst = new List<int>();
                 foreach (var year in allReadingResident.AllWaterConsumptionByResident)
@@ -185,7 +186,8 @@ namespace KVHAI.CustomClass
             // 9
             for (int i = 1; i < sortedReadings.Count; i++)
             {
-                if(i < sortedReadings.Count ){
+                if (i < sortedReadings.Count)
+                {
 
                 }
                 var currentReading = sortedReadings[i];
@@ -297,9 +299,9 @@ namespace KVHAI.CustomClass
 
 
         //FOR WATER BILLING BY RESIDENT
-        public async Task UnpaidWaterBillingByResident(string resident_ID)
+        public async Task UnpaidWaterBillingByResident(string resident_ID, string address_ID)
         {
-            var model = await _waterBillRepository.UnpaidResidentWaterBilling("1");
+            var model = await _waterBillRepository.UnpaidResidentWaterBilling("1", address_ID);
 
             foreach (var item in model)
             {

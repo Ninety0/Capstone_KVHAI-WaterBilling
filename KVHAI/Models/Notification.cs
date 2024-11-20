@@ -7,8 +7,11 @@ namespace KVHAI.Models
         [Column("notif_id")]
         public int Notification_ID { get; set; }
 
-        [Column("res_id")]
+        [Column("uid")]
         public string Resident_ID { get; set; } = string.Empty;
+
+        public string Address_ID { get; set; } = string.Empty;
+
         public string Title { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
@@ -17,6 +20,8 @@ namespace KVHAI.Models
         public Boolean Is_Read { get; set; }
 
         public string Hours { get; set; }
+        public List<int> ListResident_ID { get; set; }
+        public List<string> ListEmployee_ID { get; set; }
 
     }
 }

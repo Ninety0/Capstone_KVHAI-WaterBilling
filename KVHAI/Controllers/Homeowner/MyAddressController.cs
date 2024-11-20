@@ -11,12 +11,17 @@ namespace KVHAI.Controllers.Homeowner
         private readonly StreetRepository _streetRepository;
         private readonly AddressRepository _addressRepository;
         private readonly NotificationRepository _notification;
+        private readonly ResidentAddressRepository _residentAddressRepository;
+        private readonly ListRepository _listRepository;
 
-        public MyAddressController(StreetRepository streetRepository, AddressRepository addressRepository, NotificationRepository notification)
+
+        public MyAddressController(StreetRepository streetRepository, AddressRepository addressRepository, NotificationRepository notification, ResidentAddressRepository residentAddressRepository, ListRepository listRepository)
         {
             _streetRepository = streetRepository;
             _addressRepository = addressRepository;
             _notification = notification;
+            _residentAddressRepository = residentAddressRepository;
+            _listRepository = listRepository;
         }
 
         [Authorize]
@@ -24,10 +29,21 @@ namespace KVHAI.Controllers.Homeowner
         {
             var username = User.Identity.Name;
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
+            var address = new List<Models.Address>();
             var listStreet = await _streetRepository.GetAllStreets();
-            var address = await _addressRepository.GetAddressById(residentID);
             var notifList = await _notification.GetNotificationByResident(residentID);
+
+
+            if (role == "1")
+            {
+                address = await _addressRepository.GetAddressessByResId(residentID);
+            }
+            else
+            {
+                address = await _residentAddressRepository.GetAddressessByResId(residentID);
+            }
 
             var model = new ModelBinding
             {
@@ -41,15 +57,18 @@ namespace KVHAI.Controllers.Homeowner
         [HttpGet]
         public async Task<IActionResult> GetAddress(string resident_id)
         {
+            var address = await _addressRepository.GetAddressessByResId(resident_id);
             var listStreet = await _streetRepository.GetAllStreets();
-            var address = await _addressRepository.GetAddressById(resident_id);
+
+            //var listStreet = await _streetRepository.GetAllStreets();
+            //var address = await _addressRepository.GetAddressById(resident_id);
             var model = new ModelBinding
             {
                 ListStreet = listStreet,
                 ListAddress = address,
             };
 
-            return View("~/Views/Resident/LoggedIn/MyAddress.cshtml", model);
+            return View("~/Views/Resident/LoggedIn/MyAddress.cshtml", model); //model);
         }
 
         [HttpPost]
@@ -69,12 +88,15 @@ namespace KVHAI.Controllers.Homeowner
                 return BadRequest("There was an error requesting for address removal. Please Try again later.");
             }
 
+            var emp = await _listRepository.EmployeeList();
+            var emp_id = emp.Where(r => r.Role == "admin").Select(e => e.Emp_ID).ToList();
             var notif = new Notification
             {
                 Title = "Request Action",
                 Message = "Request of removing address",
                 Url = "/kvhai/staff/request-page/",
-                Message_Type = "Admin"
+                Message_Type = "admin",
+                ListEmployee_ID = emp_id
             };
 
             await _notification.SendNotificationToAdmin(notif);

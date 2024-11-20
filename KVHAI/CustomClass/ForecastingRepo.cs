@@ -102,7 +102,7 @@ namespace KVHAI.CustomClass
         public async Task<Forecasting> GetPercentChange(YearData forecastData, List<string> yearList)
         {
             var forecast = new Forecasting();
-            var years = new[] { 2024, 2025 }; //we can have get year
+            var years = new[] { 2024 }; //we can have get year
 
             foreach (var year in yearList)
             {
@@ -149,9 +149,7 @@ namespace KVHAI.CustomClass
         {
             // This method would return the actual data for the given year
             // For now, we'll use dummy data
-            return year == 2024
-                ? new List<double?> { 1000, 1200, 1300, 1400, 1600, 1800, 1500, 1700, 1400, 2800, 3100, 3500 }
-                : new List<double?> { 3600, 3800, 4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400, 5600, 5800 };
+            return new List<double?> { 1000, 1200, 1300, 1400, 1600, 1800, 1500, 1700, 1400, 2800, 3100 };
         }
 
         private void ProcessYearData(List<double?> actualData, List<double?> movingAverage, List<double?> percentChange, List<string> insights)

@@ -1,0 +1,384 @@
+﻿@{
+    ViewBag.Title = "Offline Payment";
+}
+
+@section sidebar{
+    <a href="/kvhai/staff/offlinepayment/" class="nav-link text-light mb-2 d-flex align-items-center active ">
+        <i class="bi bi-house-door me-2"></i> Payment
+    </a>
+}
+@section mobilenav{
+    <a href="/kvhai/staff/offlinepayment/" class="nav-link text-light mb-2 d-flex align-items-center active ">
+        <i class="bi bi-house-door me-2"></i> Payment
+    </a>
+}
+
+@section head{
+
+}
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            //GLOBAL VARIABLES
+            let address_id = 0;
+            let resident_id = 0;
+
+            InputKeyPress();
+
+            $('#btn_print').click(submitReading);
+            $('#select-street').editableSelect();
+            $('input, select').on('input change', handleInputChange);
+            $(document).on('click', '#btn-cancel', CancelSubmit);
+
+            $(document).on('blur', '#select-street', function () {
+                $(this).removeClass('is-invalid');
+                $(this).closest('.form-check').find('.invalid-feedback').css('display', 'none');
+
+                $('#input-name').val('');
+
+                GetName();
+            });
+
+            $(document).on('blur', '#occupancy', function () {
+                GetName();
+            });
+
+            function GetName() {
+                var blk = $('#input-block').val();
+                var lot = $('#input-lot').val();
+                var st = $('#select-street').val();
+                var _owner = $('#occupancy option:selected').val();
+
+                if (blk && lot && st && _owner) {
+                    var formData = {
+                        Block: blk,
+                        Lot: lot,
+                        Street: st,
+                        Is_Owner: _owner
+                    };
+
+                    console.log(formData);
+                    $.ajax({
+                        type: 'GET',
+                        url: '/OfflinePayment/GetBill',
+                        data: formData,
+                        success: function (response) {
+                            if (response && response.length > 0) {
+                                // Handle the first (and only) resident result
+                                var result = response[0]; // Grab the first (and assumed only) result
+                                var bill = parseFloat(result.totalAmount).toFixed(2);
+
+                                resident_id = result.resident_ID;
+                                address_id = result.address_ID;
+
+                                // Set the name and bill in the input fields
+                                $('#input-name').val(result.name);
+                                $('#bill_amount').val(bill);
+
+                                console.log("Resident ID: " + resident_id);
+                                console.log("Address ID: " + address_id);
+                            } else {
+                                // Handle case where no residents are returned
+                                toastr.error("No resident found for the specified address.");
+                            }
+
+                            //console.log(response);
+                            //var result = response[0];
+                            //var bill = parseFloat(result.totalAmount).toFixed(2);
+                            //console.log(bill);
+                            //resident_id = result.resident_ID;
+                            //address_id = result.address_ID;
+                            //////alert(address_id);
+                            //$('#input-name').val(result.name);
+                            //$('#bill_amount').val(bill);
+
+                        },
+                        error: function (xhr, status, err_m) {
+                            toastr.error(xhr.responseText);
+                        }
+                    });
+                }
+                //else {
+                //    toastr.error("Please fill out all required fields correctly");
+                //}
+
+
+            }
+
+            function ValidateBill() {
+                var bill = parseFloat($('#bill_amount').val());
+                var money = parseFloat($('#pesos').val());
+                var isValid = true;
+
+                if (bill > money) {
+                    isValid = false;
+                }
+
+                return isValid;
+
+            }
+
+            function handleInputChange() {
+                $(this).removeClass('is-invalid');
+                $(this).closest('.form-check').find('.invalid-feedback').css('display', 'none');
+            }
+
+            function validateTab() {
+                var inputElements = $('.water-reading').find('input, select');
+                var isValid = true;
+
+                inputElements.each(function () {
+                    console.log(this.id);
+                    const input = $(this);
+
+                    var feedback = input.closest('.form-check').find('.invalid-feedback');
+                    if (!this.checkValidity()) {
+                        input.addClass('is-invalid');
+                        //input.siblings('.invalid-feedback').css('display', 'block');
+                        feedback.css('display', 'block');
+                        feedback.css('font-size', '1rem');
+                        isValid = false;
+                    } else {
+                        input.removeClass('is-invalid');
+                        //input.siblings('.invalid-feedback').css('display', 'none');
+                        feedback.css('display', 'none');
+                    }
+                });
+
+                return isValid;
+            }
+
+            function submitReading() {
+                // Call validateTab and check if the form is valid
+                if (!validateTab()) {
+                    toastr.error("Please complete all required fields.");
+                } else {
+                    if ($('#bill_amount').val() > 1)
+                    {
+                        if (!$('#input-name').val()) //if value is empty it will be falsy so add (!) operator
+                        {
+                            toastr.error("Please complete all required fields.");
+                            return;
+                        }
+                        var bill = parseFloat($('#bill_amount').val()).toFixed(2);
+                        var money = parseFloat($('#pesos').val());
+                        var name = $('#input-name').val();
+
+                        var formData = {
+                            Address_ID: address_id,
+                            Resident_ID: resident_id,
+                            Paid_Amount: money,
+                            Bill: bill,
+                            Paid_By: name,
+                            Payment_Method : "offline"
+                        };
+                        $.ajax({
+                            type: 'POST',
+                            url: '/OfflinePayment/PayBill',
+                            data: formData,
+                            success: function (response) {
+                                toastr.success(response);
+                                Print();
+                                $('#form-reading')[0].reset();
+
+                            },
+                            error: function (xhr, status, err_m) {
+                                toastr.error(xhr.responseText);
+                            }
+                        });
+                    }
+                    else {
+                        toastr.info("You have no existing bill.");
+                    }
+                    // You can add the form submission logic here, e.g., AJAX call or form.submit()
+                }
+            }
+
+            function Print() {
+                var blk = $('#input-block').val();
+                var lot = $('#input-lot').val();
+                var st = $('#select-street').val();
+                var name = $('#input-name').val();
+                var bill = parseFloat($('#bill_amount').val());
+                var money = parseFloat($('#pesos').val());
+
+                var formData = {
+                    Name: name,
+                    Block: blk,
+                    Lot: lot,
+                    Street: st,
+                    Payment: money,
+                    TotalAmount: bill
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: '/OfflinePayment/Print',
+                    data: formData,
+                    xhrFields: {
+                        responseType: 'blob' // Set the response type to 'blob'
+                    },
+                    success: function (data) {
+                        var blob = new Blob([data], { type: 'application/pdf' });
+                        var link = document.createElement('a');
+                        window.open(window.URL.createObjectURL(blob), '_blank');
+                    },
+                    error: function (xhr, status, err_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function InputKeyPress() {
+                const inputs = $('#form-reading input');
+
+                inputs.each(function () {
+                    if (this.id === 'input-block' || this.id === 'input-lot' || this.id === 'input-reading' || this.id === 'pesos') {
+                        $(this).on('keypress', function (e) {
+                            var key = e.keyCode || e.which;
+
+                            if (key < 48 || key > 57) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                });
+            }
+
+            function CancelSubmit() {
+                $('#form-reading')[0].reset();
+                $('#input-name').val('');
+                address_id = 0;
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').css('display', 'none');
+            }
+        });
+    </script>
+}
+
+
+<form id="form-reading" autocomplete="off" class="needs-validation" novalidate>
+
+    @Html.AntiForgeryToken()
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="water-reading">
+                <!--ADDRESS SECTION-->
+                <section class="information-section">
+                    <p class="h5 fw-bold mb-3 text-muted">Address</p>
+                    <!--ROW 1-->
+                    <div class="row d-flex justify-content-center">
+                        <div class="col-12 col-sm-6 col-md-5">
+                            <div class="form-check mb-3 ps-0">
+                                <div class="input-group">
+                                    <span class="input-group-text" id="basic-addon1">Block</span>
+                                    <input type="text" class="form-control" name="Block" id="input-block" required>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-5">
+                            <div class="form-check mb-3 ps-0">
+                                <div class="input-group">
+                                    <span class="input-group-text" id="basic-addon1">Lot</span>
+                                    <input type="text" class="form-control" name="Lot" id="input-lot" required>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-12 col-md-2">
+                            <div class="form-check mb-3 ps-0">
+                                <div class="input-group">
+                                    <select class="form-select" aria-label="Default select example" name="Is_Owner" id="occupancy">
+                                        <option value="1" selected>Owner</option>
+                                        <option value="0">Renter</option>
+                                    </select>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check mb-3 ps-0">
+                                <div class="input-group">
+                                    <span class="input-group-text" id="basic-addon1">Streets</span>
+                                    <select id="select-street" class="form-select" name="Street" aria-label="Default select example" required>
+                                        @{
+                                            foreach (var item in Model)
+                                            {
+                                                <option value="@item.Street_Name">@item.Street_Name</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check mb-3 ps-0">
+                                <div class="input-group">
+                                    <span class="input-group-text" id="basic-addon1">Name</span>
+                                    <input type="text" class="form-control" id="input-name" required disabled>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!--ROW 2-->
+                    <div class="row d-flex justify-content-center">
+                        
+                    </div>
+                </section>
+
+                <hr />
+
+                <!--BILL SECTION-->
+                <section class="reading-section">
+                    <p class="h5 text-muted fw-bold mb-3">BILLING</p>
+
+                    <div class="row d-flex justify-content-center">
+                        <div class="col-12 col-md-6">
+                            <div class="form-check mb-3 ps-0">
+                                <div class="input-group ">
+                                    <span class="input-group-text" id="inputGroup-sizing-lg">Total Bill</span>
+                                    <input type="text" id="bill_amount" class="form-control" disabled required>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check mb-3 ps-0">
+                                <div class="input-group ">
+                                    <span class="input-group-text" id="inputGroup-sizing-lg">Sum of Pesos</span>
+                                    <input type="text" id="pesos" class="form-control" required>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3 mb-3">
+                    <a href="#" id="btn_print" class="btn btn-primary p-2">SUBMIT</a>
+                    <a href="#" id="btn-cancel" class="btn btn-secondary p-2">CANCEL</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>

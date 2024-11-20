@@ -2,6 +2,8 @@
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
 
 namespace KVHAI.Controllers.Staff.Admin
 {
@@ -10,17 +12,35 @@ namespace KVHAI.Controllers.Staff.Admin
     {
         private readonly AddressRepository _addressRepository;
         private readonly RequestDetailsRepository _requestDetailsRepository;
+        private readonly NotificationRepository _notification;
 
-        public RequestPageController(AddressRepository addressRepository, RequestDetailsRepository requestDetailsRepository)
+
+        public RequestPageController(AddressRepository addressRepository, RequestDetailsRepository requestDetailsRepository, NotificationRepository notification)
         {
             _addressRepository = addressRepository;
             _requestDetailsRepository = requestDetailsRepository;
+            _notification = notification;
         }
         public async Task<IActionResult> Index()
         {
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
             var model = await _requestDetailsRepository.GetPendingRemovalRequests();
 
-            return View("~/Views/Staff/Admin/PageRequest.cshtml", model);//UPDATE TOMMOROW
+
+            var viewmodel = new ModelBinding
+            {
+                NotificationStaff = notifList,
+                RequestDetailList = model
+
+            };
+
+
+            return View("~/Views/Staff/Admin/PageRequest.cshtml", viewmodel);//UPDATE TOMMOROW
         }
 
         [HttpGet]
@@ -28,7 +48,13 @@ namespace KVHAI.Controllers.Staff.Admin
         {
             var model = await _requestDetailsRepository.GetPendingRemovalRequests();
 
-            return View("~/Views/Staff/Admin/PageRequest.cshtml", model);//UPDATE TOMMOROW
+            var viewmodel = new ModelBinding
+            {
+                RequestDetailList = model
+
+            };
+
+            return View("~/Views/Staff/Admin/PageRequest.cshtml", viewmodel);//UPDATE TOMMOROW
         }
 
         public async Task<IActionResult> StatusFilter(string status = "", string date = "")
@@ -40,7 +66,13 @@ namespace KVHAI.Controllers.Staff.Admin
                 return BadRequest("No data found with specified status");
             }
 
-            return View("~/Views/Staff/Admin/PageRequest.cshtml", model);//UPDATE TOMMOROW
+            var viewmodel = new ModelBinding
+            {
+                RequestDetailList = model
+
+            };
+
+            return View("~/Views/Staff/Admin/PageRequest.cshtml", viewmodel);//UPDATE TOMMOROW
         }
 
         [HttpPost]

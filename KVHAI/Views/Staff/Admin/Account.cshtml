@@ -80,6 +80,15 @@
     @*<script src="~/js/residentAccount.js"></script>*@ <!--PARTIAL VIEW RESIDENT-->
     <script>
         $(document).ready(function () {
+            //SIGNAL R CONNECTION
+            const accountConnection = setupSignalRConnection("/staff/account", "Accounts Hub");
+
+            accountConnection.on("ReceivedNewRegisterAccount", function (message) {
+                toastr.success("New account was registered!");
+                console.log("New account was registered!");
+                respagination();
+            });
+
             //event listener
             $(document).on('change', '#res-search', function () {
                 respagination();
@@ -136,7 +145,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center active">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
@@ -157,7 +166,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center active">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
@@ -243,50 +252,55 @@
                         </thead>
                         <tbody class="table-group-divider">
                             @{
-
-                                if (Model.EmployeePagination.NumberOfData < 1)
+                                if (Model.EmployeePagination != null)
                                 {
-                                    <tr>
-                                        <td class="text-center text-uppercase p-5" colspan="8"><strong>No Data Found!</strong></td>
-                                    </tr>
-                                }
-                                else
-                                {
-                                    int indexx = Model.EmployeePagination.Index + 1;
-
-                                    foreach (var item in Model.EmployeePagination.ModelList)
+                                    if (Model.EmployeePagination.NumberOfData < 1)
                                     {
                                         <tr>
-                                            <th scope="row">@indexx</th>
-                                            <td>@string.Join(", ", item.Lname, item.Fname, item.Mname)</td>
-                                            <td>@item.Phone</td>
-                                            <td>@item.Email</td>
-                                            <td>@item.Username</td>
-                                            <td>@item.Role</td>
-                                            <td>@item.Created_At</td>
-                                            <td>
-                                                <div class="d-flex ">
-                                                    <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
-                                                        <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
-                                                        <i class="fa-regular fa-pen-to-square"></i>
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm ms-2 delete-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
-                                                        <i class="fa-solid fa-trash-can"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
+                                            <td class="text-center text-uppercase p-5" colspan="8"><strong>No Data Found!</strong></td>
                                         </tr>
+                                    }
+                                    else
+                                    {
+                                        int indexx = Model.EmployeePagination.Index + 1;
 
-                                        indexx++;
+                                        foreach (var item in Model.EmployeePagination.ModelList)
+                                        {
+                                            <tr>
+                                                <th scope="row">@indexx</th>
+                                                <td>@string.Join(", ", item.Lname, item.Fname, item.Mname)</td>
+                                                <td>@item.Phone</td>
+                                                <td>@item.Email</td>
+                                                <td>@item.Username</td>
+                                                <td>@item.Role</td>
+                                                <td>@item.Created_At</td>
+                                                <td>
+                                                    <div class="d-flex ">
+                                                        <button class="btn btn-success btn-sm edit-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                                            <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                                            <i class="fa-regular fa-pen-to-square"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm ms-2 delete-btn" data-id="@item.Emp_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            indexx++;
+                                        }
                                     }
                                 }
-
-
                             }
                             <tr>
                                 <td colspan="8">
                                     <div class="container-fluid mt-3">
-                                        @Model.EmployeePagination.Pagenation
+                                        @{
+                                            if (Model.EmployeePagination != null)
+                                            {
+                                                @Model.EmployeePagination.Pagenation
+                                            }
+                                        }
                                     </div>
                                 </td>
                             </tr>

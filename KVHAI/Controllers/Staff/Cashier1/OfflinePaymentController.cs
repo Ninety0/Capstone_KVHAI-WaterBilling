@@ -1,9 +1,11 @@
 ﻿using AspNetCore.Reporting;
+using KVHAI.CustomClass;
 using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
+using System.Security.Claims;
 
 namespace KVHAI.Controllers.Staff.Cashier1
 {
@@ -15,19 +17,61 @@ namespace KVHAI.Controllers.Staff.Cashier1
         private readonly ResidentAddressRepository _residentAddress;
         private readonly PaymentRepository _paymentRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly NotificationRepository _notification;
 
-        public OfflinePaymentController(StreetRepository streetRepository, ResidentAddressRepository residentAddress, PaymentRepository paymentRepository, IWebHostEnvironment webHostEnvironment)
+
+        public OfflinePaymentController(StreetRepository streetRepository, ResidentAddressRepository residentAddress, PaymentRepository paymentRepository, IWebHostEnvironment webHostEnvironment, NotificationRepository notification)
         {
             _streetRepository = streetRepository;
             _residentAddress = residentAddress;
             _paymentRepository = paymentRepository;
             _webHostEnvironment = webHostEnvironment;
+            _notification = notification;
         }
         public async Task<IActionResult> Index()
         {
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
             var streets = await _streetRepository.GetAllStreets();
 
-            return View("~/Views/Staff/Cashier1/OfflinePayment.cshtml", streets);
+            var model = new ModelBinding()
+            {
+                NotificationStaff = notifList,
+                ListStreet = streets
+            };
+
+            return View("~/Views/Staff/Cashier1/OfflinePayment.cshtml", model);
+        }
+
+        public async Task<IActionResult> History()
+        {
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
+            var billNoList = await _paymentRepository.GetWaterBillingNumber();
+
+            var pagination1 = new Pagination<Payment>
+            {
+                ModelList = await _paymentRepository.GetRecentOnlinePayment(0, 10, "offline"),
+                NumberOfData = await _paymentRepository.GetCountOnlinePayment("offline"),
+                ScriptName = "onpagination"
+            };
+            pagination1.set(10, 5, 1);
+
+            var model = new ModelBinding()
+            {
+                NotificationStaff = notifList,
+                PaymentPagination = pagination1
+            };
+
+            return View("~/Views/Staff/Cashier1/OfflineDashboard.cshtml", model);
         }
 
         [HttpGet]
@@ -72,11 +116,11 @@ namespace KVHAI.Controllers.Staff.Cashier1
         }
 
         [HttpPost]
-        public async Task<IActionResult> Print(ResidentAddress address)
+        public async Task<IActionResult> Print(Payment payment)
         {
             try
             {
-                var dt = await _paymentRepository.PrintWaterBilling(address);
+                var dt = await _paymentRepository.PrintWaterBilling(payment);
                 if (dt == null || dt.Rows.Count < 1)
                 {
                     return BadRequest();
@@ -99,6 +143,97 @@ namespace KVHAI.Controllers.Staff.Cashier1
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveAs(Payment payment, string fileType)
+        {
+            try
+            {
+                if (payment == null || string.IsNullOrEmpty(fileType))
+                {
+                    return BadRequest("There was an error saving your file.");
+
+                }
+
+                if (payment == null)
+                {
+                    return BadRequest("No billing data provided.");
+                }
+
+                if (string.IsNullOrEmpty(fileType))
+                {
+                    return BadRequest("File type not specified.");
+                }
+
+
+                var dt = await _paymentRepository.PrintWaterBilling(payment);
+                if (dt == null || dt.Rows.Count < 1)
+                {
+                    return BadRequest("No data found for the given parameters.");
+                }
+
+                var fileName = "";
+                ReportResult saveFileAs;
+
+                var paymentID = payment.Payment_ID;
+                var date = DateTime.Now.ToString("yyyy-MM-dd"); // Simplified date format
+                var tmpName = $"PID{paymentID}_{date}";
+
+                var path = $"{this._webHostEnvironment.WebRootPath}\\ReportViewer\\rptPayment.rdlc";
+                if (!System.IO.File.Exists(path))
+                {
+                    return BadRequest("Report definition file not found.");
+                }
+
+                LocalReport localReport = new LocalReport(path);
+                localReport.AddDataSource("dsreport_payment", dt);
+
+                if (fileType == "pdf")
+                {
+                    saveFileAs = localReport.Execute(RenderType.Pdf, 1, null);
+                    fileName = $"{tmpName}.pdf";
+                }
+                else if (fileType == "excel")
+                {
+                    saveFileAs = localReport.Execute(RenderType.Excel, 1, null);
+                    fileName = $"{tmpName}.xls";
+                }
+                else if (fileType == "doc")
+                {
+                    saveFileAs = localReport.Execute(RenderType.Word, 1, null);
+                    fileName = $"{tmpName}.doc";
+                }
+                else
+                {
+                    return BadRequest("Invalid file type specified.");
+                }
+
+                if (saveFileAs == null || saveFileAs.MainStream == null)
+                {
+                    return BadRequest("Failed to generate the report file.");
+                }
+
+
+                var memory = new MemoryStream(saveFileAs.MainStream.ToArray());
+                memory.Position = 0;
+
+
+                // Set the correct Content-Disposition header
+                var contentDisposition = new System.Net.Mime.ContentDisposition
+                {
+                    FileName = fileName,
+                    Inline = false
+                };
+
+                Response.Headers.Add("Content-Disposition", contentDisposition.ToString());
+
+                return File(memory.ToArray(), MediaTypeNames.Application.Octet, fileName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred: {ex.Message}");
             }
         }
     }

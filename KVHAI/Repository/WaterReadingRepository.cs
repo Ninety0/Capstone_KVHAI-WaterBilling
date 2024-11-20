@@ -8,11 +8,13 @@ namespace KVHAI.Repository
     {
         private readonly DBConnect _dbConnect;
         private readonly InputSanitize _sanitize;
+        private readonly ListRepository _listRepository;
 
-        public WaterReadingRepository(DBConnect dBConnect, InputSanitize inputSanitize)
+        public WaterReadingRepository(DBConnect dBConnect, InputSanitize inputSanitize, ListRepository listRepository)
         {
             _dbConnect = dBConnect;
             _sanitize = inputSanitize;
+            _listRepository = listRepository;
         }
         ////////////
         // CREATE //
@@ -178,7 +180,7 @@ namespace KVHAI.Repository
             return models;
         }
 
-        public async Task<ModelBinding> GetAllReadingByResident(string addressID, string residentID)
+        public async Task<ModelBinding> GetAllReadingByResident(string addressID, string residentID = "")
         {
             var monthNow = DateTime.Now.ToString("yyyy-MM");
             var waterReading = new List<WaterReading>();
@@ -190,12 +192,11 @@ namespace KVHAI.Repository
                     select * from water_reading_tb wr
                     JOIN address_tb a ON wr.addr_id = a.addr_id
                     JOIN resident_tb r ON a.res_id = r.res_id
-                    WHERE a.addr_id = @addr_id AND r.res_id = @res_id
+                    WHERE a.addr_id = @addr_id
                     ORDER BY date_reading DESC
-                ", connection))
+                ", connection)) //AND r.res_id = @res_id
                 {
                     command.Parameters.AddWithValue("@addr_id", addressID);
-                    command.Parameters.AddWithValue("@res_id", residentID);
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
@@ -270,7 +271,7 @@ namespace KVHAI.Repository
                     using (var command = new SqlCommand(@"
                     Select COUNT(*) from water_reading_tb wr 
                     JOIN address_tb ad ON wr.addr_id = ad.addr_id
-                    WHERE date_reading like @month AND ad.addr_id = @id", connection))
+                    WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) like @month AND ad.addr_id = @id", connection))
                     {
                         command.Parameters.AddWithValue("@month", "%" + month + "%");
                         command.Parameters.AddWithValue("@id", id);
@@ -432,6 +433,69 @@ namespace KVHAI.Repository
                         }
                     }
                 }
+            }
+        }
+
+        public async Task<List<LocationPercentage>> GetDashboard()
+        {
+            var address = await _listRepository.AddressList();
+            var waterRead = await _listRepository.WaterReadingList();
+            var locationPercentList = new List<LocationPercentage>();
+
+            for (int i = 1; i <= 4; i++)
+            {
+                var readLocation = await GetCountReadingByLocation(i);
+                var countLocation = address.Where(l => l.Location == i.ToString()).Count();
+
+                var percentLocation = await CalculateProgress(readLocation, countLocation);
+
+                var _locationPercent = new LocationPercentage
+                {
+                    //Location = $"location{i}",
+                    //Percentage = percentLocation
+                    Location = $"location{i}",
+                    Percentage = 25 * i
+                };
+
+                locationPercentList.Add(_locationPercent);
+            }
+
+            return locationPercentList;
+
+        }
+        private async Task<double> CalculateProgress(int countReading, int countTotal)
+        {
+            if (countTotal < 1)
+            {
+                return 0;
+            }
+            double percentage = Math.Round((countReading / (double)countTotal) * 100);
+
+            return percentage;
+        }
+        private async Task<int> GetCountReadingByLocation(int location)
+        {
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                    select count(*) from water_reading_tb wr
+                    JOIN address_tb a ON wr.addr_id= a.addr_id 
+                    WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND location = @location
+                    ", connection))
+                    {
+                        command.Parameters.AddWithValue("@date", "%" + DateTime.Now.ToString("yyyy-MM") + "%");
+                        command.Parameters.AddWithValue("@location", location);
+                        var result = await command.ExecuteScalarAsync();
+
+                        return Convert.ToInt32(result);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
             }
         }
     }

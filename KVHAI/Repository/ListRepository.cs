@@ -15,35 +15,41 @@ namespace KVHAI.Repository
             _sanitize = sanitize;
         }
 
-        public async Task<List<Payment>> PayList(SqlConnection connection, SqlTransaction transaction)
+        public async Task<List<Payment>> PayList()
         {
             try
             {
                 var payList = new List<Payment>();
-                using (var command = new SqlCommand("select * from payment_tb", connection, transaction))
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
                 {
-                    using (var reader = await command.ExecuteReaderAsync())
+                    using (var command = new SqlCommand("select * from payment_tb", connection))
                     {
-                        while (await reader.ReadAsync())
+                        using (var reader = await command.ExecuteReaderAsync())
                         {
-                            var payment = new Payment
+                            while (await reader.ReadAsync())
                             {
-                                Payment_ID = reader.GetInt32(0),
-                                Emp_ID = reader.GetInt32(1),
-                                Address_ID = reader.GetInt32(2),
-                                Resident_ID = reader.GetInt32(3),
-                                Bill = reader.GetDecimal(4),
-                                Paid_Amount = reader.GetDecimal(5),
-                                Remaining_Balance = reader.GetDecimal(6),
-                                Payment_Method = reader.GetString(7),
-                                Payment_Status = reader.GetString(8),
-                                Payment_Date = reader.GetDateTime(9).ToString("yyyy-MM-dd HH:mm:ss"),
-                                Paid_By = reader.GetString(10),
-                            };
+                                var payment = new Payment
+                                {
+                                    Payment_ID = reader.GetInt32(0),
+                                    Address_ID = reader.GetInt32(1),
+                                    Resident_ID = reader.GetInt32(2),
+                                    Bill = reader.GetDecimal(3),
+                                    Paid_Amount = reader.GetDecimal(4),
+                                    Remaining_Balance = reader.GetDecimal(5),
+                                    Payment_Method = reader.GetString(6),
+                                    Payment_Status = reader.GetString(7),
+                                    Payment_Date = reader.GetDateTime(8).ToString("yyyy-MM-dd HH:mm:ss"),
+                                    Paid_By = reader.GetString(9),
+                                    PayPal_TransactionId = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+                                    PayPal_PayerId = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+                                    PayPal_PayerEmail = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
+                                };
 
-                            payList.Add(payment);
+                                payList.Add(payment);
+                            }
                         }
                     }
+
                 }
 
 
@@ -100,11 +106,49 @@ namespace KVHAI.Repository
                         {
                             while (await reader.ReadAsync())
                             {
-                                
+
                                 var announce = new Notification
                                 {
                                     Notification_ID = reader.GetInt32(reader.GetOrdinal("notif_id")),
-                                    Resident_ID = reader.GetString(reader.GetOrdinal("res_id")),
+                                    Resident_ID = reader.GetString(reader.GetOrdinal("uid")),
+                                    Title = reader.GetString(reader.GetOrdinal("title")),
+                                    Message = reader.GetString(reader.GetOrdinal("message")),
+                                    Url = reader.IsDBNull(reader.GetOrdinal("url")) ? null : reader.GetString(reader.GetOrdinal("url")),
+                                    Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
+                                    Message_Type = reader.GetString(reader.GetOrdinal("message_type")),
+                                    Is_Read = reader.GetBoolean(reader.GetOrdinal("is_read")),
+                                };
+                                notifications.Add(announce);
+                            }
+                        }
+                    }
+                }
+                return notifications;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<Notification>> NotificationListEmployee()
+        {
+            try
+            {
+                var notifications = new List<Notification>();
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"select * from notification_emp_tb", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+
+                                var announce = new Notification
+                                {
+                                    Notification_ID = reader.GetInt32(reader.GetOrdinal("notif_id")),
+                                    Resident_ID = reader.GetString(reader.GetOrdinal("uid")),
                                     Title = reader.GetString(reader.GetOrdinal("title")),
                                     Message = reader.GetString(reader.GetOrdinal("message")),
                                     Url = reader.IsDBNull(reader.GetOrdinal("url")) ? null : reader.GetString(reader.GetOrdinal("url")),
@@ -371,25 +415,61 @@ namespace KVHAI.Repository
                                     WaterBill_ID = reader.GetInt32(0).ToString(),
                                     Reference_No = reader.GetInt32(1).ToString(),
                                     Address_ID = reader.GetInt32(2).ToString(),
-                                    Previous_Reading = reader.GetInt32(3).ToString(),
-                                    Current_Reading = reader.GetInt32(4).ToString(),
-                                    Cubic_Meter = reader.GetString(5),
-                                    Bill_For = reader.GetDateTime(6).ToString("yyyy-MM-dd"),
-                                    Bill_Date_Created = reader.GetDateTime(7).ToString("yyyy-MM-dd"),
-                                    Amount = reader.GetString(8),
-                                    Date_Issue_From = reader.GetDateTime(9).ToString("yyyy-MM-dd"),
-                                    Date_Issue_To = reader.GetDateTime(10).ToString("yyyy-MM-dd"),
-                                    Due_Date_From = reader.GetDateTime(11).ToString("yyyy-MM-dd"),
-                                    Due_Date_To = reader.GetDateTime(12).ToString("yyyy-MM-dd"),
-                                    Status = reader.GetString(13),
-                                    WaterBill_No = reader.GetInt32(14).ToString(),
+                                    Location = reader.GetInt32(3).ToString(),
+                                    Previous_Reading = reader.GetInt32(4).ToString(),
+                                    Current_Reading = reader.GetInt32(5).ToString(),
+                                    Cubic_Meter = reader.GetString(6),
+                                    Bill_For = reader.GetDateTime(7).ToString("yyyy-MM-dd"),
+                                    Bill_Date_Created = reader.GetDateTime(8).ToString("yyyy-MM-dd"),
+                                    Amount = reader.GetString(9),
+                                    Date_Issue_From = reader.GetDateTime(10).ToString("yyyy-MM-dd"),
+                                    Date_Issue_To = reader.GetDateTime(11).ToString("yyyy-MM-dd"),
+                                    Due_Date_From = reader.GetDateTime(12).ToString("yyyy-MM-dd"),
+                                    Due_Date_To = reader.GetDateTime(13).ToString("yyyy-MM-dd"),
+                                    Status = reader.GetString(14),
+                                    WaterBill_No = reader.GetInt32(15).ToString(),
                                 };
+
                                 waterBill.Add(_wb);
                             }
                         }
                     }
                 }
                 return waterBill;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<WaterReading>> WaterReadingList()
+        {
+            try
+            {
+                var waterRead = new List<WaterReading>();
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"SELECT * FROM water_reading_tb", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var _wr = new WaterReading
+                                {
+                                    Reading_ID = reader.GetInt32(0).ToString(),
+                                    Emp_ID = reader.GetInt32(1).ToString(),
+                                    Address_ID = reader.GetInt32(2).ToString(),
+                                    Consumption = reader.GetInt32(3).ToString(),
+                                    Date = reader.GetDateTime(4).ToString("yyyy-MM-dd"),
+                                };
+                                waterRead.Add(_wr);
+                            }
+                        }
+                    }
+                }
+                return waterRead;
             }
             catch (Exception)
             {

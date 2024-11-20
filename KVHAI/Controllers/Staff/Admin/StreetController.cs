@@ -5,6 +5,7 @@ using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
@@ -14,18 +15,27 @@ namespace KVHAI.Controllers.Staff.Admin
         private readonly StreetRepository _streetRepository;
         private readonly Pagination<Streets> _pagination;
         private readonly IHubContext<StreetHub> _hubContext;
+        private readonly NotificationRepository _notification;
 
-        public StreetController(StreetRepository streetRepository, Pagination<Streets> pagination, IHubContext<StreetHub> hubContext)
+
+        public StreetController(StreetRepository streetRepository, Pagination<Streets> pagination, IHubContext<StreetHub> hubContext, NotificationRepository notification)
         {
             _streetRepository = streetRepository;
             _pagination = pagination;
             _hubContext = hubContext;
+            _notification = notification;
         }
 
         public async Task<IActionResult> Index()
         {
             try
             {
+                var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var username = User.Identity.Name;
+
+                var notifList = await _notification.GetNotificationByStaff(role);
+
                 var pagination = new Pagination<Streets>
                 {
                     ModelList = await _streetRepository.GetAllStreets(offset: 0, limit: 10),
@@ -34,7 +44,13 @@ namespace KVHAI.Controllers.Staff.Admin
                 };
                 pagination.set(10, 5, 1);
 
-                return View("~/Views/Staff/Admin/Streets.cshtml", pagination);
+                var viewmodel = new ModelBinding
+                {
+                    NotificationStaff = notifList,
+                    StreetPagination = pagination
+                };
+
+                return View("~/Views/Staff/Admin/Streets.cshtml", viewmodel);
             }
             catch (Exception ex)
             {
@@ -58,7 +74,13 @@ namespace KVHAI.Controllers.Staff.Admin
                 pagination.set(10, 5, page_index);
                 pagination.ModelList = await _streetRepository.GetAllStreets(_search, pagination.Offset, 10);
 
-                return View("~/Views/Staff/Admin/Streets.cshtml", pagination);
+                var viewmodel = new ModelBinding
+                {
+                    StreetPagination = pagination
+                };
+
+
+                return View("~/Views/Staff/Admin/Streets.cshtml", viewmodel);
             }
             catch (Exception ex)
             {

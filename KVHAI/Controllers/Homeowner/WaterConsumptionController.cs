@@ -14,14 +14,16 @@ namespace KVHAI.Controllers.Homeowner
     {
         private readonly WaterBillingFunction _waterBillingFunction;
         private readonly AddressRepository _addressRepository;
+        private readonly ResidentAddressRepository _residentAddressRepository;
         private readonly NotificationRepository _notification;
         private readonly ICompositeViewEngine _viewEngine;
 
 
-        public WaterConsumptionController(WaterBillingFunction waterBillingFunction, AddressRepository addressRepository, ICompositeViewEngine viewEngine, NotificationRepository notification)
+        public WaterConsumptionController(WaterBillingFunction waterBillingFunction, AddressRepository addressRepository, ResidentAddressRepository residentAddressRepository, ICompositeViewEngine viewEngine, NotificationRepository notification)
         {
             _waterBillingFunction = waterBillingFunction;
             _addressRepository = addressRepository;
+            _residentAddressRepository = residentAddressRepository;
             _viewEngine = viewEngine;
             _notification = notification;
         }
@@ -31,13 +33,29 @@ namespace KVHAI.Controllers.Homeowner
         {
             var username = User.Identity.Name;
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var address = await _addressRepository.GetAddressById(residentID);
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            int addressID = 0;
+
+            var address = new List<Models.Address>();
+
+            if (role == "1")
+            {
+                address = await _addressRepository.GetAddressessByResId(residentID);
+            }
+            else
+            {
+                address = await _residentAddressRepository.GetAddressessByResId(residentID);
+            }
+
+
 
             if (address.Count > 0)
             {
-                await GetWaterConsumptionByAddress(address.FirstOrDefault().Address_ID.ToString(), residentID);
-
+                await GetWaterConsumptionByAddress(address.FirstOrDefault().Address_ID.ToString());
+                addressID = address.Select(a => a.Address_ID).FirstOrDefault();
             }
+
+            _waterBillingFunction.AddressList = address;
             //await _waterBillingFunction.GetGraphData(address.FirstOrDefault().Address_ID.ToString());
             _waterBillingFunction.NotificationResident = await _notification.GetNotificationByResident(residentID);
 
@@ -76,7 +94,7 @@ namespace KVHAI.Controllers.Homeowner
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
-            await GetWaterConsumptionByAddress(addressID, residentID);
+            await GetWaterConsumptionByAddress(addressID);
 
             var partialView = await this.RenderViewAsync("~/Views/Resident/LoggedIn/WaterConsumption.cshtml", _waterBillingFunction, false);
             return Json(new
@@ -137,9 +155,9 @@ namespace KVHAI.Controllers.Homeowner
         }
 
 
-        private async Task GetWaterConsumptionByAddress(string addressID, string residentID)
+        private async Task GetWaterConsumptionByAddress(string addressID)
         {
-            await _waterBillingFunction.WaterReading(addressID: addressID, residentID: residentID);
+            await _waterBillingFunction.WaterReading(addressID: addressID);
 
             var listConsumptions = new List<double>();
             var listCubic = new List<Double>();
@@ -162,13 +180,10 @@ namespace KVHAI.Controllers.Homeowner
             var current = _waterBillingFunction.CurrentReading;
             var address = _waterBillingFunction.ResidentAddress;
 
-            var prevConsumption = previous.Where(reading => reading.Address_ID == addressID &&
-                                                            reading.Resident_ID == residentID).ToList();
-            var currentConsumption = current.Where(reading => reading.Address_ID == addressID &&
-                                                            reading.Resident_ID == residentID).ToList();
+            var prevConsumption = previous.Where(reading => reading.Address_ID == addressID).ToList();
+            var currentConsumption = current.Where(reading => reading.Address_ID == addressID).ToList();
 
-            var addressList = address.Where(reading => reading.Address_ID.ToString() == addressID &&
-                                                            reading.Resident_ID.ToString() == residentID).ToList();
+            var addressList = address.Where(reading => reading.Address_ID.ToString() == addressID).ToList();
 
             _waterBillingFunction.PreviousReading = prevConsumption;
             _waterBillingFunction.CurrentReading = currentConsumption;

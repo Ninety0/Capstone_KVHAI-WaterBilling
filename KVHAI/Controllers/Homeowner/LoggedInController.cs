@@ -38,6 +38,8 @@ namespace KVHAI.Controllers.Homeowner
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
+            var address_id = await _addressRepository.GetAddressIDByResidentID(residentID, role);
+
             var announcments = await _announcementRepository.ShowAnnouncement();
             var notifList = await _notification.GetNotificationByResident(residentID);
 
@@ -71,9 +73,14 @@ namespace KVHAI.Controllers.Homeowner
         [HttpGet]
         public async Task<IActionResult> GetNewNotification(string resident_id)
         {
-            var model = await _announcementRepository.ShowAnnouncement();
-            var notifList = await _notification.GetNotificationByResident(resident_id);
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
+            var model = await _announcementRepository.ShowAnnouncement();
+
+            var address_id = await _addressRepository.GetAddressIDByResidentID(resident_id, role);
+
+            var announcments = await _announcementRepository.ShowAnnouncement();
+            var notifList = await _notification.GetNotificationByResident(resident_id);
 
             var viewModel = new ModelBinding
             {

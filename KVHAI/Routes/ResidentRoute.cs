@@ -39,13 +39,13 @@ namespace KVHAI.Routes
             );
 
             endpoint.MapControllerRoute(
-                name: "ResidentOwnerHome",
+                name: " ResidentRenterHome",
                 pattern: "kvhai/resident/rental/home",
                 defaults: new { controller = "ResidentHome", action = "Index" }
             );
             endpoint.MapControllerRoute(
-                name: "ResidentRenterHome",
-                pattern: "kvhai/resident/home",
+                name: "ResidentOwnerHome",
+                pattern: "kvhai/resident/rental-application",
                 defaults: new { controller = "OwnerHome", action = "OwnerHome" }
             );
 
@@ -60,6 +60,13 @@ namespace KVHAI.Routes
                 name: "ResidentMyAddress",
                 pattern: "kvhai/resident/my-address",
                 defaults: new { controller = "MyAddress", action = "Index" }
+            );
+
+            //Renter ADDRESS
+            endpoint.MapControllerRoute(
+                name: "RenterAddress",
+                pattern: "kvhai/resident/renter-address",
+                defaults: new { controller = "RenterAddress", action = "Index" }
             );
 
             endpoint.MapControllerRoute(
@@ -78,6 +85,12 @@ namespace KVHAI.Routes
                 name: "RenterRegisterAddress",
                 pattern: "kvhai/resident/register/address",
                 defaults: new { controller = "ResidentHome", action = "Index" }
+            );
+
+            endpoint.MapControllerRoute(
+                name: "NotifactionMobile",
+                pattern: "kvhai/resident/notification",
+                defaults: new { controller = "NotificationMobile", action = "Index" }
             );
 
             #endregion

@@ -1,0 +1,422 @@
+﻿@using System.Security.Claims;
+
+@{
+    Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
+    ViewBag.Title = "Notification";
+    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+}
+
+@section head{
+    <style>
+        .new_post {
+            font-size: .8rem;
+            position: relative;
+            text-align: center;
+            font-weight: 600;
+        }
+        /*.new_post::before{
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0px;
+            width: 45%;
+            height: 1px;
+            background: #ccc;
+            font-weight:600;
+
+        }
+
+        .new_post::after{
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 55%;
+            width: 45%;
+            height: 1px;
+            background: #ccc;
+            font-weight:600;
+
+        }*/
+
+        .line_post {
+            width: 100%;
+            height: 1px;
+            background: #ccc;
+        }
+
+        .post_img {
+            width: 150px;
+            height: 150px;
+        }
+
+        .content-container {
+            padding: 2rem;
+        }
+
+        .announcement-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+            .announcement-card:hover {
+                transform: scale(1.02);
+            }
+
+            .announcement-card h4 {
+                font-weight: 600;
+                color: #333;
+            }
+
+            .announcement-card h5 {
+                font-size: 0.9rem;
+                font-weight: 400;
+            }
+
+        .announcement-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .image-click {
+            border-radius: 8px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .image-click img {
+                object-fit: cover;
+                width: 100%;
+                height: 100%;
+            }
+
+            .image-click:hover {
+                transform: scale(1.05);
+            }
+
+        .badge {
+            font-size: 0.8rem;
+        }
+    </style>
+}
+
+
+@section sidebar{
+
+    <a href="/kvhai/resident/announcement" class="nav_sidebar active  mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Announcement
+            </div>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-dot nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Register
+            </div>
+
+        </div>
+    </a>
+
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-gauge nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Consumption
+            </div>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-money-bills nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Billing
+            </div>
+        </div>
+    </a>
+
+    @if (role == "1")
+    {
+        <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    My Address
+                </div>
+
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental-application" class="nav_sidebar  mb-3 ">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Rental
+                </div>
+
+            </div>
+        </a>
+    }
+    else
+    {
+        <a href="/kvhai/resident/renter-address" class="nav_sidebar mb-3">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    My Address
+                </div>
+
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental/home" class="nav_sidebar  mb-3 ">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Rental
+                </div>
+
+            </div>
+        </a>
+    }
+
+}
+
+@section mobilenav{
+
+    <a href="/kvhai/resident/announcement" class="nav_sidebar active  mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span class="ms-3">
+                Announcement
+            </span>
+
+        </div>
+    </a>
+    <a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            <span class="ms-3">
+                Register Address
+            </span>
+
+        </div>
+    </a>
+
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            <span class="ms-3">
+                Consumption
+            </span>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar  mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            <span class="ms-3">
+                Billing
+            </span>
+        </div>
+    </a>
+
+    @if (role == "1") // owner
+    {
+        <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+                <span class="ms-3">
+                    My Address
+                </span>
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental-application" class="nav_sidebar mb-3  ps-3">
+            <div class="d-flex">
+                <i class="fa-solid fa-house nav_icon"></i>
+                <span class="ms-3">
+                    Rental Application
+                </span>
+
+            </div>
+        </a>
+    }
+    else //renter
+    {
+        <a href="/kvhai/resident/renter-address" class="nav_sidebar mb-3 ps-3">
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+                <span class="ms-3">
+                    My Address
+                </span>
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental/home" class="nav_sidebar mb-3  ps-3">
+            <div class="d-flex">
+                <i class="fa-solid fa-house nav_icon"></i>
+                <span class="ms-3">
+                    Rental Application
+                </span>
+
+            </div>
+        </a>
+    }
+
+    <a href="/kvhai/resident/notification" class="nav_sidebar mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-bell"></i>
+            <span class="ms-3">
+                Notification
+            </span>
+        </div>
+    </a>
+}
+
+
+
+<!-- Modal -->
+<!-- Modal Structure -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <img id="modalImage" src="" class="img-fluid" alt="Enlarged Image" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- BODY -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-11">
+                <h5 class="fw-bold text-muted">Notification</h5>
+            </div>
+            <div class="col-1 d-flex justify-content-end badge bg-primary p-2">
+                <i class="" id="btn_notification">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M14.235 19c.865 0 1.322 1.024.745 1.668A4 4 0 0 1 12 22a4 4 0 0 1-2.98-1.332c-.552-.616-.158-1.579.634-1.661l.11-.006zM12 2c1.358 0 2.506.903 2.875 2.141l.046.171l.008.043a8.01 8.01 0 0 1 4.024 6.069l.028.287L19 11v2.931l.021.136a3 3 0 0 0 1.143 1.847l.167.117l.162.099c.86.487.56 1.766-.377 1.864L20 18H4c-1.028 0-1.387-1.364-.493-1.87a3 3 0 0 0 1.472-2.063L5 13.924l.001-2.97A8 8 0 0 1 8.822 4.5l.248-.146l.01-.043a3 3 0 0 1 2.562-2.29l.182-.017z" />
+                    </svg>
+                </i>
+                <span class="notification_count">
+                    @if (Model.NotificationResident != null && Model.NotificationResident.Count > 0)
+                    {
+                    var text = Model.NotificationResident.Count;
+                    @text
+                    }
+                    else
+                    {
+                    var text = 0;
+                    @text
+                    }
+                </span>
+            </div>
+        </div>
+
+        <hr class="border border-black" />
+
+        @if (Model.NotificationResident != null && Model.NotificationResident.Count > 0)
+        {
+        @foreach (var item in Model.NotificationResident)
+        {
+        <div class="container-fluid border shadow-sm rounded mb-3" data-notif="@item.Notification_ID">
+            <a class="text-decoration-none" id="notification_url" data-url="@item.Url">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between align-items-start ">
+                        <div>
+                            <p class="fw-bold notification-title">@item.Title</p>
+                            <p class="notification-message">@item.Message</p>
+                        </div>
+                        @*<small class="notification-date">@item.Created_At</small>*@
+                        <small class="notification-date">@item.Hours</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        }
+        }
+        else
+        {
+
+        <div class="card text-center notification-card">
+            <div class="card-body" id="notification_content">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between align-items-start notification-content">
+                        <div>
+                            <p class="notification-message text-center">No new notification!</p>
+                        </div>
+                        @*<small class="notification-date">@item.Created_At</small>*@
+                        <small class="notification-date"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            //CODE FOR SIGNALR
+
+            const homeConnection = setupSignalRConnection("/resident/announcement", "Announcement Hub");
+
+            homeConnection.on("ShowAnnouncement", function () {
+                toastr.info("Theres is an update in the announcement");
+                updateAnnouncement();
+            });
+
+            function updateAnnouncement() {
+                $.ajax({
+                    url: "/LoggedIn/GetAnnouncement", // Your endpoint to fetch the updated list
+                    type: "GET",
+                    success: function (response) {
+                        console.log(response);
+                        var result = $(response).find("#table_announcement").html();
+                        $('#table_announcement').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                        console.error("Error fetching updated data:", error);
+                    }
+                });
+            }
+
+            $(document).on('click', '.image-click', function () {
+                // Get the image URL from the clicked image
+                var imageSrc = $(this).data('image');
+                // Set the image inside the modal
+                $('#modalImage').attr('src', imageSrc);
+            });
+        });
+    </script>
+}

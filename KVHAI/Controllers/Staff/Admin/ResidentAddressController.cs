@@ -3,6 +3,7 @@ using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace KVHAI.Controllers.Staff.Admin
 {
@@ -13,18 +14,27 @@ namespace KVHAI.Controllers.Staff.Admin
         private readonly ResidentRepository _residentRepository;
         private readonly AddressRepository _addressRepository;
         private readonly IWebHostEnvironment _environment;
+        private readonly NotificationRepository _notification;
 
-
-        public ResidentAddressController(ResidentRepository residentRepository, EmployeeRepository employeeRepository, AddressRepository addressRepository, IWebHostEnvironment environment)
+        public ResidentAddressController(ResidentRepository residentRepository, EmployeeRepository employeeRepository, AddressRepository addressRepository, IWebHostEnvironment environment, NotificationRepository notification)
         {
             _residentRepository = residentRepository;
             _employeeRepository = employeeRepository;
             _addressRepository = addressRepository;
             _environment = environment;
+            _notification = notification;
         }
 
         public async Task<IActionResult> Index()
         {
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
+
+
             //RESIDENT
             var pagination2 = new Pagination<AddressWithResident>
             {
@@ -34,7 +44,13 @@ namespace KVHAI.Controllers.Staff.Admin
             };
             pagination2.set(10, 5, 1);
 
-            return View("~/Views/Staff/Admin/ResidentAddress.cshtml", pagination2);
+            var viewmodel = new ModelBinding
+            {
+                NotificationStaff = notifList,
+                ResidentPagination = pagination2
+            };
+
+            return View("~/Views/Staff/Admin/ResidentAddress.cshtml", viewmodel);
         }
 
         [HttpGet]
@@ -49,7 +65,12 @@ namespace KVHAI.Controllers.Staff.Admin
             };
             pagination2.set(10, 5, 1);
 
-            return View("~/Views/Staff/Admin/ResidentAddress.cshtml", pagination2);
+            var viewmodel = new ModelBinding
+            {
+                ResidentPagination = pagination2
+            };
+
+            return View("~/Views/Staff/Admin/ResidentAddress.cshtml", viewmodel);
         }
 
         [HttpPost]
@@ -104,7 +125,12 @@ namespace KVHAI.Controllers.Staff.Admin
                 pagination2.set(10, 5, page_index);
                 pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10, is_verified, category, resSearch);
 
-                return View("~/Views/Staff/Admin/ResidentAddress.cshtml", pagination2);
+                var viewmodel = new ModelBinding
+                {
+                    ResidentPagination = pagination2
+                };
+
+                return View("~/Views/Staff/Admin/ResidentAddress.cshtml", viewmodel);
             }
             catch (Exception ex)
             {

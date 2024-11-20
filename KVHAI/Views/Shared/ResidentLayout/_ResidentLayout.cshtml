@@ -225,7 +225,76 @@
 
 
             <!-- BODY CONTENT -->
-            <div class="container-fluid p-3 content-wrapper">
+            <div class="container-fluid p-3 pt-0 pt-lg-3 content-wrapper">
+                <div class="d-lg-none mb-3 bg-light shadow-sm">
+                    <!--NOTIFICATION-->
+                    <div class="d-flex align-items-center justify-content-end text-black-50 bg-light p-2 notification_container d-flex">
+                        <i class="" id="btn_notification">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M14.235 19c.865 0 1.322 1.024.745 1.668A4 4 0 0 1 12 22a4 4 0 0 1-2.98-1.332c-.552-.616-.158-1.579.634-1.661l.11-.006zM12 2c1.358 0 2.506.903 2.875 2.141l.046.171l.008.043a8.01 8.01 0 0 1 4.024 6.069l.028.287L19 11v2.931l.021.136a3 3 0 0 0 1.143 1.847l.167.117l.162.099c.86.487.56 1.766-.377 1.864L20 18H4c-1.028 0-1.387-1.364-.493-1.87a3 3 0 0 0 1.472-2.063L5 13.924l.001-2.97A8 8 0 0 1 8.822 4.5l.248-.146l.01-.043a3 3 0 0 1 2.562-2.29l.182-.017z" />
+                            </svg>
+                        </i>
+                        <span class="notification_count">
+                            @if (Model.NotificationResident != null && Model.NotificationResident.Count > 0)
+                            {
+                                var text = Model.NotificationResident.Count;
+                                @text
+                            }
+                            else
+                            {
+                                var text = 0;
+                                @text
+                            }
+                        </span>
+                        <div class="notification_body">
+                            @if (Model.NotificationResident != null && Model.NotificationResident.Count > 0)
+                            {
+                                <div class="card text-center notification-card">
+                                    <div class="card-header">
+                                        <h6 class="card-title">Notification</h6>
+                                    </div>
+                                    @foreach (var item in Model.NotificationResident)
+                                    {
+                                        <div class="card-body" id="notification_content" data-notif="@item.Notification_ID">
+                                            <a class="text-decoration-none" id="notification_url" data-url="@item.Url">
+                                                <div class="row">
+                                                    <div class="col-12 d-flex justify-content-between align-items-start notification-content">
+                                                        <div>
+                                                            <p class="fw-bold notification-title">@item.Title</p>
+                                                            <p class="notification-message">@item.Message</p>
+                                                        </div>
+                                                        @*<small class="notification-date">@item.Created_At</small>*@
+                                                        <small class="notification-date">@item.Hours</small>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+
+                            }
+                            else
+                            {
+                                <div class="card text-center notification-card">
+                                    <div class="card-header">
+                                        <h6 class="card-title">Notification</h6>
+                                    </div>
+                                    <div class="card-body" id="notification_content">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between align-items-start notification-content">
+                                                <div>
+                                                    <p class="notification-message text-center">No new notification!</p>
+                                                </div>
+                                                @*<small class="notification-date">@item.Created_At</small>*@
+                                                <small class="notification-date"></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
                 @RenderBody()
             </div>
         </div>

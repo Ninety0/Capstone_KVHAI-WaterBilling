@@ -9,7 +9,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
@@ -30,7 +30,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
@@ -140,7 +140,7 @@
                 <tbody class="table-group-divider">
                     @{
 
-                        if (Model.NumberOfData < 1)
+                        if (Model.StreetPagination.NumberOfData < 1)
                         {
                             <tr>
                                 <td class="text-center text-uppercase p-5" colspan="8"><strong>No Data Found!</strong></td>
@@ -148,9 +148,9 @@
                         }
                         else
                         {
-                            int indexx = Model.Index + 1;
+                            int indexx = Model.StreetPagination.Index + 1;
 
-                            foreach (var item in Model.ModelList)
+                            foreach (var item in Model.StreetPagination.ModelList)
                             {
                                 <tr>
                                     <th scope="row" class="p-3">@indexx</th>
@@ -177,7 +177,7 @@
                     <tr>
                         <td colspan="8">
                             <div class="container-fluid mt-3">
-                                @Model.Pagenation
+                                @Model.StreetPagination.Pagenation
                             </div>
                         </td>
                     </tr>

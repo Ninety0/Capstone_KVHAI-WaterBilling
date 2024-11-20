@@ -1,5 +1,8 @@
-﻿using KVHAI.Repository;
+﻿using KVHAI.CustomClass;
+using KVHAI.Models;
+using KVHAI.Repository;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -8,10 +11,14 @@ namespace KVHAI.Controllers.Staff
     public class AdminLoginController : Controller
     {
         private readonly EmployeeRepository _employeeRepository;
+        private readonly AnnouncementRepository _announcementRepository;
+        private readonly NotificationRepository _notification;
 
-        public AdminLoginController(EmployeeRepository employeeRepository)
+        public AdminLoginController(EmployeeRepository employeeRepository, AnnouncementRepository announcementRepository, NotificationRepository notificationRepository)
         {
             _employeeRepository = employeeRepository;
+            _announcementRepository = announcementRepository;
+            _notification = notificationRepository;
         }
 
         public IActionResult Index()
@@ -80,7 +87,7 @@ namespace KVHAI.Controllers.Staff
             }
             else if (role == "cashier2")
             {
-                return Ok(new { redirectUrl = "/kvhai/staff/cashier-online/home" });
+                return Ok(new { redirectUrl = "/kvhai/staff/onlinepayment/home" });
             }
             else if (role == "waterworks")
             {
@@ -88,6 +95,32 @@ namespace KVHAI.Controllers.Staff
             }
 
             return Ok(new { redirectUrl = "/kvhai/staff/error" });
+        }
+
+        [Authorize(AuthenticationSchemes = "AdminCookieAuth")]
+        [HttpGet]
+        public async Task<IActionResult> GetNewNotification(string employee_id)
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
+            var pagination = new Pagination<Streets>();
+
+            var viewmodel = new ModelBinding
+            {
+                NotificationStaff = notifList,
+                StreetPagination = pagination
+            };
+
+            return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateNotificationRead(string notification_id)
+        {
+            int result = await _notification.UpdateReadNotificationEmployee(notification_id);
+            return Ok();
         }
 
         [HttpPost]

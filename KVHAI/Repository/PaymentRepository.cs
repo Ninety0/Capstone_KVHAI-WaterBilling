@@ -10,15 +10,18 @@ namespace KVHAI.Repository
         private readonly DBConnect _dBConnect;
         private readonly InputSanitize _sanitize;
         private readonly WaterBillRepository _waterBill;
+        private readonly ListRepository _listRepository;
+        private readonly NotificationRepository _notificationRepository;
 
         private List<Payment> PaymentList { get; set; }
 
-        public PaymentRepository(DBConnect dBConnect, InputSanitize sanitize, WaterBillRepository waterBill)
+        public PaymentRepository(DBConnect dBConnect, InputSanitize sanitize, WaterBillRepository waterBill, ListRepository listRepository, NotificationRepository notificationRepository)
         {
             _dBConnect = dBConnect;
             _sanitize = sanitize;
             _waterBill = waterBill;
-
+            _listRepository = listRepository;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<List<Payment>> PayList(SqlConnection connection, SqlTransaction transaction)
@@ -35,16 +38,18 @@ namespace KVHAI.Repository
                             var payment = new Payment
                             {
                                 Payment_ID = reader.GetInt32(0),
-                                Emp_ID = reader.GetInt32(1),
-                                Address_ID = reader.GetInt32(2),
-                                Resident_ID = reader.GetInt32(3),
-                                Bill = reader.GetDecimal(4),
-                                Paid_Amount = reader.GetDecimal(5),
-                                Remaining_Balance = reader.GetDecimal(6),
-                                Payment_Method = reader.GetString(7),
-                                Payment_Status = reader.GetString(8),
-                                Payment_Date = reader.GetDateTime(9).ToString("yyyy-MM-dd HH:mm:ss"),
-                                Paid_By = reader.GetString(10),
+                                Address_ID = reader.GetInt32(1),
+                                Resident_ID = reader.GetInt32(2),
+                                Bill = reader.GetDecimal(3),
+                                Paid_Amount = reader.GetDecimal(4),
+                                Remaining_Balance = reader.GetDecimal(5),
+                                Payment_Method = reader.GetString(6),
+                                Payment_Status = reader.GetString(7),
+                                Payment_Date = reader.GetDateTime(8).ToString("yyyy-MM-dd HH:mm:ss"),
+                                Paid_By = reader.GetString(9),
+                                PayPal_TransactionId = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+                                PayPal_PayerId = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+                                PayPal_PayerEmail = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
                             };
 
                             payList.Add(payment);
@@ -216,48 +221,58 @@ namespace KVHAI.Repository
 
                 using (var connection = await _dBConnect.GetOpenConnectionAsync())
                 {
-                    // Start a SQL transaction
                     using (var transaction = connection.BeginTransaction())
                     {
                         try
                         {
-                            using (var command = new SqlCommand(@"INSERT INTO payment_tb (emp_id,addr_id,res_id,bill,paid_amount,payment_method,payment_status,payment_date,paid_by) VALUES(@emp,@address,@res,@bill,@amount,@method,@status,@date,@by);
-                                SELECT CAST(SCOPE_IDENTITY() AS INT);", connection, transaction))
+                            using (var command = new SqlCommand(@"
+                        INSERT INTO payment_tb (addr_id, res_id, bill, paid_amount, remaining_balance, payment_method, payment_status, payment_date, paid_by, transaction_id, payer_id,payer_email) 
+                        VALUES (@address, @res, @bill, @amount, @remainingBalance, @method, @status, @date, @by, @transactionId, @payerId, @payerMail);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);", connection, transaction))
                             {
-                                command.Parameters.AddWithValue("@emp", 1); // Placeholder, change when login is implemented
                                 command.Parameters.AddWithValue("@address", payment.Address_ID);
                                 command.Parameters.AddWithValue("@res", payment.Resident_ID);
                                 command.Parameters.AddWithValue("@bill", payment.Bill);
-                                command.Parameters.AddWithValue("@amount", await _sanitize.HTMLSanitizerAsync(payment.Paid_Amount.ToString("F2")));
-                                command.Parameters.AddWithValue("@method", "offline");
+                                command.Parameters.AddWithValue("@amount", payment.Paid_Amount.ToString("F2"));
+                                command.Parameters.AddWithValue("@remainingBalance", 0); // Initially zero
+                                command.Parameters.AddWithValue("@method", payment.Payment_Method);
                                 command.Parameters.AddWithValue("@status", status);
                                 command.Parameters.AddWithValue("@date", date);
                                 command.Parameters.AddWithValue("@by", payment.Paid_By);
+                                command.Parameters.AddWithValue("@transactionId", payment.PayPal_TransactionId ?? (object)DBNull.Value); // Store transaction ID if online
+                                command.Parameters.AddWithValue("@payerId", payment.PayPal_PayerId ?? (object)DBNull.Value); // Store transaction ID if online
+                                command.Parameters.AddWithValue("@payerMail", payment.PayPal_PayerEmail ?? (object)DBNull.Value); // Store transaction ID if online
 
-                                // Insert payment into the database
+
                                 result = (int)await command.ExecuteScalarAsync();
                             }
 
-                            // Call the logic to update unpaid bills after inserting the payment, if the insert was successful
                             if (result > 0)
                             {
-                                int updateResult = await UpdateBillsAfterPayment(result, payment, connection, transaction); // Pass the connection and transaction to ensure it's within the same transaction
-
+                                int updateResult = await UpdateBillsAfterPayment(result, payment, connection, transaction);
                                 if (updateResult < 1)
                                 {
-                                    throw new Exception();
+                                    throw new Exception("Error updating bills after payment");
                                 }
                             }
 
-                            // Commit the transaction
+                            var resident = await _listRepository.ResidentList();
+                            var lname = resident.Where(r => r.Res_ID == payment.Resident_ID.ToString())
+                                .Select(l => l.Lname).ToString();
+                            var notif = new Notification
+                            {
+                                Title = "Water Billing",
+                                Message = $"{lname} has just been paid water bill.",
+                                Url = "/kvhai/staff/onlinepayment/home",
+                                Message_Type = "Cashier2",
+                            };
+                            var notificationResult = await _notificationRepository.SendNotificationToAdmin(notif);
+
                             transaction.Commit();
                         }
                         catch (Exception ex)
                         {
-                            // If an error occurs, roll back the transaction
                             transaction.Rollback();
-                            // Log the error or rethrow for further handling
-                            //throw new Exception("An error occurred while inserting payment and updating bills: " + ex.Message);
                             return 0;
                         }
                     }
@@ -267,15 +282,14 @@ namespace KVHAI.Repository
             }
             catch (Exception ex)
             {
-                // Handle any other errors that were not caught within the transaction scope
-                //throw new Exception("An error occurred: " + ex.Message);
                 return 0;
             }
         }
 
 
 
-        public async Task<DataTable> PrintWaterBilling(ResidentAddress payment)
+
+        public async Task<DataTable> PrintWaterBilling(Payment payment)
         {
             // Adjust your implementation here to loop through the list of reportWaterBilling items
             // and fetch the corresponding data.
@@ -288,6 +302,8 @@ namespace KVHAI.Repository
             }
             try
             {
+                string paymentDate = DateTime.TryParse(payment.Payment_Date, out DateTime date) ? date.ToString("MMMM dd, yyyy") : "";
+
                 // Setup DataTable columns
                 dt.Columns.Add("Block");
                 dt.Columns.Add("Lot");
@@ -296,16 +312,18 @@ namespace KVHAI.Repository
                 dt.Columns.Add("Payment");
                 dt.Columns.Add("Bill");
                 dt.Columns.Add("Name");
+                dt.Columns.Add("Method");
 
                 // Sample row creation (replace with your actual data processing logic)
                 DataRow row = dt.NewRow();
                 row["Block"] = await _sanitize.HTMLSanitizerAsync(payment.Block);
                 row["Lot"] = await _sanitize.HTMLSanitizerAsync(payment.Lot);
                 row["Street"] = await _sanitize.HTMLSanitizerAsync(payment.Street);
-                row["Date"] = DateTime.Now.ToString("MMMM dd, yyyy");
-                row["Payment"] = await _sanitize.HTMLSanitizerAsync(payment.Payment.ToString("F2"));
-                row["Bill"] = await _sanitize.HTMLSanitizerAsync(payment.TotalAmount.ToString("F2"));
-                row["Name"] = await _sanitize.HTMLSanitizerAsync(payment.Name);
+                row["Date"] = paymentDate;
+                row["Payment"] = await _sanitize.HTMLSanitizerAsync(payment.Paid_Amount.ToString("F2"));
+                row["Bill"] = await _sanitize.HTMLSanitizerAsync(payment.Bill.ToString("F2"));
+                row["Name"] = await _sanitize.HTMLSanitizerAsync(payment.Paid_By);
+                row["Method"] = await _sanitize.HTMLSanitizerAsync(payment.Payment_Method);
 
                 dt.Rows.Add(row);
                 return dt;
@@ -369,7 +387,7 @@ namespace KVHAI.Repository
                     JOIN address_tb a ON p.addr_id = a.addr_id
                     JOIN resident_address_tb ra ON a.addr_id = ra.addr_id AND p.res_id = ra.res_id
                     JOIN street_tb s ON a.st_id = s.st_id 
-                    WHERE CONVERT(VARCHAR, payment_date,23) LIKE '%2024-10-23%'
+                    WHERE CONVERT(VARCHAR, payment_date,23) LIKE '%%'
                     ORDER BY payment_date DESC", connection))
                     {
                         using (var reader = await command.ExecuteReaderAsync())
@@ -405,6 +423,85 @@ namespace KVHAI.Repository
 
                 return null;
             }
+        }
+
+        public async Task<List<string>> GetWaterBillingNumber()
+        {
+            var wb = await _listRepository.WaterBillingList();
+
+            var waterbillNoList = wb.Select(w => w.WaterBill_No).ToList();
+
+            return waterbillNoList;
+        }
+
+
+        public async Task<List<Payment>> GetRecentOnlinePayment(int offset, int limit, string paymentMethod)
+        {
+            var paymentList = await _listRepository.PayList();
+            var methodPay = string.IsNullOrEmpty(paymentMethod) ? "" : paymentMethod;
+
+            var onlinePayList = paymentList.Where(m => m.Payment_Method == "online").ToList();
+            try
+            {
+                var payList = new List<Payment>();
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand($@"select p.payment_id, a.addr_id,p.res_id,    
+                                p.transaction_id,a.block,
+	                            a.lot,s.st_name,p.paid_amount, p.bill,p.paid_by, 
+	                            p.payment_status, p.payment_date, payment_method from payment_tb p
+                        JOIN address_tb a ON p.addr_id = a.addr_id
+                        JOIN street_tb s ON a.st_id = s.st_id 
+                        WHERE payment_method LIKE @method  ORDER BY payment_date DESC 
+                        OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
+                    {
+                        command.Parameters.AddWithValue("@method", "%" + methodPay + "%");
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var payment = new Payment
+                                {
+                                    Payment_ID = reader.GetInt32(0),
+                                    Address_ID = reader.GetInt32(1),
+                                    Resident_ID = reader.GetInt32(2),
+                                    PayPal_TransactionId = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                                    Block = reader.GetString(4),
+                                    Lot = reader.GetString(5),
+                                    Street = reader.GetString(6),
+                                    Paid_Amount = reader.GetDecimal(7),
+                                    Bill = reader.GetDecimal(8),
+                                    Paid_By = reader.GetString(9),
+                                    Payment_Status = reader.GetString(10),
+                                    Payment_Date = reader.GetDateTime(11).ToString("MMMM dd, yyyy HH:mm:ss"),
+                                    Payment_Method = reader.GetString(12),
+                                };
+
+                                payList.Add(payment);
+                            }
+                        }
+                    }
+
+                }
+
+
+                return payList;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+        }
+
+        public async Task<int> GetCountOnlinePayment(string paymentMethod)
+        {
+            var paymentList = await _listRepository.PayList();
+
+            var count = paymentList.Where(m => m.Payment_Method == paymentMethod).Count();
+
+            return count;
+
         }
     }
 }

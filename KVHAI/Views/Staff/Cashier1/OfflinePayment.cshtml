@@ -3,13 +3,19 @@
 }
 
 @section sidebar{
+    <a href="/kvhai/staff/offlinepayment/home" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
     <a href="/kvhai/staff/offlinepayment/" class="nav-link text-light mb-2 d-flex align-items-center active ">
-        <i class="bi bi-house-door me-2"></i> Payment
+        <i class="bi bi-wallet2 me-2"></i> Payment
     </a>
 }
 @section mobilenav{
+    <a href="/kvhai/staff/offlinepayment/home" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
     <a href="/kvhai/staff/offlinepayment/" class="nav-link text-light mb-2 d-flex align-items-center active ">
-        <i class="bi bi-house-door me-2"></i> Payment
+        <i class="bi bi-wallet2 me-2"></i> Payment
     </a>
 }
 
@@ -17,6 +23,7 @@
 
 }
 @section scripts{
+    <script src="~/lib/editable-select/jquery-editable-select.js"></script>
     <script>
         $(document).ready(function () {
             //GLOBAL VARIABLES
@@ -153,8 +160,7 @@
                 if (!validateTab()) {
                     toastr.error("Please complete all required fields.");
                 } else {
-                    if ($('#bill_amount').val() > 1)
-                    {
+                    if ($('#bill_amount').val() > 1) {
                         if (!$('#input-name').val()) //if value is empty it will be falsy so add (!) operator
                         {
                             toastr.error("Please complete all required fields.");
@@ -169,7 +175,8 @@
                             Resident_ID: resident_id,
                             Paid_Amount: money,
                             Bill: bill,
-                            Paid_By: name
+                            Paid_By: name,
+                            Payment_Method: "offline"
                         };
                         $.ajax({
                             type: 'POST',
@@ -202,12 +209,13 @@
                 var money = parseFloat($('#pesos').val());
 
                 var formData = {
-                    Name: name,
+                    Paid_By: name,
                     Block: blk,
                     Lot: lot,
                     Street: st,
-                    Payment: money,
-                    TotalAmount: bill
+                    Paid_Amount: money,
+                    Bill: bill,
+                    Payment_Method: 'cash'
                 };
                 $.ajax({
                     type: 'POST',
@@ -253,7 +261,6 @@
         });
     </script>
 }
-
 
 <form id="form-reading" autocomplete="off" class="needs-validation" novalidate>
 
@@ -308,7 +315,7 @@
                                     <span class="input-group-text" id="basic-addon1">Streets</span>
                                     <select id="select-street" class="form-select" name="Street" aria-label="Default select example" required>
                                         @{
-                                            foreach (var item in Model)
+                                            foreach (var item in Model.ListStreet)
                                             {
                                                 <option value="@item.Street_Name">@item.Street_Name</option>
                                             }
@@ -336,7 +343,7 @@
 
                     <!--ROW 2-->
                     <div class="row d-flex justify-content-center">
-                        
+
                     </div>
                 </section>
 
@@ -381,3 +388,4 @@
     </div>
 
 </form>
+

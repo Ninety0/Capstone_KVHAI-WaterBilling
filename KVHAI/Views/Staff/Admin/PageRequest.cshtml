@@ -9,7 +9,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center active">
@@ -30,7 +30,7 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcment/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center active">
@@ -119,7 +119,7 @@
         $(document).ready(function () {
 
             //SIGNAL R SETUP
-            const pageRequestConnection = setupSignalRConnection("/resident/my-address", "Page Request Hub");
+            const pageRequestConnection = setupSignalRConnection("/staff/my-address", "Page Request Hub");
 
             pageRequestConnection.on("ReceivedRequestPageNotificationToAdmin", function (message, resident_id) {
                 alert("May Pumasok na request");
@@ -435,13 +435,13 @@
                                         3 = cancel
                                     */
                                     int i = 1;
-                                    if (Model.Count < 1)
+                                    if (Model.RequestDetailList.Count < 1)
                                     {
                                         <tr>
                                             <td colspan="8" class="text-center p-5 fw-bold">NO DATA FOUND!</td>
                                         </tr>
                                     }
-                                    foreach (var item in Model)
+                                    foreach (var item in Model.RequestDetailList)
                                     {
                                         string className = "";
                                         string statusName = "";
