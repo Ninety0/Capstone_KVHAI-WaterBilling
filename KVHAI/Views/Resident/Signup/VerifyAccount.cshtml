@@ -151,6 +151,7 @@
 
             //INITIALIZE METHOD
 
+
             codeVerify();
             //TokenExist();
             //END INITIALIZING METHOD
@@ -209,6 +210,7 @@
             $(document).on('click', '#btn_Send', function () {
                 $(this).addClass('disabled');
                 SendCodeToEmail();
+                $('#code1').focus();
             });
 
             function TokenExist() {
@@ -242,10 +244,10 @@
                         url: '/ResLogin/VerifyCode',
                         data: formData,
                         success: function (response) {
-                            toastr.info(response);
+                            toastr.info("Your account is now activated.");
                             setTimeout(function () {
                                  window.location.replace('/kvhai/resident/login');
-                            },1000);
+                            },3000);
                         },
                         error: function (xhr, status, error) {
                             toastr.error(xhr.responseText);

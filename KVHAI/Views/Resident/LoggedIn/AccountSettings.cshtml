@@ -1,0 +1,733 @@
+﻿@using System.Security.Claims;
+
+@{
+    Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
+    ViewBag.Title = "Settings";
+    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+}
+
+@section head{
+    <style>
+        #user_info, #update_info {
+            background-color: #f1f5f9;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+            #user_info:hover, #update_info:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+        .invalid-length {
+            display: none;
+            width: 100%;
+            margin-top: .25rem;
+            color: #dc3545;
+        }
+
+        .row_address {
+            position: relative;
+        }
+
+        .btn_add, .btn_remove {
+            background-color: #16a34a;
+            color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 400;
+            height: 38px;
+            width: 150px;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 31px;
+        }
+
+        .btn_remove {
+            background-color: #dc2626;
+        }
+
+        input, select {
+            outline: 1px solid rgba(5, 37, 114,.2);
+        }
+
+        .btn_wrapper {
+            position: relative;
+        }
+
+        .btn_register {
+            position: absolute;
+            top: 31px;
+            left: 13px;
+            width: 331.33px;
+        }
+
+        .code_input {
+            border-radius: 6px;
+            height: 50px;
+            width: 50px;
+            margin-right: .5em;
+        }
+
+        #btn_Verify {
+            width: 280px;
+            font-weight: 600;
+        }
+    </style>
+}
+
+
+@section sidebar{
+
+    <a href="/kvhai/resident/announcement" class="nav_sidebar   mb-3 ">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Announcement
+            </div>
+
+        </div>
+    </a>
+    @*<a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-location-dot nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Register
+            </div>
+
+        </div>
+    </a>*@
+
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-gauge nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Consumption
+            </div>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-money-bills nav_icon"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Billing
+            </div>
+        </div>
+    </a>
+
+    @if (role == "1")
+    {
+        <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    My Address
+                </div>
+
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental-application" class="nav_sidebar  mb-3 ">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Rental
+                </div>
+
+            </div>
+        </a>
+    }
+    else
+    {
+        <a href="/kvhai/resident/renter-address" class="nav_sidebar mb-3">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-crosshairs nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    My Address
+                </div>
+
+            </div>
+        </a>
+
+        @*<a href="/kvhai/resident/rental/home" class="nav_sidebar  mb-3 ">
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Rental
+                </div>
+
+            </div>
+        </a>*@
+    }
+
+    <a href="/kvhai/resident/account/settings" class="nav_sidebar active mb-3">
+        <div class="row">
+            <div class="col-4  d-flex justify-content-center">
+                <i class="fa-solid fa-gear"></i>
+            </div>
+            <div class="col  d-flex justify-content-start">
+                Settings
+            </div>
+
+        </div>
+    </a>
+
+}
+
+@section mobilenav{
+
+    <a href="/kvhai/resident/announcement" class="nav_sidebar   mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span class="ms-3">
+                Announcement
+            </span>
+
+        </div>
+    </a>
+    @*<a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 ps-3">
+        <div class=" d-flex">
+            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+            <span class="ms-3">
+                Register Address
+            </span>
+
+        </div>
+    </a>*@
+
+    <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3 ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-gauge mobile_nav_icon"></i>
+            <span class="ms-3">
+                Consumption
+            </span>
+        </div>
+    </a>
+    <a href="/kvhai/resident/billing" class="nav_sidebar  mb-3  ps-3">
+        <div class="d-flex">
+            <i class="fa-solid fa-money-bills mobile_nav_icon"></i>
+            <span class="ms-3">
+                Billing
+            </span>
+        </div>
+    </a>
+
+    @if (role == "1") // owner
+    {
+        <a href="/kvhai/resident/my-address" class="nav_sidebar mb-3 ps-3">
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+                <span class="ms-3">
+                    My Address
+                </span>
+            </div>
+        </a>
+
+        <a href="/kvhai/resident/rental-application" class="nav_sidebar mb-3  ps-3">
+            <div class="d-flex">
+                <i class="fa-solid fa-house nav_icon"></i>
+                <span class="ms-3">
+                    Rental Application
+                </span>
+
+            </div>
+        </a>
+    }
+    else //renter
+    {
+        <a href="/kvhai/resident/renter-address" class="nav_sidebar mb-3 ps-3">
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-crosshairs mobile_nav_icon"></i>
+                <span class="ms-3">
+                    My Address
+                </span>
+            </div>
+        </a>
+
+        @*<a href="/kvhai/resident/rental/home" class="nav_sidebar mb-3  ps-3">
+            <div class="d-flex">
+                <i class="fa-solid fa-house nav_icon"></i>
+                <span class="ms-3">
+                    Rental Application
+                </span>
+
+            </div>
+        </a>*@
+    }
+
+<a href="/kvhai/resident/account/settings" class="nav_sidebar active mb-3">
+    <div class="row">
+        <div class="col-4  d-flex justify-content-center">
+            <i class="fa-solid fa-gear"></i>
+        </div>
+        <div class="col  d-flex justify-content-start">
+            Settings
+        </div>
+
+    </div>
+</a>
+
+}
+
+
+
+<!-- Modal -->
+<!-- Modal Structure -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <img id="modalImage" src="" class="img-fluid" alt="Enlarged Image" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- BODY -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="fw-bold text-muted">Account</h5>
+        <hr class="border border-black" />
+
+        <div class="container-fluid" id="user_info">
+            @{
+                if (Model.ResidentList != null)
+                {
+                    if (Model.ResidentList.Count > 0)
+                    {
+                        foreach (var item in Model.ResidentList)
+                        {
+                            var name = string.Join(", ", item.Lname, item.Fname, item.Mname);
+                            var date = DateTime.TryParse(item.Verified_At, out DateTime dateResult) ? dateResult.ToString("MMMM dd, yyyy hh:mm tt") : "";
+
+                            <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData" data-rid="@item.Res_ID">
+                                <div class="col-8">
+                                    <p class="mb-3 h3" data-res="@item.Res_ID"><strong>@name</strong></p>
+                                    <p class="mb-3 fw-bold text-muted">Phone: @item.Phone</p>
+                                    <p class="mb-3 fw-bold text-muted">Username: @item.Username</p>
+                                    <p class="mb-3 fw-bold text-muted">Email: @item.Email</p>
+                                    <p class="mb-3 fw-bold text-muted">Date: @date</p>
+                                </div>
+                                <div class="col-4 d-flex justify-content-end">
+                                    <button id="btn_edit" class="btn btn-outline-dark btn-sm fw-bold">Edit</button>
+                                </div>
+                            </div>
+                        }
+
+                    }
+
+
+                }
+            }
+
+        </div>
+
+
+
+        <!--UPDATE INFORMATION-->
+        <div class="container-fluid mb-3 border border-2 shadow-sm rounded" id="update_info">
+            <form id="myForm" autocomplete="off" class="needs-validation" enctype="multipart/form-data" novalidate>
+                @Html.AntiForgeryToken()
+
+                <!-- INFORMATION PROCESS -->
+                <div class="container" id="information">
+                    <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+                        <h3>Information Details</h3>
+                    </div>
+
+                    @* PERSONAL INFO *@
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
+                                <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
+                                <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
+                                <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
+                                <div class="form-check input-group mb-3">
+                                    <span class="input-group-text" id="num-span">63</span>
+                                    <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required>
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="Email" class="form-label fw-bold fs-6">Email</label>
+                                <input type="email" maxlength="50" class="form-control" id="Email" name="Email" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="Email" class="form-label fw-bold fs-6">Account Number</label>
+                                <input type="text" maxlength="50" class="form-control" id="Account_Number" name="Account_Number" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!--USER CREDENTIALS-->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="Username" class="form-label fw-bold fs-6">Username</label>
+                                <input type="text" maxlength="50" class="form-control" id="Username" name="Username" required>
+                                <div class="invalid-feedback">
+                                    Required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mb-3">
+                                <label for="Password" class="form-label fw-bold fs-6">Password</label>
+                                <input type="password" maxlength="50" class="form-control" id="Password" name="Password" minlength="8" required>
+                                <div class="pass-validation">
+                                    <div class="invalid-feedback">
+                                        Required.
+                                    </div>
+                                    <div class="invalid-length">
+                                        Password must be atleast 8 characters long.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class=" mb-3">
+                                <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
+                                <input type="password" maxlength="50" class="form-control" id="cpass" minlength="8" required>
+                                <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 btn_wrapper">
+                            <div class="mb-3 ">
+                            </div>
+                        </div>
+
+                    </div>
+                    @* END PERSONAL INFO *@
+                </div>
+            </form>
+
+            <!--BUTTON SIGNUP-->
+            <div class="container d-flex justify-content-end">
+                <button class="p-2 mb-3 me-2 btn btn-primary text-uppercase fw-bold" id="btn_Signup">Activate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            //CODE FOR SIGNALR
+
+            const homeConnection = setupSignalRConnection("/resident/announcement", "Announcement Hub");
+
+            homeConnection.on("ShowAnnouncement", function () {
+                toastr.info("Theres is an update in the announcement");
+                updateAnnouncement();
+            });
+
+            function updateAnnouncement() {
+                $.ajax({
+                    url: "/LoggedIn/GetAnnouncement", // Your endpoint to fetch the updated list
+                    type: "GET",
+                    success: function (response) {
+                        console.log(response);
+                        var result = $(response).find("#table_announcement").html();
+                        $('#table_announcement').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                        console.error("Error fetching updated data:", error);
+                    }
+                });
+            }
+
+            $(document).on('click', '.image-click', function () {
+                // Get the image URL from the clicked image
+                var imageSrc = $(this).data('image');
+                // Set the image inside the modal
+                $('#modalImage').attr('src', imageSrc);
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            var token = "";
+            var currentTab = 0;
+            var maxTab = 1;
+            var minTab = 0;
+
+            $('#cpass').on('change', ConfirmPassword);
+            $('#btn_Signup').click(checkInputLength);
+
+            $('#btn_Signup').click(handleRegistration);
+
+            $('#test-btn').on('click', function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '/ResLogin/SendEmail',
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        toastr.success("GOOds");
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            })
+
+            $(document).on('click', '#btn_edit', function () {
+                var raid = $(this).closest('#renter').find('[data-rid]').data('rid');
+
+                console.log(raid);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Settings/GetResidentAccount',
+                    //data: { resident_address: raid },
+                    success: function (response) {
+                        console.log(response);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+
+            })
+
+            function handleRegistration(e) {
+                e.preventDefault();
+
+                if (!validateCurrentTab()) {
+                    toastr.error('Please fill out all required fields correctly.');
+                    return;
+                }
+
+                var formData = new FormData($('#myForm')[0]);
+                var resident = {
+                    Lname: $('#Lname').val(),
+                    Fname: $('#Fname').val(),
+                    Mname: $('#Mname').val(),
+                    Phone: $('#Phone').val(),
+                    Email: $('#Email').val(),
+                    Account_Number: $('#Account_Number').val(),
+                    Username: $('#Username').val(),
+                    Password: $('#Password').val(),
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    //url: window.location.origin + '/kvhai/resident/signup',
+                    url: '/ResLogin/VerifyPage',
+                    contentType: false,
+                    processData: false,
+                    data: formData,
+                    success: function (response) {
+                        if (response.message) {
+                            toastr.success(response.message);
+                            if (response.token) {
+                                console.log("Verification Token:", response.token);
+                                document.cookie = "verifyToken=" + encodeURIComponent(response.token) + "; path=/kvhai/resident";
+                                setTimeout(function () {
+                                    // Redirect to the route with the token
+                                    window.location.href = '/kvhai/resident/verifyaccount/' + encodeURIComponent(response.token);
+                                }, 3000);
+                            }
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        //console.log(xhr.responseText);
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function validateCurrentTab() {
+                const form = $('#myForm'); // jQuery
+                const inputs = form.find('input, select');
+                let isValid = true;
+
+                inputs.each(function () {
+                    const input = $(this); // Store jQuery object reference for `this`
+                    if (this.id === 'cpass') {
+                        // Handle confirm password separately
+                        if (!ConfirmPassword()) {
+                            isValid = false;
+                            input.addClass('is-invalid');
+                        }
+                        else {
+                            input.removeClass('is-invalid');
+                        }
+                    } else {
+                        // Handle other inputs
+                        if (!this.checkValidity()) {
+                            isValid = false;
+                            input.addClass('is-invalid');
+                        } else {
+                            input.removeClass('is-invalid');
+                        }
+                    }
+                });
+
+                return isValid;
+            }
+
+            function updateActiveClass() {
+                $('.make-circle').removeClass('active').eq(currentTab).addClass('active');
+            }
+
+            //METHOD TO CHECK INPUT LENgTH
+            function checkInputLength() {
+                const form = $('#myForm'); // jQuery
+                const inputs = form.find('input');
+                let isValid = true;
+
+                inputs.each(function () {
+                    if (this.id === 'Password') {
+                        var str = $('#Password').val();
+                        if (str.length < 8) {
+                            toastr.error("Password atleast 8 characters")
+                            this.classList.add('is-invalid');
+                        }
+                        else {
+                            this.classList.remove('is-invalid');
+                            $('.invalid-length').addClass('d-none');
+                        }
+                    }
+                });
+            }
+
+            //METHOD TO ENSURE NUMBER ONLY
+            function InputKeyPress() {
+                if (currentTab === 1) {
+                    const form = $('.tab').eq(currentTab);
+                    const inputs = form.find('input');
+
+                    inputs.each(function () {
+                        if (this.id === 'Phone') {
+                            $('#Phone').on('keypress', function (e) {
+
+                                var key = e.keyCode || e.which;
+
+                                if (key < 48 || key > 57) {
+                                    e.preventDefault();
+                                }
+                            })
+                        }
+                        else if (this.id === 'Block') {
+                            $('#Block').on('keypress', function (e) {
+
+                                var key = e.keyCode || e.which;
+
+                                if (key < 48 || key > 57) {
+                                    e.preventDefault();
+                                }
+                            })
+                        }
+                        else if (this.id === 'Lot') {
+                            $('#Lot').on('keypress', function (e) {
+
+                                var key = e.keyCode || e.which;
+
+                                if (key < 48 || key > 57) {
+                                    e.preventDefault();
+                                }
+                            })
+                        }
+                    });
+
+
+                }
+            }
+
+            //METHOD CONFIRM PASOWRD
+            function ConfirmPassword() {
+                //console.log("jQuery version:", $.fn.jquery);
+                //console.log("Password element:", $('#Password').length);
+                //console.log("Password value:", $('#Password').val());
+                //console.log("cpass element:", $('#cpass').length);
+                //console.log("cpass value:", $('#cpass').val());
+
+                const pass = document.getElementById('Password').value;
+                const cpass = document.getElementById('cpass');
+                const errorMsg = document.getElementById('err-msg');
+
+                const isValid = pass === cpass.value;
+
+                cpass.classList.toggle('is-invalid', !isValid);
+                errorMsg.style.display = isValid ? 'none' : 'block';
+
+                //if (!isValid) {
+                //    alert("GGWP");
+                //}
+
+                return isValid;
+            }
+
+            $('input, select').on('input', function () {
+                $(this).removeClass('is-invalid');
+                $(this).closest('form').removeClass('was-validated');
+            });
+        });
+    </script>
+}

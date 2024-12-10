@@ -252,6 +252,25 @@ namespace KVHAI.Repository
             }
         }
 
+        // CHECK IF EXIST
+        public async Task<bool> IsAddressExist(string block, string lot)
+        {
+            try
+            {
+                var addressList = await _listRepository.AddressList();
+                return addressList.Any(a =>
+                    a.Block == block &&
+                    a.Lot == lot);
+            }
+            catch (Exception ex)
+            {
+                // Log exception for debugging
+                Console.WriteLine($"Error: {ex.Message}");
+                return false;
+            }
+        }
+
+
         public async Task<int> GetResidentIdByAddressId(string address_id)
         {
             int id = 0;
@@ -510,7 +529,7 @@ namespace KVHAI.Repository
                 var addressList = new List<Address>();
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("SELECT * FROM address_tb WHERE is_verified = 'true'AND res_id = @id", connection))
+                    using (var command = new SqlCommand("SELECT * FROM address_tb WHERE res_id = @id", connection))
                     {
                         command.Parameters.AddWithValue("@id", resID);
                         using (var reader = await command.ExecuteReaderAsync())

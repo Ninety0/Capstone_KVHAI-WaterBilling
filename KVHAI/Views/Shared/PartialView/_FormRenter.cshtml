@@ -1,0 +1,133 @@
+﻿@{
+    string action = ViewBag.Action ?? string.Empty;
+}
+
+<div class="modal fade" id="modal-renter" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="fw-bold text-muted">Register Renter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-renter" autocomplete="off" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="container tab" id="information">
+
+                        <div class="container" id="information">
+                            <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+                                <h3>Renter Information</h3>
+                            </div>
+
+                            @* PERSONAL INFO *@
+                            <div class="row">
+
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
+                                        <input type="text" maxlength="50" class="form-control shadow-sm" id="Lname" name="Lname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
+                                        <input type="text" maxlength="50" class="form-control shadow-sm" id="Fname" name="Fname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
+                                        <input type="text" maxlength="50" class="form-control shadow-sm" id="Mname" name="Mname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Mname" class="form-label fw-bold fs-6">Select Address</label>
+                                        <select class="form-select shadow-sm" aria-label="Default select example" id="select_address">
+                                            @{
+                                                if (Model.ListAddress != null)
+                                                {
+                                                    if (Model.ListAddress.Count > 0)
+                                                    {
+                                                        for (int i = 0; i < Model.ListAddress.Count; i++)
+                                                        {
+                                                            var addressID = Model.ListAddress[i].Address_ID;
+                                                            var block = "Blk " + Model.ListAddress[i].Block;
+                                                            var lot = "Lot " + Model.ListAddress[i].Lot;
+                                                            var st = Model.ListAddress[i].Street_Name + " St.";
+                                                            var address = string.Join(" ", block, lot, st);
+
+                                                            if (i == 0)
+                                                            {
+                                                                <option value="@addressID" selected>@address</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@addressID">@address</option>
+                                                            }
+
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="" selected></option>
+                                                    }
+                                                }
+
+
+                                            }
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Mname" class="form-label fw-bold fs-6">Username</label>
+                                        <input type="text" maxlength="50" class="form-control shadow-sm" id="Username" name="Username" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Mname" class="form-label fw-bold fs-6">Password</label>
+                                        <input type="password" maxlength="50" class="form-control shadow-sm" id="Password" name="Password" minlength="8" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            @* END PERSONAL INFO *@
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="btn_register_renter">Register</button>
+                    @*<button type="submit" class="btn btn-primary d-none" id="btn_update">Update</button>*@
+                    @*<button type="button" id="btn-test">TEST</button>*@
+
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+

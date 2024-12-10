@@ -16,7 +16,7 @@
           <xs:complexType>
             <xs:sequence>
               <xs:element name="waterbill_id" msprop:Generator_ColumnPropNameInTable="waterbill_idColumn" msprop:Generator_ColumnPropNameInRow="waterbill_id" msprop:Generator_UserColumnName="waterbill_id" msprop:Generator_ColumnVarNameInTable="columnwaterbill_id" type="xs:string" minOccurs="0" />
-              <xs:element name="reference_no" msprop:Generator_UserColumnName="reference_no" msprop:Generator_ColumnPropNameInTable="reference_noColumn" msprop:Generator_ColumnPropNameInRow="reference_no" msprop:Generator_ColumnVarNameInTable="columnreference_no" type="xs:string" minOccurs="0" />
+              <xs:element name="reference_no" msprop:Generator_ColumnPropNameInTable="reference_noColumn" msprop:Generator_ColumnPropNameInRow="reference_no" msprop:Generator_UserColumnName="reference_no" msprop:Generator_ColumnVarNameInTable="columnreference_no" type="xs:string" minOccurs="0" />
               <xs:element name="waterbill_no" msprop:Generator_ColumnPropNameInTable="waterbill_noColumn" msprop:Generator_ColumnPropNameInRow="waterbill_no" msprop:Generator_UserColumnName="waterbill_no" msprop:Generator_ColumnVarNameInTable="columnwaterbill_no" type="xs:string" minOccurs="0" />
               <xs:element name="block" msprop:Generator_ColumnPropNameInTable="blockColumn" msprop:Generator_ColumnPropNameInRow="block" msprop:Generator_UserColumnName="block" msprop:Generator_ColumnVarNameInTable="columnblock" type="xs:string" minOccurs="0" />
               <xs:element name="lot" msprop:Generator_ColumnPropNameInTable="lotColumn" msprop:Generator_ColumnPropNameInRow="lot" msprop:Generator_UserColumnName="lot" msprop:Generator_ColumnVarNameInTable="columnlot" type="xs:string" minOccurs="0" />
@@ -32,7 +32,8 @@
               <xs:element name="amount_due_now" msprop:Generator_ColumnPropNameInTable="amount_due_nowColumn" msprop:Generator_ColumnPropNameInRow="amount_due_now" msprop:Generator_UserColumnName="amount_due_now" msprop:Generator_ColumnVarNameInTable="columnamount_due_now" type="xs:string" minOccurs="0" />
               <xs:element name="amount_previous" msprop:Generator_ColumnPropNameInTable="amount_previousColumn" msprop:Generator_ColumnPropNameInRow="amount_previous" msprop:Generator_UserColumnName="amount_previous" msprop:Generator_ColumnVarNameInTable="columnamount_previous" type="xs:string" minOccurs="0" />
               <xs:element name="total" msprop:Generator_ColumnPropNameInTable="totalColumn" msprop:Generator_ColumnPropNameInRow="total" msprop:Generator_UserColumnName="total" msprop:Generator_ColumnVarNameInTable="columntotal" type="xs:string" minOccurs="0" />
-              <xs:element name="period_cover" msprop:Generator_ColumnPropNameInRow="period_cover" msprop:Generator_ColumnPropNameInTable="period_coverColumn" msprop:Generator_ColumnVarNameInTable="columnperiod_cover" msprop:Generator_UserColumnName="period_cover" type="xs:string" minOccurs="0" />
+              <xs:element name="period_cover" msprop:Generator_UserColumnName="period_cover" msprop:Generator_ColumnPropNameInTable="period_coverColumn" msprop:Generator_ColumnPropNameInRow="period_cover" msprop:Generator_ColumnVarNameInTable="columnperiod_cover" type="xs:string" minOccurs="0" />
+              <xs:element name="account_number" msprop:Generator_ColumnPropNameInRow="account_number" msprop:Generator_ColumnPropNameInTable="account_numberColumn" msprop:Generator_ColumnVarNameInTable="columnaccount_number" msprop:Generator_UserColumnName="account_number" type="xs:string" minOccurs="0" />
             </xs:sequence>
           </xs:complexType>
         </xs:element>

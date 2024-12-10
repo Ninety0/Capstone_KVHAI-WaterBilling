@@ -17,6 +17,7 @@
         public string Due_Date_To { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string WaterBill_No { get; set; } = string.Empty;
+        public string Account_Number { get; set; } = string.Empty;
 
         public string Location { get; set; } = string.Empty;
 

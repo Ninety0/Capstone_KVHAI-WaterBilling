@@ -99,6 +99,24 @@ namespace KVHAI.Repository
             return streets;
         }
 
+        //RETURN SINGLE StreetID
+        public async Task<int> GetSingleStreetID(string name)
+        {
+            try
+            {
+                var st_list = await _listRepository.StreetList();
+
+                var stID = st_list.Where(n => n.Street_Name == name).Select(i => i.Street_ID).FirstOrDefault() ?? "0";
+
+                return Convert.ToInt32(stID);
+            }
+            catch (Exception)
+            {
+
+                return 0;
+            }
+        }
+
         //WITHOUT SEARCH
         public async Task<List<Streets>> GetAllStreets(int offset, int limit)
         {
@@ -273,7 +291,8 @@ namespace KVHAI.Repository
                 // Retrieve list of all streets once
                 var st_list = await _listRepository.StreetList();
                 var st_IDS = new List<Address>();
-                if(st_list.Count > 0){
+                if (st_list.Count > 0)
+                {
 
                     foreach (var st in streetList)
                     {
@@ -293,7 +312,7 @@ namespace KVHAI.Repository
                         }
                     }
                 }
-                
+
 
                 return st_IDS;
             }

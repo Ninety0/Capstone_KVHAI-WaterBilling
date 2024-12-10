@@ -1,0 +1,153 @@
+﻿@{
+    string action = ViewBag.Action ?? string.Empty;
+}
+
+<div class="modal fade" id="modal-resident" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="fw-bold text-muted">Register Address</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-resident" autocomplete="off" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="container tab" id="information">
+
+                        <div class="container" id="information">
+                            <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+                                <h3>Information Details</h3>
+                            </div>
+
+                            @* PERSONAL INFO *@
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
+                                        <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
+                                        <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
+                                        <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required>
+                                        <div class="invalid-feedback">
+                                            Required.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @* END PERSONAL INFO *@
+                        </div>
+
+                            <hr />
+
+                        <!--Address Details-->
+                        <div class="row">
+                            <div class="container-fluid d-flex justify-content-center mb-3">
+                                <h3>Address Details</h3>
+                            </div>
+
+
+                            @* ADDRESS *@
+                        <div id="add_item">
+                            <div class="row_address">
+                                <div class="row">
+
+                                    <!--BLOCK-->
+                                    <div class="col-md-5">
+                                        <div class="form-check mb-3">
+                                            <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                                            <input type="text" min="1" class="form-control" id="rBlock" name="Block" required>
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--LOT-->
+                                    <div class="col-md-5">
+                                        <div class="form-check mb-3">
+                                            <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                                            <input type="text" oninput="this.value = this.value.toUpperCase()" min="1" class="form-control" id="rLot" name="Lot" required>
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+
+                                    <!--STREET-->
+                                    <div class="col-md-5">
+                                        <div class="form-check mb-3">
+                                            <label for="fname" class="form-label fw-bold fs-6">Street</label>
+
+                                            <select id="select-street1" class="form-select" aria-label="Default select example" required>
+                                                @{
+                                                    foreach (var item in Model.ListStreet)
+                                                    {
+                                                        <option value="@item.Street_ID">@item.Street_Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--DATE RESIDENCY-->
+                                    <div class="col-md-5">
+                                        <div class="form-check mb-3">
+                                            <label for="Email" class="form-label fw-bold fs-6">Date Residency: </label>
+                                            <input type="date" class="form-control" id="Date_Residency" name="Date_Residency" required autocomplete="nope">
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-check">
+                                            <label class="form-label fw-bold fs-6">&nbsp;</label>
+                                            <button type="button" class="btn_add btn btn-outline-success w-100" id="">ADD</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                            
+
+
+                            @* END PERSONAL INFO *@
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="btn_register">Register</button>
+                    <button type="submit" class="btn btn-primary d-none" id="btn_update">Update</button>
+                    @*<button type="button" id="btn-test">TEST</button>*@
+
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

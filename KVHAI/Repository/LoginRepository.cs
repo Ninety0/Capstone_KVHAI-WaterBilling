@@ -47,12 +47,22 @@ namespace KVHAI.Repository
             return codeList;
         }
 
-        public async Task SendEmail(EmailDto request, string code)
+        public async Task<int> SendEmail(EmailDto request, string code)
         {
-            //request.To = "dorojavince@gmail.com";
-            request.Subject = "KVHAI verification code";
-            request.Body = VerificationBody(request.To, code).ToString();
-            await _emailService.SendEmail(request);
+            try
+            {
+                //request.To = "dorojavince@gmail.com";
+                request.Subject = "KVHAI verification code";
+                request.Body = VerificationBody(request.To, code).ToString();
+                await _emailService.SendEmail(request);
+
+                return 1;
+            }
+            catch (Exception)
+            {
+
+                return 0;
+            }
         }
 
         public HtmlString VerificationBody(string email, string code)

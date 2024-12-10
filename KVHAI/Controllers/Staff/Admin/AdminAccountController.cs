@@ -3,6 +3,7 @@ using KVHAI.Models;
 using KVHAI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Security.Claims;
 
 namespace KVHAI.Controllers.Staff.Admin
@@ -15,19 +16,23 @@ namespace KVHAI.Controllers.Staff.Admin
         private readonly AddressRepository _addressRepository;
         private readonly IWebHostEnvironment _environment;
         private readonly NotificationRepository _notification;
+        private readonly StreetRepository _streetRepository;
 
 
-        public AdminAccountController(EmployeeRepository employeeRepository, ResidentRepository residentRepository, AddressRepository addressRepository, IWebHostEnvironment environment, NotificationRepository notification)
+
+        public AdminAccountController(EmployeeRepository employeeRepository, ResidentRepository residentRepository, AddressRepository addressRepository, IWebHostEnvironment environment, NotificationRepository notification, StreetRepository streetRepository)
         {
             _employeeRepository = employeeRepository;
             _residentRepository = residentRepository;
             _addressRepository = addressRepository;
             _environment = environment;
             _notification = notification;
+            _streetRepository = streetRepository;
         }
 
         public async Task<IActionResult> Index()
         {
+            var listStreet = await _streetRepository.GetAllStreets();
             var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
             var username = User.Identity.Name;
@@ -56,10 +61,12 @@ namespace KVHAI.Controllers.Staff.Admin
             {
                 EmployeePagination = pagination1,
                 ResidentPagination = pagination2,
-                NotificationStaff = notifList
+                NotificationStaff = notifList,
+                ListStreet = listStreet
             };
             return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> EmployeePagination(string search, string category, int page_index)
@@ -99,11 +106,14 @@ namespace KVHAI.Controllers.Staff.Admin
             }
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> ResidentPagination(string search, string category, string is_verified, int page_index)
+        public async Task<IActionResult> ResidentPagination(string search, string is_verified, int page_index)
         {
             try
             {
+                var listStreet = await _streetRepository.GetAllStreets();
+
                 //EMPLOYEE
                 var pagination1 = new Pagination<Employee>
                 {
@@ -118,16 +128,18 @@ namespace KVHAI.Controllers.Staff.Admin
 
                 var pagination2 = new Pagination<AddressWithResident>
                 {
-                    NumberOfData = await _residentRepository.CountResidentDataAccount(category, resSearch),
+                    NumberOfData = await _residentRepository.CountResidentDataAccount(resSearch),
                     ScriptName = "respagination"
                 };
                 pagination2.set(10, 5, page_index);
-                pagination2.ModelList = await _residentRepository.GetAllResidentAsyncAccount(pagination2.Offset, 10, category, resSearch);
+                pagination2.ModelList = await _residentRepository.GetAllResidentAsyncAccount(pagination2.Offset, 10, resSearch);
 
                 var viewmodel = new ModelBinding
                 {
                     EmployeePagination = pagination1,
-                    ResidentPagination = pagination2
+                    ResidentPagination = pagination2,
+                    ListStreet = listStreet
+
                 };
                 return View("~/Views/Staff/Admin/Account.cshtml", viewmodel);
 
@@ -160,6 +172,72 @@ namespace KVHAI.Controllers.Staff.Admin
 
                 //return Ok(new { message = "Registration Successful." });
                 return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "An error occurred while processing your request." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RegisterResident(Resident resident, string addresses)
+        {
+            try
+            {
+                var addressDataList = JsonConvert.DeserializeObject<List<Address>>(addresses);
+                var modelAddressList = new List<Address>();
+
+                var stIDList = await _streetRepository.GetStreetID(addressDataList);
+
+
+                for (int i = 0; i < addressDataList.Count(); i++)
+                {
+                    // Check if there is already an entry with the same lot and street name in the modelAddressList
+                    bool isDuplicate = modelAddressList.Any(a => a.Lot == addressDataList[i].Lot && a.Street_Name == addressDataList[i].Street_Name);
+
+                    // If it's not a duplicate, process the address and its associated file
+                    if (!isDuplicate)
+                    {
+                        var addressModel = new Address
+                        {
+                            Street_ID = stIDList[i].Street_ID,
+                            Block = addressDataList[i].Block,
+                            Lot = addressDataList[i].Lot,
+                            Street_Name = addressDataList[i].Street_Name,
+                            Date_Residency = addressDataList[i].Date_Residency
+                        };
+
+                        var isAddressExist = await _addressRepository.IsAddressExist(addressDataList[i].Block, addressDataList[i].Lot);
+
+                        if (isAddressExist)
+                        {
+                            return BadRequest("The address was already been registered.");
+
+                        }
+                        modelAddressList.Add(addressModel);
+                    }
+                }
+
+
+                var insertResident = await _residentRepository.CreateResident(resident, modelAddressList);
+
+                if (insertResident < 1)
+                {
+                    return BadRequest("There was an error in processing the data.");
+                }
+
+                //if (await _employeeRepository.UserExists(formData))
+                //{
+                //    return Ok(new { message = "exist" });
+                //}
+
+                //int result = await _employeeRepository.CreateEmployee(formData);
+
+                //if (result == 0)
+                //    return BadRequest(new { message = "There was an error saving the resident and the image." });
+
+                return Ok(new { message = "Added Successful." });
+                //return RedirectToAction(nameof(Index));
             }
             catch (Exception)
             {

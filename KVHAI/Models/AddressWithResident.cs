@@ -20,6 +20,16 @@
 
         public string Occupancy { get; set; } = string.Empty;
 
+        public string Is_Activated { get; set; } = string.Empty;
+
+        public string Account_Number { get; set; } = string.Empty;
+        public string Date_Residency { get; set; } = string.Empty;
+        public string Verified_At { get; set; } = string.Empty;
+
+        public string _Block { get; set; } = string.Empty;
+        public string _Lot { get; set; } = string.Empty;
+        public string _NameStreet { get; set; } = string.Empty;
+
 
         public List<string>? AddressID { get; set; } = new List<string>();
         public List<string>? Block { get; set; } = new List<string>();

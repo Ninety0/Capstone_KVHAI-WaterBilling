@@ -1614,6 +1614,57 @@
               </TablixCells>
             </TablixRow>
             <TablixRow>
+              <Height>0.6cm</Height>
+              <TablixCells>
+                <TablixCell>
+                  <CellContents>
+                    <Textbox Name="account_number">
+                      <CanGrow>true</CanGrow>
+                      <KeepTogether>true</KeepTogether>
+                      <Paragraphs>
+                        <Paragraph>
+                          <TextRuns>
+                            <TextRun>
+                              <Value>Account No:   </Value>
+                              <Style>
+                                <FontSize>7pt</FontSize>
+                                <FontWeight>Bold</FontWeight>
+                              </Style>
+                            </TextRun>
+                            <TextRun>
+                              <Value>=Fields!account_number.Value</Value>
+                              <Style>
+                                <FontSize>7pt</FontSize>
+                                <FontWeight>Bold</FontWeight>
+                              </Style>
+                            </TextRun>
+                          </TextRuns>
+                          <Style>
+                            <TextAlign>Center</TextAlign>
+                          </Style>
+                        </Paragraph>
+                      </Paragraphs>
+                      <rd:DefaultName>account_number</rd:DefaultName>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                          <Style>Solid</Style>
+                        </Border>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                    </Textbox>
+                    <ColSpan>4</ColSpan>
+                  </CellContents>
+                </TablixCell>
+                <TablixCell />
+                <TablixCell />
+                <TablixCell />
+              </TablixCells>
+            </TablixRow>
+            <TablixRow>
               <Height>0.69175cm</Height>
               <TablixCells>
                 <TablixCell>
@@ -1738,6 +1789,7 @@
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixMember>
           </TablixMembers>
@@ -1746,7 +1798,7 @@
         <DataSetName>dsreport_waterbill</DataSetName>
         <Top>0.04695cm</Top>
         <Left>0.02964cm</Left>
-        <Height>12.0845cm</Height>
+        <Height>12.6845cm</Height>
         <Width>13.05688cm</Width>
         <Style>
           <Border>
@@ -1755,7 +1807,7 @@
         </Style>
       </Tablix>
     </ReportItems>
-    <Height>4.83161in</Height>
+    <Height>5.01238in</Height>
     <Style />
   </Body>
   <Width>5.88901in</Width>
@@ -1856,6 +1908,10 @@
         </Field>
         <Field Name="period_cover">
           <DataField>period_cover</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="account_number">
+          <DataField>account_number</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>

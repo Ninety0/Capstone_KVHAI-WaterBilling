@@ -272,24 +272,28 @@ namespace KVHAI.Repository
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                        SELECT TOP 1 waterbill_no FROM address_tb a 
-                        JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
-                        JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
-                        WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @month
-                    ", connection))
+                SELECT TOP 1 waterbill_no FROM address_tb a 
+                JOIN water_reading_tb wr ON a.addr_id = wr.addr_id
+                JOIN water_billing_tb wb ON a.addr_id = wb.addr_id
+                WHERE CONVERT(VARCHAR, wr.date_reading, 23) LIKE @month
+            ", connection))
                     {
                         command.Parameters.AddWithValue("@month", "%" + _date + "%");
                         var result = await command.ExecuteScalarAsync();
 
-                        return result.ToString();
+                        // Check if result is null before converting to string
+                        return result != null ? result.ToString() : string.Empty;
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Log exception details for debugging
+                Console.WriteLine($"Error in GetWaterBillNumber: {ex.Message}");
                 return null;
             }
         }
+
         public async Task<ModelBinding> GetPreviousReading(string location, string date = "", string wbNumber = "")
         {
             var WBNumber = string.IsNullOrEmpty(wbNumber) ? await GetWaterBillNumber() : wbNumber;
@@ -429,13 +433,14 @@ namespace KVHAI.Repository
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                        select r.lname,r.fname,r.mname,s.st_name, a.*,wb.*  from water_billing_tb wb
+                        select r.lname,r.fname,r.mname,s.st_name, a.*,wb.*, r.account_number  
+                        from water_billing_tb wb
                         JOIN address_tb a ON wb.addr_id = a.addr_id
                         JOIN street_tb s ON a.st_id = s.st_id
                         JOIN resident_tb r ON a.res_id = r.res_id
                         WHERE waterbill_no = @num AND wb.location = @location", connection))
                     {
-                        command.Parameters.AddWithValue("@num", wbNumber);
+                        command.Parameters.AddWithValue("@num", WBNumber ?? "1");
                         command.Parameters.AddWithValue("@location", location);
 
                         using (var reader = await command.ExecuteReaderAsync())
@@ -453,26 +458,28 @@ namespace KVHAI.Repository
                                     Block = reader.GetString(6),
                                     Lot = reader.GetString(7),
                                     Street_Name = reader.GetString(3),
-                                    Resident_Name = string.Join(", ", lname, fname, mname)
+                                    Resident_Name = string.Join(", ", lname, fname, mname),
                                 };
                                 var wb = new WaterBilling
                                 {
-                                    WaterBill_ID = reader.GetInt32(14).ToString(),
-                                    Reference_No = reader.GetInt32(15).ToString(),
-                                    Address_ID = reader.GetInt32(16).ToString(),
-                                    Location = reader.GetInt32(17).ToString(),
-                                    Previous_Reading = reader.GetInt32(18).ToString(),
-                                    Current_Reading = reader.GetInt32(19).ToString(),
-                                    Cubic_Meter = reader.GetString(20),
-                                    Bill_For = reader.GetDateTime(21).ToString("MMMM yyyy"),
-                                    Bill_Date_Created = reader.GetDateTime(22).ToString("MMMM yyyy"),
-                                    Amount = reader.GetString(23),
-                                    Date_Issue_From = reader.GetDateTime(24).ToString("MMMM yyyy"),
-                                    Date_Issue_To = reader.GetDateTime(25).ToString("MMMM yyyy"),
-                                    Due_Date_From = reader.GetDateTime(26).ToString("MMMM yyyy"),
-                                    Due_Date_To = reader.GetDateTime(27).ToString("MMMM yyyy"),
-                                    Status = reader.GetString(28),
-                                    WaterBill_No = reader.GetInt32(29).ToString()
+                                    WaterBill_ID = reader.GetInt32(13).ToString(),
+                                    Reference_No = reader.GetInt32(14).ToString(),
+                                    Address_ID = reader.GetInt32(15).ToString(),
+                                    Location = reader.GetInt32(16).ToString(),
+                                    Previous_Reading = reader.GetInt32(17).ToString(),
+                                    Current_Reading = reader.GetInt32(18).ToString(),
+                                    Cubic_Meter = reader.GetString(19),
+                                    Bill_For = reader.GetDateTime(20).ToString("MMMM yyyy"),
+                                    Bill_Date_Created = reader.GetDateTime(21).ToString("MMMM yyyy"),
+                                    Amount = reader.GetString(22),
+                                    Date_Issue_From = reader.GetDateTime(23).ToString("MMMM yyyy"),
+                                    Date_Issue_To = reader.GetDateTime(24).ToString("MMMM yyyy"),
+                                    Due_Date_From = reader.GetDateTime(25).ToString("MMMM yyyy"),
+                                    Due_Date_To = reader.GetDateTime(26).ToString("MMMM yyyy"),
+                                    Status = reader.GetString(27),
+                                    WaterBill_No = reader.GetInt32(28).ToString(),
+                                    Account_Number = reader.GetString(29)
+
 
                                 };
 
@@ -734,7 +741,8 @@ namespace KVHAI.Repository
                         var waterBillNo = reportWaterBilling.WaterBill_Number;
 
                         using (var command = new SqlCommand(@"
-                    select r.lname,r.fname,r.mname,s.st_name, a.*,wb.*  from water_billing_tb wb
+                    select r.lname,r.fname,r.mname,s.st_name, a.*,wb.*,r.account_number  
+                    from water_billing_tb wb
                     JOIN address_tb a ON wb.addr_id = a.addr_id
                     JOIN street_tb s ON a.st_id = s.st_id
                     JOIN resident_tb r ON a.res_id = r.res_id
@@ -772,22 +780,23 @@ namespace KVHAI.Repository
                                     };
                                     var wb = new WaterBilling
                                     {
-                                        WaterBill_ID = reader.GetInt32(14).ToString(),
-                                        Reference_No = reader.GetInt32(15).ToString(),
-                                        Address_ID = reader.GetInt32(16).ToString(),
-                                        Location = reader.GetInt32(17).ToString(),
-                                        Previous_Reading = reader.GetInt32(18).ToString(),
-                                        Current_Reading = reader.GetInt32(19).ToString(),
-                                        Cubic_Meter = reader.GetString(20),
-                                        Bill_For = reader.GetDateTime(21).ToString("MMMM yyyy"),
-                                        Bill_Date_Created = reader.GetDateTime(22).ToString("MMMM yyyy"),
-                                        Amount = reader.GetString(23),
-                                        Date_Issue_From = reader.GetDateTime(24).ToString("MMMM yyyy"),
-                                        Date_Issue_To = reader.GetDateTime(25).ToString("MMMM yyyy"),
-                                        Due_Date_From = reader.GetDateTime(26).ToString("MMMM yyyy"),
-                                        Due_Date_To = reader.GetDateTime(27).ToString("MMMM yyyy"),
-                                        Status = reader.GetString(28),
-                                        WaterBill_No = reader.GetInt32(29).ToString(),
+                                        WaterBill_ID = reader.GetInt32(13).ToString(),
+                                        Reference_No = reader.GetInt32(14).ToString(),
+                                        Address_ID = reader.GetInt32(15).ToString(),
+                                        Location = reader.GetInt32(16).ToString(),
+                                        Previous_Reading = reader.GetInt32(17).ToString(),
+                                        Current_Reading = reader.GetInt32(18).ToString(),
+                                        Cubic_Meter = reader.GetString(19),
+                                        Bill_For = reader.GetDateTime(20).ToString("MMMM yyyy"),
+                                        Bill_Date_Created = reader.GetDateTime(21).ToString("MMMM yyyy"),
+                                        Amount = reader.GetString(22),
+                                        Date_Issue_From = reader.GetDateTime(23).ToString("MMMM yyyy"),
+                                        Date_Issue_To = reader.GetDateTime(24).ToString("MMMM yyyy"),
+                                        Due_Date_From = reader.GetDateTime(25).ToString("MMMM yyyy"),
+                                        Due_Date_To = reader.GetDateTime(26).ToString("MMMM yyyy"),
+                                        Status = reader.GetString(27),
+                                        WaterBill_No = reader.GetInt32(28).ToString(),
+                                        Account_Number = reader.GetString(29),
 
                                         DatePeriodCovered = periodCoverDate
 
@@ -1017,7 +1026,7 @@ namespace KVHAI.Repository
                     JOIN address_tb a ON wb.addr_id = a.addr_id
                     JOIN resident_tb r ON a.res_id = r.res_id
                     JOIN street_tb s ON a.st_id = s.st_id
-                    WHERE  status = 'unpaid' AND r.res_id  = @res_id AND is_verified = 'true' AND a.addr_id = @addr_id", connection))
+                    WHERE  status = 'unpaid' AND r.res_id  = @res_id AND a.addr_id = @addr_id", connection))
                     {
                         command.Parameters.AddWithValue("@res_id", residentID);
                         command.Parameters.AddWithValue("@addr_id", addressID);
@@ -1043,6 +1052,7 @@ namespace KVHAI.Repository
                                     Lot = reader["lot"].ToString() ?? string.Empty,
                                     Street_ID = Convert.ToInt32(reader["st_id"].ToString() ?? string.Empty),
                                     Street_Name = reader["st_name"].ToString() ?? string.Empty,
+                                    Account_Number = reader["account_number"].ToString() ?? string.Empty,
 
                                     TotalAmount = totalAmount.ToString("F2")
                                 };
@@ -1101,7 +1111,7 @@ namespace KVHAI.Repository
                     JOIN address_tb a ON wb.addr_id = a.addr_id
                     JOIN resident_tb r ON a.res_id = r.res_id
                     JOIN street_tb s ON a.st_id = s.st_id
-                    WHERE  status = 'paid' AND r.res_id  = @res_id AND is_verified = 'true' AND a.addr_id = @addr_id", connection))
+                    WHERE  status = 'paid' AND r.res_id  = @res_id AND a.addr_id = @addr_id", connection))
                     {
                         command.Parameters.AddWithValue("@res_id", residentID);
                         command.Parameters.AddWithValue("@addr_id", addressID);
@@ -1127,6 +1137,7 @@ namespace KVHAI.Repository
                                     Lot = reader["lot"].ToString() ?? string.Empty,
                                     Street_ID = Convert.ToInt32(reader["st_id"].ToString() ?? string.Empty),
                                     Street_Name = reader["st_name"].ToString() ?? string.Empty,
+                                    Account_Number = reader["account_number"].ToString() ?? string.Empty,
 
                                     TotalAmount = totalAmount.ToString("F2")
                                 };

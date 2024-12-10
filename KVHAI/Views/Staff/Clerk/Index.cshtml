@@ -104,57 +104,54 @@
                                 }
                                 for (int i = 0; i < Model.ResidentAddress.Count; i++)
                                 {
-                                    if (i < Model.PreviousReading.Count && i < Model.CurrentReading.Count)
+                                    // Define default values for cases where data might be missing
+                                    string previousReading = "N/A";
+                                    string currentReading = "N/A";
+                                    string cubicMeter = "N/A";
+                                    string billAmount = "N/A";
+                                    string arrears = "N/A";
+
+                                    // Fetch the previous reading if available
+                                    if (i < Model.PreviousReading.Count)
                                     {
-                                        // Define default values for cases where data might be missing
-                                        string previousReading = "N/A";
-                                        string currentReading = "N/A";
-                                        string cubicMeter = "N/A";
-                                        string billAmount = "N/A";
-                                        string arrears = "N/A";
-
-                                        // Fetch the previous reading if available
-                                        if (i < Model.PreviousReading.Count)
-                                        {
-                                            previousReading = Model.PreviousReading[i]?.Consumption ?? "N/A";
-                                        }
-
-                                        // Fetch the current reading if available
-                                        if (i < Model.CurrentReading.Count)
-                                        {
-                                            currentReading = Model.CurrentReading[i]?.Consumption ?? "N/A";
-                                        }
-
-                                        // Fetch the calculated cubic meter if available
-                                        if (i < Model.CubicMeter.Count)
-                                        {
-                                            cubicMeter = Model.CubicMeter[i].ToString();
-                                        }
-
-                                        // Fetch the calculated bill amount if available
-                                        if (i < Model.BillAmount.Count)
-                                        {
-                                            billAmount = Model.BillAmount[i].ToString("F2");
-                                        }
-
-                                        // Fetch the arrears if available
-                                        //if (i < Model.Arrears.Count)
-                                        //{
-                                        //    arrears = Model.Arrears[i].ToString("F2");
-                                        //}
-
-                                        <tr class="rowData">
-                                            <td class="border border-secondary-subtle readingID" data-reading="@Model.PreviousReading[i].Address_ID">@(i + 1) @Model.PreviousReading[i].Address_ID</td>
-                                            <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
-                                            <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
-                                            <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
-                                            <td class="previous-reading text-center border border-secondary-subtle" data-prev="@Model.WaterBillingValues[i].PreviousReading">@Model.WaterBillingValues[i].PreviousReading</td>
-                                            <td class="current-reading text-center border border-secondary-subtle" data-current="@Model.WaterBillingValues[i].CurrentReading">@Model.WaterBillingValues[i].CurrentReading</td>
-                                            <td class="text-center border border-secondary-subtle" data-cubic="@Model.WaterBillingValues[i].CubicMeter">@Model.WaterBillingValues[i].CubicMeter</td>
-                                            <td class="border border-secondary-subtle" data-bill="@Model.WaterBillingValues[i].Total">@Model.WaterBillingValues[i].Total</td>
-                                            @*<td>@arrears</td>*@
-                                        </tr>
+                                        previousReading = Model.PreviousReading[i]?.Consumption ?? "N/A";
                                     }
+
+                                    // Fetch the current reading if available
+                                    if (i < Model.CurrentReading.Count)
+                                    {
+                                        currentReading = Model.CurrentReading[i]?.Consumption ?? "N/A";
+                                    }
+
+                                    // Fetch the calculated cubic meter if available
+                                    if (i < Model.CubicMeter.Count)
+                                    {
+                                        cubicMeter = Model.CubicMeter[i].ToString();
+                                    }
+
+                                    // Fetch the calculated bill amount if available
+                                    if (i < Model.BillAmount.Count)
+                                    {
+                                        billAmount = Model.BillAmount[i].ToString("F2");
+                                    }
+
+                                    // Fetch the arrears if available
+                                    //if (i < Model.Arrears.Count)
+                                    //{
+                                    //    arrears = Model.Arrears[i].ToString("F2");
+                                    //}
+
+                                    <tr class="rowData">
+                                        <td class="border border-secondary-subtle readingID" data-reading="@Model.PreviousReading[i].Address_ID">@(i + 1) @Model.PreviousReading[i].Address_ID</td>
+                                        <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Block</td>
+                                        <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Lot</td>
+                                        <td class="border border-secondary-subtle">@Model.ResidentAddress[i].Name</td>
+                                        <td class="previous-reading text-center border border-secondary-subtle" data-prev="@Model.WaterBillingValues[i].PreviousReading">@Model.WaterBillingValues[i].PreviousReading</td>
+                                        <td class="current-reading text-center border border-secondary-subtle" data-current="@Model.WaterBillingValues[i].CurrentReading">@Model.WaterBillingValues[i].CurrentReading</td>
+                                        <td class="text-center border border-secondary-subtle" data-cubic="@Model.WaterBillingValues[i].CubicMeter">@Model.WaterBillingValues[i].CubicMeter</td>
+                                        <td class="border border-secondary-subtle" data-bill="@Model.WaterBillingValues[i].Total">@Model.WaterBillingValues[i].Total</td>
+                                        @*<td>@arrears</td>*@
+                                    </tr>
 
                                 }
                             }

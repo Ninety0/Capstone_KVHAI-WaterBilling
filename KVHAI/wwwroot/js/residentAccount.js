@@ -1,4 +1,5 @@
 ﻿$(document).ready(function () {
+    GetRequestAddress();
 
     //SIGNALR SETUP
     const registerConnection = setupSignalRConnection("/staff/register-address", "Register Address Hub");
@@ -25,104 +26,14 @@
     //END SIGNAL R SETUP
 
     //ON LOAD CALL
-    GetCurrentSwitch();
+    $('#select-street1').editableSelect();
 
     //event listerner
-    $(document).on('change', '#toggleSwitch', function () {
-        var toggle = $('#toggleSwitch').prop('checked');
-        var lblSwitch = $('#lblSwitch');
-
-        if (toggle) {
-            lblSwitch.html('<b>VERIFIED</b>');
-            
-            $('#lblSwitch').css({
-                'background-color': 'white',
-                'outline': '1px solid #22c55e',
-                'color': '#22c55e'
-            });
-        }
-        else {
-            lblSwitch.html('<b>NOT VERIFIED</b>');
-            $('#lblSwitch').css({
-                'background-color': 'white',
-                'outline': '1px solid #ef4444',
-                'color': '#ef4444'
-            });
-
-            //lblSwitch.css('background-color', 'white');
-            //lblSwitch.css('outline', '1px solid #ef4444');
-            //lblSwitch.css('color', '#ef4444');
-        }
-
-        localStorage.setItem('toggleState', toggle);
-
-        respagination();
-    });
-
     $(document).on('click', '.tableContents', function () {
         var btn = $(this).find('.details-section');
         btn.fadeToggle("fast");
     });
 
-    $(document).on('click', '.btn-res-edit', function () {
-        var addresID = $(this).data('id');
-        var resId = $(this).closest('#res-tableData').find('[data-res]').data('res');
-        alert(resId);
-        var _status = "true";
-        var _data = { addrID: addresID, status:_status };
-        if (addresID) {
-            $.ajax({
-                type: 'POST',
-                url: '/ResidentAddress/UpdateStatus',
-                data: _data,
-                success: function (response) {
-                    toastr.success("Resident address was approved");
-                    var result = $(response).find('#res-tableData').html();
-                    $('#res-tableData').html(result);
-                },
-                error: function (xhr, status, err_m) {
-                    toastr.error(xhr.responseText);
-                    //if (xhr.status === 404) {
-                    //    toastr.error("Resource not found");
-                    //} else if (xhr.status === 500) {
-                    //    toastr.error("Server error. Please try again later.");
-                    //} else {
-                    //    toastr.error(xhr.responseText || "An unknown error occurred");
-                    //}
-                }
-            });
-        }
-    })
-
-    $(document).on('click', '.btn-res-delete', function () {
-        var addressID = $(this).data('id');
-        var _status = "null";
-        var _data = { addrID: addressID, status: _status };
-        if (addressID) {
-            $.ajax({
-                type: 'POST',
-                url: '/ResidentAddress/UpdateStatus',
-                data: _data,
-                success: function (response) {
-                    toastr.success("Resident address was disapprove");
-                    var result = $(response).find('#res-tableData').html();
-                    $('#res-tableData').html(result);
-                },
-                error: function (xhr, status, err_m) {
-                    toastr.error(xhr.responseText);
-                    //if (xhr.status === 404) {
-                    //    toastr.error("Resource not found");
-                    //} else if (xhr.status === 500) {
-                    //    toastr.error("Server error. Please try again later.");
-                    //} else {
-                    //    toastr.error(xhr.responseText || "An unknown error occurred");
-                    //}
-                }
-            });
-        }
-    })
-
-    //event listener
     $(document).on('change', '#res-search', function () {
         respagination();
     })
@@ -191,37 +102,6 @@
         $('#imagePreloader').show();
     });
 
-    //DEFINE FUNCTIONS
-    function GetCurrentSwitch() {
-        var savedToggleState = localStorage.getItem('toggleState');
-
-        if (savedToggleState !== null) {
-            var isChecked = savedToggleState === 'true';
-            $('#toggleSwitch').prop('checked', isChecked);
-
-            // Update label and color based on saved state
-            var lblSwitch = $('#lblSwitch');
-            if (isChecked) {
-                lblSwitch.html('<b>VERIFIED</b>');
-                $('#lblSwitch').css({
-                    'background-color': 'white',
-                    'outline': '1px solid #22c55e',
-                    'color': '#22c55e'
-                });
-                
-
-            } else {
-                lblSwitch.html('<b>NOT VERIFIED</b>');
-                $('#lblSwitch').css({
-                    'background-color': 'white',
-                    'outline': '1px solid #ef4444',
-                    'color': '#ef4444'
-                });
-            }
-        }
-
-        respagination();
-    }
 
     function hidePreloader() {
         const loader = $('#loader');
@@ -242,13 +122,9 @@
     function respagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
         var _search = $('#res-search').val();
         var _category = $('#res-category').val();
-        var _isActive = $('#toggleSwitch').prop('checked');
-        console.log(`Category = ${_category}, Active = ${_isActive}`);
 
         var array = {
             search: _search,
-            category: _category.toLowerCase(),
-            is_verified: _isActive.toString(),
             page_index: i
             
         };

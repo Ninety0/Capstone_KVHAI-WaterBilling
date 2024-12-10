@@ -15,30 +15,32 @@ namespace KVHAI.Controllers.Staff.Admin
         private readonly AddressRepository _addressRepository;
         private readonly IWebHostEnvironment _environment;
         private readonly NotificationRepository _notification;
+        private readonly StreetRepository _streetRepository;
 
-        public ResidentAddressController(ResidentRepository residentRepository, EmployeeRepository employeeRepository, AddressRepository addressRepository, IWebHostEnvironment environment, NotificationRepository notification)
+        public ResidentAddressController(ResidentRepository residentRepository, EmployeeRepository employeeRepository, AddressRepository addressRepository, IWebHostEnvironment environment, NotificationRepository notification
+            , StreetRepository streetRepository)
         {
             _residentRepository = residentRepository;
             _employeeRepository = employeeRepository;
             _addressRepository = addressRepository;
             _environment = environment;
             _notification = notification;
+            _streetRepository = streetRepository;
         }
 
         public async Task<IActionResult> Index()
         {
+            var listStreet = await _streetRepository.GetAllStreets();
             var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
             var username = User.Identity.Name;
 
             var notifList = await _notification.GetNotificationByStaff(role);
 
-
-
             //RESIDENT
             var pagination2 = new Pagination<AddressWithResident>
             {
-                ModelList = await _residentRepository.GetAllResidentAsync(0, 10, "false"),
+                ModelList = await _residentRepository.GetAllResidentAsyncAccount(0, 10),
                 NumberOfData = await _residentRepository.CountResidentData("false"),
                 ScriptName = "respagination"
             };
@@ -46,8 +48,9 @@ namespace KVHAI.Controllers.Staff.Admin
 
             var viewmodel = new ModelBinding
             {
+                ResidentPagination = pagination2,
                 NotificationStaff = notifList,
-                ResidentPagination = pagination2
+                ListStreet = listStreet
             };
 
             return View("~/Views/Staff/Admin/ResidentAddress.cshtml", viewmodel);
@@ -56,10 +59,17 @@ namespace KVHAI.Controllers.Staff.Admin
         [HttpGet]
         public async Task<IActionResult> GetRequestAddress()
         {
+            var listStreet = await _streetRepository.GetAllStreets();
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
             //RESIDENT
             var pagination2 = new Pagination<AddressWithResident>
             {
-                ModelList = await _residentRepository.GetAllResidentAsync(0, 10, "false"),
+                ModelList = await _residentRepository.GetAllResidentAsyncAccount(0, 10),
                 NumberOfData = await _residentRepository.CountResidentData("false"),
                 ScriptName = "respagination"
             };
@@ -67,7 +77,9 @@ namespace KVHAI.Controllers.Staff.Admin
 
             var viewmodel = new ModelBinding
             {
-                ResidentPagination = pagination2
+                ResidentPagination = pagination2,
+                NotificationStaff = notifList,
+                ListStreet = listStreet
             };
 
             return View("~/Views/Staff/Admin/ResidentAddress.cshtml", viewmodel);
@@ -110,32 +122,69 @@ namespace KVHAI.Controllers.Staff.Admin
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResidentPagination(string search, string category, string is_verified, int page_index)
+        public async Task<IActionResult> ResidentPagination(string search, int page_index)
         {
             try
             {
-                var resSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
+                var listStreet = await _streetRepository.GetAllStreets();
 
                 //RESIDENT
+                var resSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
+
                 var pagination2 = new Pagination<AddressWithResident>
                 {
-                    NumberOfData = await _residentRepository.CountResidentData(is_verified, category, resSearch),
+                    NumberOfData = await _residentRepository.CountResidentDataAccount(resSearch),
                     ScriptName = "respagination"
                 };
                 pagination2.set(10, 5, page_index);
-                pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10, is_verified, category, resSearch);
+                pagination2.ModelList = await _residentRepository.GetAllResidentAsyncAccount(pagination2.Offset, 10, resSearch);
 
                 var viewmodel = new ModelBinding
                 {
-                    ResidentPagination = pagination2
+                    ResidentPagination = pagination2,
+                    ListStreet = listStreet
+
                 };
 
                 return View("~/Views/Staff/Admin/ResidentAddress.cshtml", viewmodel);
+
+
+                // Use the more explicit method to return the partial view
+                //return PartialView("PartialView/_ResidentAccount", pagination2);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> ResidentPagination(string search, string category, string is_verified, int page_index)
+        //{
+        //    try
+        //    {
+        //        var resSearch = search == null || string.IsNullOrEmpty(search) ? "" : search;
+
+        //        //RESIDENT
+        //        var pagination2 = new Pagination<AddressWithResident>
+        //        {
+        //            NumberOfData = await _residentRepository.CountResidentData(is_verified, category, resSearch),
+        //            ScriptName = "respagination"
+        //        };
+        //        pagination2.set(10, 5, page_index);
+        //        pagination2.ModelList = await _residentRepository.GetAllResidentAsync(pagination2.Offset, 10, is_verified, category, resSearch);
+
+        //        var viewmodel = new ModelBinding
+        //        {
+        //            ResidentPagination = pagination2
+        //        };
+
+        //        return View("~/Views/Staff/Admin/ResidentAddress.cshtml", viewmodel);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
     }
 }

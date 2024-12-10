@@ -52,24 +52,25 @@ namespace KVHAI.Controllers.Homeowner
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(Resident credentials)
         {
-            var userExist = await _residentRepository.ValidateAccount(credentials);
-            var verifiedAt = await _residentRepository.VerifiedAt(credentials);
-
-            if (!await _residentRepository.ValidatePassword(credentials))
-            {
-                return BadRequest("Password is incorrect.");
-            }
+            var userExist = await _residentRepository.IsUsernameExist(credentials.Username);
 
             if (!userExist)
             {
                 return BadRequest("User not found.");
             }
 
-
-            if (string.IsNullOrEmpty(verifiedAt[0].Verified_At))
+            if (!await _residentRepository.ValidatePassword(credentials))
             {
-                return Ok(new { message = "Account is not verified!", token = verifiedAt[0].Verification_Token, email = verifiedAt[0].Email });
+                return BadRequest("Password is incorrect.");
             }
+
+
+
+
+            //if (string.IsNullOrEmpty(verifiedAt[0].Verified_At))
+            //{
+            //    return Ok(new { message = "Account is not verified!", token = verifiedAt[0].Verification_Token, email = verifiedAt[0].Email });
+            //}
 
             var authCredentials = await _residentRepository.GetResidentID(credentials);
 
@@ -107,31 +108,67 @@ namespace KVHAI.Controllers.Homeowner
         }
 
 
-
-        public async Task<IActionResult> VerifyPage()
+        [HttpPost]
+        public async Task<IActionResult> VerifyPage(Resident resident)
         {
             try
             {
-                if (Request.Cookies.ContainsKey("verifyToken"))
+                var isUserExist = await _residentRepository.AccountNumberExist(resident);
+                if (!isUserExist)
                 {
-                    // Retrieve the token from the cookie
-                    string token = Request.Cookies["verifyToken"] ?? string.Empty;
-                    string email = await _residentRepository.GetEmailByToken(token);
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        // Validate the token (e.g., check in the database)
-                        if (await _residentRepository.IsTokenExist(token))
-                        {
-                            if (!string.IsNullOrEmpty(email))
-                            {
-                                ViewData["Email"] = email;
-                                return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
-                            }
-                        }
-                    }
+                    return BadRequest("Account number not found.");
                 }
+
+                //ADD VALIDATION IF ACCOUNT HAS ALREADY BEEN ACTIVATED
+                var isActivated = await _residentRepository.IsAccountVerified(resident);
+
+                if (isActivated)
+                {
+                    return BadRequest("Your account is already activated.");
+                }
+
+                //VALIDATION USERNAME EXIST
+                var isUsernameExist = await _residentRepository.IsUsernameExist(resident.Username);
+                if (isUsernameExist)
+                {
+                    return BadRequest("Username already exist.");
+                }
+
+                //VALIDATION EMAIL EXIST
+                var isEmailExist = await _residentRepository.IsEmailExist(resident.Email);
+                if (isEmailExist)
+                {
+                    return BadRequest("The email had already been used.");
+                }
+
+                var updateDetails = await _residentRepository.UpdateResidentDetails(resident);
+
+                if (string.IsNullOrEmpty(updateDetails))
+                {
+                    return BadRequest("There was an error activating the account. Please try again later");
+                }
+
+                return Ok(new { message = "Proceed to next step verify the email", token = updateDetails });
+                //if (Request.Cookies.ContainsKey("verifyToken"))
+                //{
+                //    // Retrieve the token from the cookie
+                //    string token = Request.Cookies["verifyToken"] ?? string.Empty;
+                //    string email = await _residentRepository.GetEmailByToken(token);
+                //    if (!string.IsNullOrEmpty(token))
+                //    {
+                //        // Validate the token (e.g., check in the database)
+                //        if (await _residentRepository.IsTokenExist(token))
+                //        {
+                //            if (!string.IsNullOrEmpty(email))
+                //            {
+                //                ViewData["Email"] = email;
+                //                return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
+                //            }
+                //        }
+                //    }
+                //}
                 //return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
-                return View("~/Views/Resident/RLogin/Index.cshtml");
+                //return View("~/Views/Resident/RLogin/Index.cshtml");
 
                 //return View("~/Views/Shared/Error.cshtml");
             }
@@ -141,44 +178,80 @@ namespace KVHAI.Controllers.Homeowner
             }
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Signup(Resident formData)
+        public async Task<IActionResult> VerifyEmail(string? token)
         {
             try
             {
-                if (formData == null || !ModelState.IsValid)
+                // Check if token is provided in the URL; otherwise, fallback to cookie
+                if (string.IsNullOrEmpty(token) && Request.Cookies.ContainsKey("verifyToken"))
                 {
-                    return BadRequest(new { message = 0 });
+                    token = Request.Cookies["verifyToken"];
                 }
 
-                if (await _residentRepository.UserExists(formData))
+                if (!string.IsNullOrEmpty(token))
                 {
-                    return BadRequest("Email or Username already taken.");
+                    // Validate the token
+                    if (await _residentRepository.IsTokenExist(token))
+                    {
+                        string email = await _residentRepository.GetEmailByToken(token);
+                        if (!string.IsNullOrEmpty(email))
+                        {
+                            ViewData["Email"] = email;
+                            return View("~/Views/Resident/Signup/VerifyAccount.cshtml");
+                        }
+                    }
                 }
 
-
-                string result = await _residentRepository.CreateResident(formData);
-
-                if (string.IsNullOrEmpty(result))
-                    return BadRequest("There was an error creating the account. Please try again later.");
-
-                //Response.Cookies.Append("verificationToken", result, new CookieOptions
-                //{
-                //    HttpOnly = false, // Allow JavaScript to access the cookie
-                //    Secure = true, // Use only over HTTPS
-                //    SameSite = SameSiteMode.Strict, // Strict same-site policy
-                //    Expires = DateTime.Now.AddHours(1) // Cookie expires in 1 hour
-                //});
-
-                return Ok(new { message = "Registration Successful.", token = result });
-                //return Ok("Registration Successful.");
+                // Token not valid or not found
+                return View("~/Views/Shared/Error.cshtml");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest("An error occurred while processing your request.");
+                // Log the exception (optional)
+                Console.WriteLine($"Error during verification: {ex.Message}");
+                return View("~/Views/Resident/RLogin/Index.cshtml");
             }
         }
+
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Signup(Resident formData)
+        //{
+        //    try
+        //    {
+        //        if (formData == null || !ModelState.IsValid)
+        //        {
+        //            return BadRequest(new { message = 0 });
+        //        }
+
+        //        if (await _residentRepository.UserExists(formData))
+        //        {
+        //            return BadRequest("Email or Username already taken.");
+        //        }
+
+
+        //        string result = await _residentRepository.CreateResident(formData);
+
+        //        if (string.IsNullOrEmpty(result))
+        //            return BadRequest("There was an error creating the account. Please try again later.");
+
+        //        //Response.Cookies.Append("verificationToken", result, new CookieOptions
+        //        //{
+        //        //    HttpOnly = false, // Allow JavaScript to access the cookie
+        //        //    Secure = true, // Use only over HTTPS
+        //        //    SameSite = SameSiteMode.Strict, // Strict same-site policy
+        //        //    Expires = DateTime.Now.AddHours(1) // Cookie expires in 1 hour
+        //        //});
+
+        //        return Ok(new { message = "Registration Successful.", token = result });
+        //        //return Ok("Registration Successful.");
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return BadRequest("An error occurred while processing your request.");
+        //    }
+        //}
 
         [HttpPost]
         public async Task<IActionResult> VerifyCode(string Code, string Email)
@@ -188,7 +261,7 @@ namespace KVHAI.Controllers.Homeowner
             {
                 case 1:
                     await DeleteTokenCookie();
-                    return Ok("The code is valid.");
+                    return Ok();
                 case 0:
                     return BadRequest("Invalid code. Please try again.");
                 default:

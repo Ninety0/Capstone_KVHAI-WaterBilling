@@ -20,5 +20,6 @@
         public string DueDate = "";
         public string DateIssued = "";
         public string PeriodCoverDate = "";
+        public string Account_Number = "";
     }
 }

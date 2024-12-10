@@ -122,6 +122,18 @@
         </a>
     }
 
+<a href="/kvhai/resident/account/settings" class="nav_sidebar mb-3">
+    <div class="row">
+        <div class="col-4  d-flex justify-content-center">
+            <i class="fa-solid fa-gear"></i>
+        </div>
+        <div class="col  d-flex justify-content-start">
+            Settings
+        </div>
+
+    </div>
+</a>
+
 }
 
 @section mobilenav{
@@ -205,6 +217,18 @@
         </a>
     }
 
+<a href="/kvhai/resident/account/settings" class="nav_sidebar mb-3">
+    <div class="row">
+        <div class="col-4  d-flex justify-content-center">
+            <i class="fa-solid fa-gear"></i>
+        </div>
+        <div class="col  d-flex justify-content-start">
+            Settings
+        </div>
+
+    </div>
+</a>
+
 }
 
 
@@ -223,7 +247,15 @@
     </div>
 </div>
 
+<!--
+MODAL
+-->
 
+@await Html.PartialAsync("PartialView/_FormRenter")
+
+<!--
+END MODAL
+-->
 <!-- BODY -->
 <div class="card shadow-sm mb-3">
     <div class="card-body">
@@ -234,7 +266,7 @@
 
         <div class="container-fluid">
             <div class="row mb-3">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
                     <select id="address_renter" class="form-select" aria-label="Default select example">
                         @{
                             if (Model.ResidentAddress != null)
@@ -255,21 +287,31 @@
                         <option value="">All</option> -->
                     </select>
                 </div>
+
+                <div class="col-12 col-md-6 d-flex justify-content-end">
+                    <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#modal-renter" style="background-color: #030712; color:white;">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="fw-bold ms-2" style="font-size:1rem;">New renter</span>
+                    </button>
+                </div>
             </div>
             <div class="container-fluid" id="renter">
                 @{
-                    if (Model.RequestAddressList != null)
+                    if (Model.ResidentList != null)
                     {
-                        if (Model.RequestAddressList.Count > 0)
+                        if (Model.ResidentList.Count > 0)
                         {
-                            foreach (var item in Model.RequestAddressList)
+                            foreach (var item in Model.ResidentList)
                             {
-                                <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData" data-raid="@item.Resident_Address_ID">
+                                var name = string.Join(", ", item.Lname, item.Fname, item.Mname);
+                                var date = DateTime.TryParse(item.Verified_At, out DateTime dateResult) ? dateResult.ToString("MMMM dd, yyyy hh:mm tt"):"";
+                                <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData" data-rid="@item.Res_ID">
                                     <div class="col-8">
-                                        <p class="mb-0 " data-res="@item.Resident_ID"><strong>@item.Name</strong></p>
+                                        <p class="mb-0 " data-res="@item.Res_ID"><strong>@name</strong></p>
+                                        <p class="mb-0 fw-bold text-muted">Username: @item.Username</p>
                                         <p class="mb-0 fw-bold text-muted">Phone: @item.Phone</p>
                                         <p class="mb-0 fw-bold text-muted">Email: @item.Email</p>
-                                        <p class="mb-0 fw-bold text-muted">Date: @item.Decision_Date</p>
+                                        <p class="mb-0 fw-bold text-muted">Date: @date</p>
                                     </div>
                                     <div class="col-4 d-flex justify-content-end">
                                         <button id="btn_delete" class="btn btn-outline-danger btn-sm">Delete</button>
@@ -290,91 +332,6 @@
                     }
                 }
             </div>
-        </div>
-
-
-    </div>
-</div>
-
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="container-fluid d-flex">
-            <h5 class="fw-bold text-muted">Applications</h5>
-        </div>
-        <hr class="border border-black" />
-
-        <div class="container-fluid">
-            <div class="row mb-3">
-                <div class="col-12 col-md-4">
-                    <select id="address" class="form-select" aria-label="Default select example">
-                        @{
-                            if (Model.ResidentAddress != null)
-                            {
-                                if (Model.ResidentAddress.Count > 0)
-                                {
-                                    foreach (var item in Model.ResidentAddress)
-                                    {
-                                        <option value="@item.Address_ID">Blk @item.Block Lot @item.Lot @item.Street St. </option>
-                                    }
-                                }
-                            }
-                        }
-                        <!-- <option selected value="1">Phase 2 (Blk 51 to  143)</option>
-                        <option value="2">Phase 1 (Blk 41 to  48)</option>
-                        <option value="3">Blk 24 to 40</option>
-                        <option value="4">Blk 7 to 23</option>
-                        <option value="">All</option> -->
-                    </select>
-                </div>
-            </div>
-            <!-- Example of an application entry -->
-            <div class="container-fluid" id="rent_application">
-                @{
-                    if (Model.RequestAddressList != null)
-                    {
-                        if (Model.RequestAddressList.Count > 0)
-                        {
-                            foreach (var item in Model.RequestAddressList)
-                            {
-                                <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData" data-raid="@item.Resident_Address_ID">
-                                    <div class="col-8">
-                                        <p class="mb-0 " data-res="@item.Resident_ID"><strong>@item.Name</strong></p>
-                                        <p class="mb-0 fw-bold text-muted" data-address="@item.Address_ID">Block @item.Block, Lot @item.Lot,  @item.Street St.</p>
-                                        <p class="mb-0 fw-bold text-muted">Phone: @item.Phone</p>
-                                        <p class="mb-0 fw-bold text-muted">Email: @item.Email</p>
-                                    </div>
-                                    <div class="col-4 d-flex justify-content-end">
-                                        <button id="btn_accept" class="btn btn-outline-success btn-sm me-2">Accept</button>
-                                        <button id="btn_reject" class="btn btn-outline-danger btn-sm">Reject</button>
-                                    </div>
-                                </div>
-                            }
-
-                        }
-                        else
-                        {
-                            <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData">
-                                <div class="col-md-12">
-                                    <p class="mb-0 p-5"><strong>No Data Found.</strong></p>
-                                </div>
-                            </div>
-                        }
-
-                    }
-                }
-            </div>
-            <!-- <div class="row align-items-center mb-3 border border-2 shadow-sm rounded" id="rowData">
-                <div class="col-md-8">
-                    <p class="mb-0 "><strong>John Doe</strong></p>
-                    <p class="mb-0 fw-bold text-muted">Block 1, Lot 2, Street 5</p>
-                    <p class="mb-0 fw-bold text-muted">Phone: 123-456-7890</p>
-                    <p class="mb-0 fw-bold text-muted">Email: johndoe@example.com</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <button class="btn btn-outline-success btn-sm me-2">Accept</button>
-                    <button class="btn btn-outline-danger btn-sm">Reject</button>
-                </div>
-            </div> -->
         </div>
 
 
@@ -422,8 +379,10 @@
         $(document).ready(function () {
             let _addrIDRenter = $('#address_renter option:selected').val();
             let _addrID = $('#address option:selected').val();
-            GetRequest(_addrID);
+            //GetRequest(_addrID);
             GetRenter(_addrIDRenter)
+
+            $('#btn_register_renter').click(handleRegistration);
 
             $(document).on('click', '#btn_accept', function () {
                 var rowdata = $(this).closest('#rowData');
@@ -457,7 +416,7 @@
             });
 
             $(document).on('click', '#btn_delete', function () {
-                var raid = $(this).closest('#renter').find('[data-raid]').data('raid');
+                var raid = $(this).closest('#renter').find('[data-rid]').data('rid');
 
                 console.log(raid);
 
@@ -487,7 +446,7 @@
                         }
                     });
                 });
-                
+
             })
 
             function GetRenter(addressID) {
@@ -553,6 +512,72 @@
                     }
                 });
             }
+
+            // METHOD TO ENSURE ALL FIELDS ARE VALID
+            function validateCurrentTab() {
+                const currentTabElement = $('#form-renter');
+                const inputs = currentTabElement.find('input, select');
+                let isValid = true;
+
+                // Use .each() for jQuery collections
+                inputs.each(function () {
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                return isValid;
+            }
+
+            //METHOD INSERT
+            function handleRegistration(e) {
+                e.preventDefault();
+
+                if (!validateCurrentTab()) {
+                    toastr.error('Please fill out all required fields correctly.');
+                    return;
+                }
+
+                // Gather resident data
+                const formData = {
+                    Tenant_ID: $('#cookie_id').val(),
+                    Address_ID: $('#select_address').val(),
+                    Lname: $('#Lname').val(),
+                    Fname: $('#Fname').val(),
+                    Mname: $('#Mname').val(),
+                    Username: $('#Username').val(),
+                    Password: $('#Password').val(),
+
+                };
+                
+                //AJAX Request
+                $.ajax({
+                    type: 'POST',
+                    url: '/OwnerHome/RegisterRenter',
+                    data: formData,
+                    success: function (response) {
+                        toastr.success(response.message);
+                        $('#form-renter')[0].reset();
+                        $('#modal-renter').modal('hide');
+                        GetRequestAddress();
+                        console.log(response);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+
+
+            // Remove 'is-invalid' class on input
+            $('input, select').on('input', function () {
+                $(this).removeClass('is-invalid');
+                $(this).closest('form').removeClass('was-validated');
+            });
 
         })
     </script>

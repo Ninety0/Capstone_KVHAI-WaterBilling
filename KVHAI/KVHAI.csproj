@@ -13,6 +13,7 @@
     <Content Remove="wwwroot\js\mini-event-calendar.min.js" />
     <Content Remove="wwwroot\js\notification.js" />
     <Content Remove="wwwroot\js\residentAccount.js" />
+    <Content Remove="wwwroot\js\residentCreation.js" />
     <Content Remove="wwwroot\js\residentSignup.js" />
     <Content Remove="wwwroot\js\signalr.min.js" />
     <Content Remove="wwwroot\js\signalrSetupConnection.js" />
@@ -48,6 +49,7 @@
   <ItemGroup>
     <None Include="Views\Home\Print.cshtml" />
     <None Include="wwwroot\js\notification.js" />
+    <None Include="wwwroot\js\residentCreation.js" />
     <None Include="wwwroot\js\signalr.min.js" />
     <None Include="wwwroot\js\signalrSetupConnection.js" />
     <None Include="wwwroot\js\mini-event-calendar.min.js" />
@@ -105,6 +107,10 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Update="Views\Resident\Reading\WaterConsumption.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Views\Shared\PartialView\_FormRenter.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

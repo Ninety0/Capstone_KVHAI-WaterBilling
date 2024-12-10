@@ -19,5 +19,6 @@
         public string Street_Name { get; set; } = string.Empty;
 
         public string TotalAmount { get; set; } = string.Empty;
+        public string Account_Number { get; set; } = string.Empty;
     }
 }

@@ -257,16 +257,16 @@ namespace KVHAI.Repository
                                 var res = new Resident
                                 {
                                     Res_ID = reader.GetInt32(0).ToString(),
-                                    Lname = reader.GetString(1),
-                                    Fname = reader.GetString(2),
-                                    Mname = reader.GetString(3),
-                                    Phone = reader.GetString(4),
-                                    Email = reader.GetString(5),
-                                    Username = reader.GetString(6),
-                                    Password = reader.GetString(7),
-                                    Occupancy = reader.GetString(8),
-                                    Verification_Token = reader.GetString(9),
-                                    Verified_At = reader.IsDBNull(10) ? string.Empty : reader.GetDateTime(10).ToString("yyyy-MM-dd HH:mm:ss"),
+                                    Lname = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                                    Fname = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                                    Mname = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                                    Phone = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                                    Email = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                                    Username = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                                    Password = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                                    Verified_At = reader.IsDBNull(8) ? string.Empty : reader.GetDateTime(8).ToString("yyyy-MM-dd HH:mm:ss"),
+                                    Is_Activated = reader.GetBoolean(9),
+                                    Account_Token = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
                                     Password_Reset_Token = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
                                     Reset_Token_Expire = reader.IsDBNull(12) ? string.Empty : reader.GetDateTime(12).ToString("yyyy-MM-dd HH:mm:ss"),
                                 };
@@ -284,6 +284,49 @@ namespace KVHAI.Repository
                 return null;
             }
         }
+
+        public async Task<List<Renter>> RenterList()
+        {
+            try
+            {
+                var renterList = new List<Renter>();
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("select * from renter_tb", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var renter = new Renter
+                                {
+                                    Renter_ID = reader.GetInt32(0).ToString(),
+                                    Tentant_ID = reader.GetInt32(1).ToString(),
+                                    Address_ID = reader.GetInt32(2).ToString(),
+                                    Lname = reader.GetString(3),
+                                    Fname = reader.GetString(4),
+                                    Mname = reader.GetString(5),
+                                    Phone = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                                    Email = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                                    Username = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                                    Password = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                                    Date_Created = reader.GetDateTime(10).ToString("yyyy-MM-dd hh:mm tt"),
+                                };
+
+                                renterList.Add(renter);
+                            }
+                        }
+                    }
+                }
+
+                return renterList;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public async Task<List<Employee>> EmployeeList()
         {
             try
@@ -346,10 +389,11 @@ namespace KVHAI.Repository
                                     Lot = reader.GetString(3),
                                     Street_ID = reader.GetInt32(4),
                                     Location = reader.GetString(5),
-                                    Is_Verified = reader.GetString(6),
-                                    Register_At = reader.GetDateTime(7),
-                                    Remove_Request_Token = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
-                                    Remove_Token_Date = reader.IsDBNull(9) ? string.Empty : reader.GetDateTime(9).ToString("yyyy-MM-dd HH:mm:ss"),
+                                    Account_Number = reader.GetString(6),
+                                    Date_Residency = reader.GetDateTime(7).ToString(),
+                                    Register_At = reader.GetDateTime(8),
+                                    Remove_Request_Token = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                                    Remove_Token_Date = reader.IsDBNull(10) ? string.Empty : reader.GetDateTime(10).ToString("yyyy-MM-dd HH:mm:ss"),
 
                                 };
                                 address.Add(_address);

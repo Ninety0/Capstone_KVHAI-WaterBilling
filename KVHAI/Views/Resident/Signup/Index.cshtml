@@ -172,12 +172,8 @@
                                 
                                 <div class="col-md-4">
                                     <div class="form-check mb-3">
-                                        <label for="Occupancy" class="form-label fw-bold fs-6">Occupancy</label>
-                                        <select id="Occupancy" name="Occupancy" class="form-select mb-3" required>
-                                            <option value="" disabled selected hidden>Select</option>
-                                            <option value="1">Owner</option>
-                                            <option value="2">Renter</option>
-                                        </select>
+                                        <label for="Email" class="form-label fw-bold fs-6">Account Number</label>
+                                        <input type="text" maxlength="50" class="form-control" id="Account_Number" name="Account_Number" required>
                                         <div class="invalid-feedback">
                                             Required.
                                         </div>
@@ -230,7 +226,7 @@
 
                     <!--BUTTON SIGNUP-->
                     <div class="container d-flex justify-content-end">
-                        <button class="p-2 mb-3 me-2 btn btn-primary text-uppercase fw-bold" id="btn_Signup">Signup</button>
+                        <button class="p-2 mb-3 me-2 btn btn-primary text-uppercase fw-bold" id="btn_Signup">Activate</button>
                     </div>
                 </div>
                 </div>
@@ -283,10 +279,21 @@
                 }
 
                 var formData = new FormData($('#myForm')[0]);
+                var resident = {
+                    Lname: $('#Lname').val(),
+                    Fname: $('#Fname').val(),
+                    Mname: $('#Mname').val(),
+                    Phone: $('#Phone').val(),
+                    Email: $('#Email').val(),
+                    Account_Number: $('#Account_Number').val(),
+                    Username: $('#Username').val(),
+                    Password: $('#Password').val(),
+                };
 
                 $.ajax({
                     type: 'POST',
-                    url: window.location.origin + '/kvhai/resident/signup',
+                    //url: window.location.origin + '/kvhai/resident/signup',
+                    url: '/ResLogin/VerifyPage',
                     contentType: false,
                     processData: false,
                     data: formData,
@@ -297,7 +304,8 @@
                                 console.log("Verification Token:", response.token);
                                 document.cookie = "verifyToken=" + encodeURIComponent(response.token) + "; path=/kvhai/resident";
                                 setTimeout(function () {
-                                    window.location.href = '/kvhai/resident/verifyaccount/';
+                                    // Redirect to the route with the token
+                                    window.location.href = '/kvhai/resident/verifyaccount/' + encodeURIComponent(response.token);
                                 }, 3000);
                             }
                         }

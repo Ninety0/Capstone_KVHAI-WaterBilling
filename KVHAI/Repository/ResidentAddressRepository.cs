@@ -190,10 +190,10 @@ namespace KVHAI.Repository
                     using (var command = new SqlCommand(@"
                         select a.* FROM resident_address_tb ra
                         JOIN address_tb a ON ra.addr_id = a.addr_id
-                        WHERE is_verified = 'true'AND ra.res_id = @id AND ra.status = @status", connection))
+                        WHERE ra.res_id = @id", connection))//AND ra.status = @status
                     {
                         command.Parameters.AddWithValue("@id", resID);
-                        command.Parameters.AddWithValue("@status", "1");
+                        //command.Parameters.AddWithValue("@status", "1");
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
@@ -241,8 +241,8 @@ namespace KVHAI.Repository
                     JOIN resident_address_tb ra ON a.addr_id = ra.addr_id
                     JOIN resident_tb r ON a.res_id = r.res_id
                     JOIN street_tb s ON a.st_id = s.st_id
-                    WHERE  wb.status = 'unpaid'  AND is_verified = 'true' 
-                    AND ra.res_id  = @res_id AND ra.status = 1 AND a.addr_id = @addr_id", connection))
+                    WHERE  wb.status = 'unpaid'
+                    AND ra.res_id  = @res_id AND a.addr_id = @addr_id", connection))
                     {
                         command.Parameters.AddWithValue("@res_id", residentID);
                         command.Parameters.AddWithValue("@addr_id", addressID);
@@ -304,8 +304,8 @@ namespace KVHAI.Repository
                     JOIN resident_address_tb ra ON a.addr_id = ra.addr_id
                     JOIN resident_tb r ON a.res_id = r.res_id
                     JOIN street_tb s ON a.st_id = s.st_id
-                    WHERE wb.status = 'paid' AND is_verified = 'true'
-                    AND ra.res_id  = @res_id AND ra.status = 1 AND a.addr_id = @addr_id", connection))
+                    WHERE wb.status = 'paid'
+                    AND ra.res_id  = @res_id AND a.addr_id = @addr_id", connection))
                     {
                         command.Parameters.AddWithValue("@res_id", residentID);
                         command.Parameters.AddWithValue("@addr_id", addressID);

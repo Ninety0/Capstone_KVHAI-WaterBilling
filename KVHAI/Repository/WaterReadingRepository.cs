@@ -390,7 +390,7 @@ namespace KVHAI.Repository
                 var startListDate = new List<string>();
                 var endListDate = new List<string>();
 
-                for (int i = monthStart; i <= monthEnd; i++)
+                for (int i = monthStart; i < monthEnd; i++)
                 {
                     string start = DateTime.Now.ToString("yyyy-") + i.ToString() + "-1";
 

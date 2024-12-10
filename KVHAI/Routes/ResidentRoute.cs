@@ -21,7 +21,7 @@ namespace KVHAI.Routes
             endpoint.MapControllerRoute(
                 name: "AccountVerification",
                 pattern: "kvhai/resident/verifyaccount/{token?}",
-                defaults: new { controller = "ResLogin", action = "VerifyPage" }
+                defaults: new { controller = "ResLogin", action = "VerifyEmail" }
             );
 
             endpoint.MapControllerRoute(
@@ -79,6 +79,12 @@ namespace KVHAI.Routes
                 name: "ResidentConsumption",
                 pattern: "kvhai/resident/water-consumption",
                 defaults: new { controller = "WaterConsumption", action = "Index" }
+            );
+
+            endpoint.MapControllerRoute(
+                name: "Settings",
+                pattern: "kvhai/resident/account/settings",
+                defaults: new { controller = "Settings", action = "Index" }
             );
 
             endpoint.MapControllerRoute(

@@ -77,7 +77,6 @@
     <script src="~/js/signalrSetupConnection.js"></script>
     <script src="~/js/employeeSignup.js"></script>
     <script src="~/js/staffAccount.js"></script> <!--FOR STAFF or EMPLOYEE-->
-    <script src="~/js/residentCreation.js"></script> <!--FOR USER or RESIDENT-->
     @*<script src="~/js/residentAccount.js"></script>*@ <!--PARTIAL VIEW RESIDENT-->
     <script>
         $(document).ready(function () {
@@ -90,24 +89,10 @@
                 respagination();
             });
 
-            $('#select-street1').editableSelect();
-
-
             //event listener
             $(document).on('change', '#res-search', function () {
                 respagination();
             })
-
-            //$(document).on('click', '.tableContents', function () {
-            //    $(this).closest('.tableContents').find('.additional-details').slideToggle();
-            //})
-
-            $(document).on('click', '.toggle-details', function () {
-                // Find the closest parent .tableContents and toggle the additional details
-                $(this).closest('.tableContents').find('.additional-details').toggleClass('d-none');
-            });
-            
-
 
             $(document).on('click', '.respagination', function (event) {
                 event.preventDefault();
@@ -120,11 +105,13 @@
 
             function respagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
                 var _search = $('#res-search').val();
+                var _category = $('#res-category').val();
                 //var _isActive = $('#toggleSwitch').prop('checked');
                 //console.log(`Category = ${_category}, Active = ${_isActive}`);
 
                 var array = {
                     search: _search,
+                    category: _category.toLowerCase(),
                     //is_verified: _isActive.toString(),
                     page_index: i
 
