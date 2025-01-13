@@ -1,4 +1,6 @@
 ﻿@using System.Security.Claims;
+@using System.Text.RegularExpressions;
+
 
 @{
     Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
@@ -95,16 +97,16 @@
         </div>
     </a>
     @*<a href="/kvhai/resident/register-address" class="nav_sidebar mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-location-dot nav_icon"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                Register
-            </div>
+            <div class="row">
+                <div class="col-4  d-flex justify-content-center">
+                    <i class="fa-solid fa-location-dot nav_icon"></i>
+                </div>
+                <div class="col  d-flex justify-content-start">
+                    Register
+                </div>
 
-        </div>
-    </a>*@
+            </div>
+        </a>*@
 
     <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3">
         <div class="row">
@@ -168,16 +170,16 @@
         </a>
 
         @*<a href="/kvhai/resident/rental/home" class="nav_sidebar  mb-3 ">
-            <div class="row">
-                <div class="col-4  d-flex justify-content-center">
-                    <i class="fa-solid fa-house nav_icon"></i>
-                </div>
-                <div class="col  d-flex justify-content-start">
-                    Rental
-                </div>
+                <div class="row">
+                    <div class="col-4  d-flex justify-content-center">
+                        <i class="fa-solid fa-house nav_icon"></i>
+                    </div>
+                    <div class="col  d-flex justify-content-start">
+                        Rental
+                    </div>
 
-            </div>
-        </a>*@
+                </div>
+            </a>*@
     }
 
     <a href="/kvhai/resident/account/settings" class="nav_sidebar active mb-3">
@@ -206,14 +208,14 @@
         </div>
     </a>
     @*<a href="/kvhai/resident/register-address" class="nav_sidebar mb-3 ps-3">
-        <div class=" d-flex">
-            <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
-            <span class="ms-3">
-                Register Address
-            </span>
+            <div class=" d-flex">
+                <i class="fa-solid fa-location-dot mobile_nav_icon"></i>
+                <span class="ms-3">
+                    Register Address
+                </span>
 
-        </div>
-    </a>*@
+            </div>
+        </a>*@
 
     <a href="/kvhai/resident/water-consumption" class="nav_sidebar  mb-3 ps-3">
         <div class="d-flex">
@@ -265,24 +267,22 @@
         </a>
 
         @*<a href="/kvhai/resident/rental/home" class="nav_sidebar mb-3  ps-3">
-            <div class="d-flex">
-                <i class="fa-solid fa-house nav_icon"></i>
-                <span class="ms-3">
-                    Rental Application
-                </span>
+                <div class="d-flex">
+                    <i class="fa-solid fa-house nav_icon"></i>
+                    <span class="ms-3">
+                        Rental Application
+                    </span>
 
-            </div>
-        </a>*@
+                </div>
+            </a>*@
     }
 
-<a href="/kvhai/resident/account/settings" class="nav_sidebar active mb-3">
-    <div class="row">
-        <div class="col-4  d-flex justify-content-center">
-            <i class="fa-solid fa-gear"></i>
-        </div>
-        <div class="col  d-flex justify-content-start">
+<a href="/kvhai/resident/account/settings" class="nav_sidebar active mb-3 ps-3">
+    <div class="d-flex">
+        <i class="fa-solid fa-gear"></i>
+        <span class="ms-3">
             Settings
-        </div>
+        </span>
 
     </div>
 </a>
@@ -293,15 +293,25 @@
 
 <!-- Modal -->
 <!-- Modal Structure -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+<div class="modal fade" id="modalPassword" tabindex="-1" aria-labelledby="modalPasswordLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Confirm Update</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
             <div class="modal-body">
-                <img id="modalImage" src="" class="img-fluid" alt="Enlarged Image" />
+                <input type="password" id="updatePassword" class="form-control mb-2" placeholder="Enter password to confirm">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btn_confirmupdate">Update</button>
             </div>
         </div>
     </div>
 </div>
+<!-- END Modal Structure -->
+
 
 
 <!-- BODY -->
@@ -346,127 +356,143 @@
 
 
         <!--UPDATE INFORMATION-->
-        <div class="container-fluid mb-3 border border-2 shadow-sm rounded" id="update_info">
-            <form id="myForm" autocomplete="off" class="needs-validation" enctype="multipart/form-data" novalidate>
-                @Html.AntiForgeryToken()
-
-                <!-- INFORMATION PROCESS -->
-                <div class="container" id="information">
-                    <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
-                        <h3>Information Details</h3>
-                    </div>
-
-                    @* PERSONAL INFO *@
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-check mb-3">
-                                <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
-                                <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" required>
-                                <div class="invalid-feedback">
-                                    Required.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check mb-3">
-                                <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
-                                <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" required>
-                                <div class="invalid-feedback">
-                                    Required.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check mb-3">
-                                <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
-                                <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" required>
-                                <div class="invalid-feedback">
-                                    Required.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-check mb-3">
-                                <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
-                                <div class="form-check input-group mb-3">
-                                    <span class="input-group-text" id="num-span">63</span>
-                                    <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" placeholder="" required>
-                                    <div class="invalid-feedback">
-                                        Required.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check mb-3">
-                                <label for="Email" class="form-label fw-bold fs-6">Email</label>
-                                <input type="email" maxlength="50" class="form-control" id="Email" name="Email" required>
-                                <div class="invalid-feedback">
-                                    Required.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="form-check mb-3">
-                                <label for="Email" class="form-label fw-bold fs-6">Account Number</label>
-                                <input type="text" maxlength="50" class="form-control" id="Account_Number" name="Account_Number" required>
-                                <div class="invalid-feedback">
-                                    Required.
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!--USER CREDENTIALS-->
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-check mb-3">
-                                <label for="Username" class="form-label fw-bold fs-6">Username</label>
-                                <input type="text" maxlength="50" class="form-control" id="Username" name="Username" required>
-                                <div class="invalid-feedback">
-                                    Required.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check mb-3">
-                                <label for="Password" class="form-label fw-bold fs-6">Password</label>
-                                <input type="password" maxlength="50" class="form-control" id="Password" name="Password" minlength="8" required>
-                                <div class="pass-validation">
-                                    <div class="invalid-feedback">
-                                        Required.
-                                    </div>
-                                    <div class="invalid-length">
-                                        Password must be atleast 8 characters long.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class=" mb-3">
-                                <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
-                                <input type="password" maxlength="50" class="form-control" id="cpass" minlength="8" required>
-                                <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4 btn_wrapper">
-                            <div class="mb-3 ">
-                            </div>
-                        </div>
-
-                    </div>
-                    @* END PERSONAL INFO *@
+        <div class="container-fluid mb-3 border border-2 shadow-sm rounded d-none" id="update_info">
+            <!-- INFORMATION PROCESS -->
+            <div class="container" id="information">
+                <div class="container-fluid d-flex justify-content-center mb-3 mt-3">
+                    <h3>Information Details</h3>
                 </div>
-            </form>
+
+                @{
+                    if (Model.ResidentList != null)
+                    {
+                        if (Model.ResidentList.Count > 0)
+                        {
+                            foreach (var item in Model.ResidentList)
+                            {
+                                var phone = Regex.Replace(item.Phone, "63", "");
+                                var classDisabled = "";
+                                if (role == "1")
+                                {
+                                    classDisabled = "disabled";
+                                }
+
+                                <input type="hidden" id="db_phone" value="@phone" />
+                                <input type="hidden" id="db_email" value="@item.Email" />
+                                <input type="hidden" id="db_user" value="@item.Username" />
+
+                                @* PERSONAL INFO *@
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check mb-3">
+                                            <label for="Lname" class="form-label fw-bold fs-6">Last Name</label>
+                                            <input type="text" maxlength="50" class="form-control" id="Lname" name="Lname" value="@item.Lname" disabled>
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check mb-3">
+                                            <label for="Fname" class="form-label fw-bold fs-6">First Name</label>
+                                            <input type="text" maxlength="50" class="form-control" id="Fname" name="Fname" value="@item.Fname" disabled>
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check mb-3">
+                                            <label for="Mname" class="form-label fw-bold fs-6">Middle Name</label>
+                                            <input type="text" maxlength="50" class="form-control" id="Mname" name="Mname" value="@item.Mname" disabled>
+                                            <div class="invalid-feedback">
+                                                Required.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <form id="myForm" autocomplete="off" class="needs-validation" enctype="multipart/form-data" novalidate>
+                                    @Html.AntiForgeryToken()
+
+                                    
+                                    <div class="row">
+
+                                        <div class="col-md-4">
+                                            <div class="form-check mb-3">
+                                                <label for="Email" class="form-label fw-bold fs-6">Email</label>
+                                                <input type="email" maxlength="50" class="form-control" id="Email" name="Email" value="@item.Email" placeholder="no email registered" @classDisabled required>
+                                                <div class="invalid-feedback">
+                                                    Required.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="form-check mb-3">
+                                                <label for="Phone" class="form-label fw-bold fs-6">Phone Number</label>
+                                                <div class="form-check input-group ps-0 mb-3">
+                                                    <span class="input-group-text" id="num-span">63</span>
+                                                    <input id="Phone" maxlength="10" name="Phone" type="text" class="form-control" value="@phone" placeholder="no number registered" required>
+                                                    <div class="invalid-feedback">
+                                                        Required.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-md-4">
+                                            <div class="form-check mb-3">
+                                                <label for="Username" class="form-label fw-bold fs-6">Username</label>
+                                                <input type="text" maxlength="50" class="form-control" id="Username" name="Username" value="@item.Username" required>
+                                                <div class="invalid-feedback">
+                                                    Required.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <!--USER CREDENTIALS-->
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check mb-3">
+                                                <label for="Password" class="form-label fw-bold fs-6">Password</label>
+                                                <input type="password" maxlength="50" class="form-control" id="Password" name="Password" minlength="8" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check mb-3">
+                                                <label for="cpass" class="form-label fw-bold fs-6">Confirm Password</label>
+                                                <input type="password" maxlength="50" class="form-control" id="cpass" minlength="8">
+                                                <span id="err-msg" class="text-danger" style="display: none;">Passwords do not match</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                </form>
+
+
+                                @* END PERSONAL INFO *@
+
+                            }
+
+                        }
+
+
+                    }
+                }
+
+
+
+            </div>
 
             <!--BUTTON SIGNUP-->
             <div class="container d-flex justify-content-end">
-                <button class="p-2 mb-3 me-2 btn btn-primary text-uppercase fw-bold" id="btn_Signup">Activate</button>
+                <button class="p-2 mb-3 me-2 btn btn-secondary text-uppercase fw-bold" id="btn_cancel">Cancel</button>
+                <button class="p-2 mb-3 me-2 btn btn-primary text-uppercase fw-bold" id="btn_update">Update</button>
             </div>
         </div>
     </div>
@@ -515,10 +541,30 @@
             var maxTab = 1;
             var minTab = 0;
 
-            $('#cpass').on('change', ConfirmPassword);
-            $('#btn_Signup').click(checkInputLength);
+            // Declare resident object globally
+            var resident = {};
 
-            $('#btn_Signup').click(handleRegistration);
+            InputKeyPress();
+
+            $('#cpass').on('change', ConfirmPassword);
+            $('#btn_update').click(checkInputLength);
+
+            $('#btn_update').click(handleRegistration);
+
+            $(document).on('click', '#btn_cancel', function () {
+                $('#myForm')[0].reset();
+                $('#cpass').removeClass('is-invalid');
+                $('#err-msg').css("display", "none");
+                this.blur();
+
+                $('#update_info').addClass('d-none');
+                $('#user_info').removeClass('d-none');
+
+                //const cpass = document.getElementById('cpass');
+                //const errorMsg = document.getElementById('err-msg');
+                //cpass.classList.toggle('is-invalid', !isValid);
+                //errorMsg.style.display = isValid ? 'none' : 'block';
+            });
 
             $('#test-btn').on('click', function () {
                 $.ajax({
@@ -536,100 +582,200 @@
                 });
             })
 
+
             $(document).on('click', '#btn_edit', function () {
-                var raid = $(this).closest('#renter').find('[data-rid]').data('rid');
+                //var raid = $(this).closest('#renter').find('[data-rid]').data('rid');
+                $('#update_info').removeClass('d-none');
+                $('#user_info').addClass('d-none');
 
-                console.log(raid);
+                //console.log(raid);
 
-                $.ajax({
-                    type: 'POST',
-                    url: '/Settings/GetResidentAccount',
-                    //data: { resident_address: raid },
-                    success: function (response) {
-                        console.log(response);
-                    },
-                    error: function (xhr) {
-                        toastr.error(xhr.responseText);
-                    }
-                });
+                //$.ajax({
+                //    type: 'GET',
+                //    url: '/Settings/GetResidentAccount',
+                //    //data: { resident_address: raid },
+                //    success: function (response) {
+                //        var result = $(response).find('#update_info').html();
+
+                //        console.log(result);
+                //    },
+                //    error: function (xhr) {
+                //        toastr.error(xhr.responseText);
+                //    }
+                //});
 
             })
 
             function handleRegistration(e) {
                 e.preventDefault();
 
-                if (!validateCurrentTab()) {
-                    toastr.error('Please fill out all required fields correctly.');
-                    return;
+                //if (!validateCurrentTab()) {
+                //    //toastr.error('Please fill out all required fields.');
+                //    return;
+                //}
+
+
+                // Hidden inputs
+                var phone = $('#db_phone').val();
+                var email = $('#db_email').val();
+                var user = $('#db_user').val();
+
+                // Visible inputs
+                var _phone = $('#Phone').val();
+                var _email = $('#Email').val();
+                var _user = $('#Username').val();
+                var _pass = $('#Password').val();
+
+                // Initialize resident object
+                resident = {};
+
+                // Conditionally add properties to resident object
+                if (phone !== _phone) {
+                    resident.Phone = _phone;
+                    console.log("Phone");
                 }
 
-                var formData = new FormData($('#myForm')[0]);
-                var resident = {
-                    Lname: $('#Lname').val(),
-                    Fname: $('#Fname').val(),
-                    Mname: $('#Mname').val(),
-                    Phone: $('#Phone').val(),
-                    Email: $('#Email').val(),
-                    Account_Number: $('#Account_Number').val(),
-                    Username: $('#Username').val(),
-                    Password: $('#Password').val(),
-                };
+                if (email !== _email) {
+                    resident.Email = _email;
+                    console.log("email");
 
-                $.ajax({
-                    type: 'POST',
-                    //url: window.location.origin + '/kvhai/resident/signup',
-                    url: '/ResLogin/VerifyPage',
-                    contentType: false,
-                    processData: false,
-                    data: formData,
-                    success: function (response) {
-                        if (response.message) {
-                            toastr.success(response.message);
-                            if (response.token) {
-                                console.log("Verification Token:", response.token);
-                                document.cookie = "verifyToken=" + encodeURIComponent(response.token) + "; path=/kvhai/resident";
-                                setTimeout(function () {
-                                    // Redirect to the route with the token
-                                    window.location.href = '/kvhai/resident/verifyaccount/' + encodeURIComponent(response.token);
-                                }, 3000);
-                            }
+                }
+
+                if (user !== _user) {
+                    resident.Username = _user;
+                    console.log("user");
+
+                }
+
+                if (_pass) {
+                    resident.Password = _pass;
+                }
+
+                // Check if resident object is not empty
+                if (Object.keys(resident).length > 0) {
+                    $('#modalPassword').modal('show');
+                    alert("may changes");
+                }
+                else {
+                    alert("wala changes");
+                }
+
+            }
+
+            $(document).on('click', '#btn_confirmupdate', function () {
+                console.log("clicked");
+                var password = $('#updatePassword').val();
+
+                // Use a promise-based approach
+                validatePasswordFromDB(password)
+                    .then(function (isValid) {
+                        if (isValid) {
+                            $.ajax({
+                                type: 'POST',
+                                url: '/Settings/UpdateResidentAccount',
+                                data: resident,
+                                success: function (response) {
+                                    toastr.success("Update successful");
+                                    $('#modalPassword').modal('hide');
+                                    setTimeout(function () {
+                                        windows.location.reload();
+                                    }, 1000);
+                                },
+                                error: function (xhr, status, error) {
+                                    toastr.error(xhr.responseText);
+                                }
+                            });
                         }
-                    },
-                    error: function (xhr, status, error) {
-                        //console.log(xhr.responseText);
-                        toastr.error(xhr.responseText);
-                    }
+                        else {
+                            toastr.error("Password is incorrect.");
+                        }
+                    })
+                    .catch(function (error) {
+                        toastr.error("Error validating password: " + error);
+                    });
+            });
+
+            function validatePasswordFromDB(pass) {
+                // Return a Promise
+                return new Promise(function (resolve, reject) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/Settings/ValidatePassword',
+                        data: { password: pass },
+                        success: function (response) {
+                            // Resolve with true if password is valid
+                            resolve(true);
+                        },
+                        error: function (xhr, status, error) {
+                            // Resolve with false if password is invalid
+                            resolve(false);
+                        }
+                    });
                 });
             }
 
             function validateCurrentTab() {
-                const form = $('#myForm'); // jQuery
-                const inputs = form.find('input, select');
-                let isValid = true;
+                
 
+                const form = $('#myForm'); // jQuery
+                const inputs = form.find('input');
+                let isValid = true;
+                let formHasValue = false;
+
+                // First, check if any input has a value
                 inputs.each(function () {
-                    const input = $(this); // Store jQuery object reference for `this`
-                    if (this.id === 'cpass') {
-                        // Handle confirm password separately
-                        if (!ConfirmPassword()) {
-                            isValid = false;
-                            input.addClass('is-invalid');
-                        }
-                        else {
-                            input.removeClass('is-invalid');
-                        }
-                    } else {
-                        // Handle other inputs
-                        if (!this.checkValidity()) {
-                            isValid = false;
-                            input.addClass('is-invalid');
-                        } else {
-                            input.removeClass('is-invalid');
+                    const input = $(this);
+                    const value = input.val().trim();
+
+                    // Check inputs with an ID (excluding hidden inputs)
+                    if (this.id && !input.is(':hidden')) {
+                        if (value) {
+                            formHasValue = true;
+                            return false; // Break the each loop
                         }
                     }
                 });
 
-                return isValid;
+                // If at least one input has a value, perform validation
+                if (formHasValue) {
+                    inputs.each(function () {
+                        const input = $(this);
+                        const value = input.val().trim();
+
+                        // Skip hidden inputs
+                        if (input.is(':hidden')) {
+                            return true; // continue to next iteration
+                        }
+
+                        if (this.id === 'cpass') {
+                            // Handle confirm password separately
+                            if (!ConfirmPassword()) {
+                                isValid = false;
+                                input.addClass('is-invalid');
+                            } else {
+                                input.removeClass('is-invalid');
+                            }
+                        } else {
+                            // Handle other inputs
+                            if (!this.checkValidity()) {
+                                isValid = false;
+                                input.addClass('is-invalid');
+                            } else {
+                                input.removeClass('is-invalid');
+                            }
+                        }
+                    });
+                }
+
+                if (!(formHasValue)) {
+                    toastr.info('There is nothing to update.');
+                    return;
+                }
+                if (!isValid) {
+                    toastr.error('Please fill out all required fields.');
+                    return;
+                }
+                return isValid && formHasValue;
             }
 
             function updateActiveClass() {
@@ -645,13 +791,15 @@
                 inputs.each(function () {
                     if (this.id === 'Password') {
                         var str = $('#Password').val();
-                        if (str.length < 8) {
-                            toastr.error("Password atleast 8 characters")
-                            this.classList.add('is-invalid');
-                        }
-                        else {
-                            this.classList.remove('is-invalid');
-                            $('.invalid-length').addClass('d-none');
+                        if (str.length) {
+                            if (str.length < 8) {
+                                toastr.error("Password atleast 8 characters")
+                                this.classList.add('is-invalid');
+                            }
+                            else {
+                                this.classList.remove('is-invalid');
+                                $('.invalid-length').addClass('d-none');
+                            }
                         }
                     }
                 });
@@ -659,45 +807,41 @@
 
             //METHOD TO ENSURE NUMBER ONLY
             function InputKeyPress() {
-                if (currentTab === 1) {
-                    const form = $('.tab').eq(currentTab);
-                    const inputs = form.find('input');
+                const form = $('#myForm'); // jQuery
+                const inputs = form.find('input');
 
-                    inputs.each(function () {
-                        if (this.id === 'Phone') {
-                            $('#Phone').on('keypress', function (e) {
+                inputs.each(function () {
+                    if (this.id === 'Phone') {
+                        $('#Phone').on('keypress', function (e) {
 
-                                var key = e.keyCode || e.which;
+                            var key = e.keyCode || e.which;
 
-                                if (key < 48 || key > 57) {
-                                    e.preventDefault();
-                                }
-                            })
-                        }
-                        else if (this.id === 'Block') {
-                            $('#Block').on('keypress', function (e) {
+                            if (key < 48 || key > 57) {
+                                e.preventDefault();
+                            }
+                        })
+                    }
+                    else if (this.id === 'Block') {
+                        $('#Block').on('keypress', function (e) {
 
-                                var key = e.keyCode || e.which;
+                            var key = e.keyCode || e.which;
 
-                                if (key < 48 || key > 57) {
-                                    e.preventDefault();
-                                }
-                            })
-                        }
-                        else if (this.id === 'Lot') {
-                            $('#Lot').on('keypress', function (e) {
+                            if (key < 48 || key > 57) {
+                                e.preventDefault();
+                            }
+                        })
+                    }
+                    else if (this.id === 'Lot') {
+                        $('#Lot').on('keypress', function (e) {
 
-                                var key = e.keyCode || e.which;
+                            var key = e.keyCode || e.which;
 
-                                if (key < 48 || key > 57) {
-                                    e.preventDefault();
-                                }
-                            })
-                        }
-                    });
-
-
-                }
+                            if (key < 48 || key > 57) {
+                                e.preventDefault();
+                            }
+                        })
+                    }
+                });
             }
 
             //METHOD CONFIRM PASOWRD

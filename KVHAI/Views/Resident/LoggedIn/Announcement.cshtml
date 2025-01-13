@@ -298,14 +298,12 @@
         </a>*@
     }
 
-<a href="/kvhai/resident/account/settings" class="nav_sidebar mb-3">
-    <div class="row">
-        <div class="col-4  d-flex justify-content-center">
-            <i class="fa-solid fa-gear"></i>
-        </div>
-        <div class="col  d-flex justify-content-start">
+<a href="/kvhai/resident/account/settings" class="nav_sidebar mb-3 ps-3">
+    <div class="d-flex">
+        <i class="fa-solid fa-gear"></i>
+        <span class="ms-3">
             Settings
-        </div>
+        </span>
 
     </div>
 </a>
@@ -336,11 +334,12 @@
             @foreach (var announcement in Model.AnnouncementList)
             {
                 var datePost = "";
+                var newPost = "<span class=\"badge bg-primary p-2\">New Post</span>";
                 if (DateTime.TryParse(announcement.Date_Created, out DateTime datepost))
                 {
                     datePost = datepost.ToString("MMMM dd, yyyy");
                 }
-
+                
                 <div class="announcement-card card mb-4 p-4 shadow-sm rounded">
                     <div class="row align-items-center">
                         <div class="col">
@@ -348,7 +347,15 @@
                             <h5 class="text-muted">@datePost</h5>
                         </div>
                         <div class="col-auto text-end">
-                            <span class="badge bg-primary p-2">New Post</span>
+                            @*<span class="badge bg-primary p-2">New Post</span>*@
+
+                            @if (DateTime.TryParse(announcement.Date_Created, out DateTime dateBadge))
+                            {
+                                @if (dateBadge.ToString("yyyy-MM-dd") == DateTime.Now.ToString("yyyy-MM-dd"))
+                                {
+                                    <span class="badge bg-primary p-2">New Post</span>
+                                }
+                            }
                             <div class="text-muted small">@announcement.Date_Created</div>
                         </div>
                     </div>
@@ -405,6 +412,10 @@
                         console.log(response);
                         var result = $(response).find("#table_announcement").html();
                         $('#table_announcement').html(result);
+
+                        var notif = $(response).find('.notification_container').html();
+                        //var result = $(response).find('.notification_body').html();
+                        $('.notification_container').html(notif);
                     },
                     error: function (xhr, status, error) {
                         console.log(xhr.responseText);

@@ -115,6 +115,11 @@ namespace KVHAI.Controllers.Staff.Waterworks
                 };
                 var notificationResult = await _notificationRepository.InsertNotificationPersonalToUser(notif);
 
+                if (notificationResult < 1)
+                {
+                    return BadRequest("There was an error processing the reading consumption");
+                }
+
                 var notifStaff = new Notification
                 {
                     //Address_ID = waterReading.Address_ID,
@@ -125,6 +130,12 @@ namespace KVHAI.Controllers.Staff.Waterworks
                 };
 
                 var notificationAdminResult = await _notificationRepository.SendNotificationAdminToAdmin(notifStaff);
+
+                if (notificationAdminResult < 1)
+                {
+                    return BadRequest("There was an error processing the reading consumption");
+                }
+
                 await _staffhubContext.Clients.All.SendAsync("ReceivedWaterReading");
 
 

@@ -51,7 +51,7 @@ namespace KVHAI.Controllers.Homeowner
 
             if (address.Count > 0)
             {
-                await GetWaterConsumptionByAddress(address.FirstOrDefault().Address_ID.ToString());
+                await GetWaterConsumptionByAddress(address.FirstOrDefault().Address_ID.ToString(), DateTime.Now.ToString("yyyy"));
                 addressID = address.Select(a => a.Address_ID).FirstOrDefault();
             }
 
@@ -64,12 +64,39 @@ namespace KVHAI.Controllers.Homeowner
 
         [HttpGet]
         public async Task<IActionResult> GraphWaterReading(string addressID, string year = "")
+
         {
             if (string.IsNullOrEmpty(addressID))
             {
                 return BadRequest("You currently have no address.");
             }
-            var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
+            //var forecastData = await _waterBillingFunction.GetGraphDataReplicate(addressID, year);
+            var forecastData = await _waterBillingFunction.GetGraphDataDatabase(addressID, year);
+            //var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
+
+            if (forecastData == null)
+            {
+                return BadRequest("There was an error loading the data.");
+            }
+            return Json(forecastData);
+            //return Json(_waterBillingFunction.GraphData);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GraphWaterReadingOrig(string addressID, string year = "")
+
+        {
+            if (string.IsNullOrEmpty(addressID))
+            {
+                return BadRequest("You currently have no address.");
+            }
+            var forecastData = await _waterBillingFunction.GetGraphDataReplicate(addressID, year);
+            //var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
+
+            if (forecastData == null)
+            {
+                return BadRequest("There was an error loading the data.");
+            }
             return Json(forecastData);
             //return Json(_waterBillingFunction.GraphData);
         }
@@ -88,13 +115,16 @@ namespace KVHAI.Controllers.Homeowner
         //    return View("~/Views/Resident/Reading/WaterConsumption.cshtml", _waterBillingFunction);
         //}
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> WaterReadingByAddress(string addressID, string year = "")
+
         {
             var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
-            await GetWaterConsumptionByAddress(addressID);
+            var forecastData = await _waterBillingFunction.GetGraphDataDatabase(addressID, year);
+
+            //var forecastData = await _waterBillingFunction.GetGraphData(addressID, year);
+            await GetWaterConsumptionByAddress(addressID, year);
 
             var partialView = await this.RenderViewAsync("~/Views/Resident/LoggedIn/WaterConsumption.cshtml", _waterBillingFunction, false);
             return Json(new
@@ -121,6 +151,8 @@ namespace KVHAI.Controllers.Homeowner
             //    return Content($"Error: The view '{viewName}' was not found. Searched locations: {searchedLocations}");
             //}
         }
+
+
 
         private async Task<string> RenderPartialViewToString(string viewName, object model)
         {
@@ -216,6 +248,81 @@ namespace KVHAI.Controllers.Homeowner
             }
 
         }
+
+        private async Task GetWaterConsumptionByAddress(string addressID, string year)
+        {
+            await _waterBillingFunction.WaterReading(addressID: addressID, _year: year);
+
+            var listConsumptions = new List<double>();
+            var listCubic = new List<double>();
+
+            // Filter AllWaterReadingByResident by year if a year is specified
+            var allReadingsByYear = string.IsNullOrEmpty(year)
+                ? _waterBillingFunction.AllWaterReadingByResident
+                : _waterBillingFunction.AllWaterReadingByResident
+                    .Where(item => DateTime.Parse(item.Date).Year.ToString() == year).ToList();
+
+            foreach (var item in allReadingsByYear)
+            {
+                listConsumptions.Add(Convert.ToDouble(item.Consumption));
+            }
+
+            for (int i = listConsumptions.Count - 1; i > 0; i--)
+            {
+                var difference = listConsumptions[i - 1] - listConsumptions[i];
+                listCubic.Add(difference);
+            }
+
+            _waterBillingFunction.CubicMeter = listCubic;
+            _waterBillingFunction.CubicMeter.Reverse();
+
+            var previous = _waterBillingFunction.PreviousReading;
+            var current = _waterBillingFunction.CurrentReading;
+            var address = _waterBillingFunction.ResidentAddress;
+
+            // Filter by addressID and year
+            var prevConsumption = previous
+                .Where(reading => reading.Address_ID == addressID && DateTime.Parse(reading.Date).Year.ToString() == year)
+                .ToList();
+
+            var currentConsumption = current
+                .Where(reading => reading.Address_ID == addressID && DateTime.Parse(reading.Date).Year.ToString() == year)
+                .ToList();
+
+            var addressList = address
+                .Where(reading => reading.Address_ID.ToString() == addressID)
+                .ToList();
+
+            _waterBillingFunction.PreviousReading = prevConsumption;
+            _waterBillingFunction.CurrentReading = currentConsumption;
+            _waterBillingFunction.ResidentAddress = addressList;
+
+            for (int i = 0; i < addressList.Count; i++)
+            {
+                var cubic = 0.0;
+                double previousConsumption = 0;
+                double nextConsumption = 0;
+
+                // Check if the index is within range for PreviousReading
+                if (i < prevConsumption.Count && !double.TryParse(prevConsumption[i].Consumption, out previousConsumption))
+                {
+                    previousConsumption = 0; // Default value if parsing fails
+                }
+
+                // Check if the index is within range for CurrentReading
+                if (i < currentConsumption.Count && !double.TryParse(currentConsumption[i].Consumption, out nextConsumption))
+                {
+                    nextConsumption = 0; // Default value if parsing fails
+                }
+
+                cubic = (nextConsumption - previousConsumption) < 1 ? 0 : nextConsumption - previousConsumption;
+
+                _waterBillingFunction.CubicMeter.Add(cubic);
+
+                _waterBillingFunction.CubicConsumption = cubic.ToString();
+            }
+        }
+
     }
 
     public static class RenderViewToStringHelper

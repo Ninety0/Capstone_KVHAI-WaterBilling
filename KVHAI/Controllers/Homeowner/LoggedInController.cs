@@ -60,11 +60,15 @@ namespace KVHAI.Controllers.Homeowner
         [HttpGet]
         public async Task<IActionResult> GetAnnouncement()
         {
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var model = await _announcementRepository.ShowAnnouncement();
+            var notifList = await _notification.GetNotificationByResident(residentID);
+
 
             var viewModel = new ModelBinding
             {
-                AnnouncementList = model
+                AnnouncementList = model,
+                NotificationResident = notifList
             };
 
             return View("~/Views/Resident/LoggedIn/Announcement.cshtml", viewModel);
@@ -94,7 +98,8 @@ namespace KVHAI.Controllers.Homeowner
         [HttpPost]
         public async Task<IActionResult> UpdateNotificationRead(string notification_id)
         {
-            int result = await _notification.UpdateReadNotification(notification_id);
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int result = await _notification.UpdateReadNotification(notification_id, residentID);
             return Ok();
         }
 

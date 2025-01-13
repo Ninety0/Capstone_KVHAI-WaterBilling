@@ -20,8 +20,8 @@ namespace KVHAI.Models
         public Boolean Is_Read { get; set; }
 
         public string Hours { get; set; }
-        public List<int> ListResident_ID { get; set; }
-        public List<string> ListEmployee_ID { get; set; }
+        public List<int> ListResident_ID { get; set; } = new List<int>();
+        public List<string> ListEmployee_ID { get; set; } = new List<string>();
 
     }
 }

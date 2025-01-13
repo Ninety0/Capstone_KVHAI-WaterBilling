@@ -50,6 +50,8 @@ namespace KVHAI.Models
         public List<Resident> ResidentList { get; set; }
         public List<RequestDetails> RequestDetailList { get; set; }
 
+        public List<int> YearList = new List<int>();
+
 
     }
 }

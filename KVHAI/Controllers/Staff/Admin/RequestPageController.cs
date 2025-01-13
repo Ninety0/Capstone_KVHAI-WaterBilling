@@ -31,6 +31,8 @@ namespace KVHAI.Controllers.Staff.Admin
 
             var model = await _requestDetailsRepository.GetPendingRemovalRequests();
 
+            ViewData["count"] = model.Count();
+
 
             var viewmodel = new ModelBinding
             {
@@ -48,6 +50,8 @@ namespace KVHAI.Controllers.Staff.Admin
         {
             var model = await _requestDetailsRepository.GetPendingRemovalRequests();
 
+            ViewData["count"] = model.Count();
+
             var viewmodel = new ModelBinding
             {
                 RequestDetailList = model
@@ -60,6 +64,8 @@ namespace KVHAI.Controllers.Staff.Admin
         public async Task<IActionResult> StatusFilter(string status = "", string date = "")
         {
             var model = await _requestDetailsRepository.GetPendingRemovalRequests(status, date);
+
+            ViewData["count"] = model.Count();
 
             if (model == null)
             {

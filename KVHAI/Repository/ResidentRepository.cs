@@ -394,6 +394,73 @@ namespace KVHAI.Repository
             }
         }
 
+        //UPDATE INSIDE SYSTEM
+        public async Task<int> UpdateResidentInformation(string resident_id, Resident resident)
+        {
+            try
+            {
+                var query = new StringBuilder();
+                var updateColumns = new List<string>();
+                var parameters = new List<SqlParameter>();
+
+                // Sanitize and prepare parameters conditionally
+                if (!string.IsNullOrEmpty(resident.Phone))
+                {
+                    var sanitizedPhone = "63" + await _sanitize.HTMLSanitizerAsync(resident.Phone);
+                    updateColumns.Add("phone = @phone");
+                    parameters.Add(new SqlParameter("@phone", sanitizedPhone));
+                }
+
+                if (!string.IsNullOrEmpty(resident.Email))
+                {
+                    var sanitizedEmail = await _sanitize.HTMLSanitizerAsync(resident.Email);
+                    updateColumns.Add("email = @email");
+                    parameters.Add(new SqlParameter("@email", sanitizedEmail));
+                }
+
+                if (!string.IsNullOrEmpty(resident.Username))
+                {
+                    var sanitizedUsername = await _sanitize.HTMLSanitizerAsync(resident.Username);
+                    updateColumns.Add("username = @user");
+                    parameters.Add(new SqlParameter("@user", sanitizedUsername));
+                }
+
+                if (!string.IsNullOrEmpty(resident.Password))
+                {
+                    var hashedPassword = _hash.HashPassword(await _sanitize.HTMLSanitizerAsync(resident.Password));
+                    updateColumns.Add("password = @pass");
+                    parameters.Add(new SqlParameter("@pass", hashedPassword));
+                }
+
+                // Check if there are any updates to make
+                if (updateColumns.Count == 0)
+                {
+                    return 0; // No updates to perform
+                }
+
+                // Build the query
+                query.AppendLine("UPDATE resident_tb SET");
+                query.AppendLine(string.Join(", ", updateColumns));
+                query.AppendLine("WHERE res_id = @id");
+                parameters.Add(new SqlParameter("@id", resident_id));
+
+                // Execute the update
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(query.ToString(), connection))
+                    {
+                        command.Parameters.AddRange(parameters.ToArray());
+                        return await command.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Consider logging the exception
+                return 0;
+            }
+        }
+
         //REGION START
         #region CODE NEED TO BE MIGRATE
         //VALIDATE ACCOUNT
@@ -601,6 +668,23 @@ namespace KVHAI.Repository
                 var residentList = await _listRepository.ResidentList();
 
                 return residentList.Any(a => a.Username == email);
+
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
+        }
+
+        public async Task<bool> IsPasswordCorrect(string resident_id, string password)
+        {
+            try
+            {
+                var residentList = await _listRepository.ResidentList();
+                var passFromDB = residentList.Where(r => r.Res_ID == resident_id).Select(p => p.Password).FirstOrDefault();
+
+                return _hash.VerifyPassword(passFromDB, password);
 
             }
             catch (Exception)

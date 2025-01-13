@@ -272,9 +272,11 @@
             }
 
             function GetGraphData() {
+                var selectedYear = $('#select_year').val();
                 $.ajax({
-                    url: '@Url.Action("GraphWaterConsumption", "AdminDashboard")',
                     type: 'GET',
+                    url: '@Url.Action("GraphWaterConsumption", "AdminDashboard")',
+                    data: { year: selectedYear },
                     success: function (data) {
                         //console.log(data);
                         var yearDropdown = $('#select_year');
@@ -817,7 +819,12 @@
                 </div>
                 <div class="col-3">
                     <select class="form-control text-center" id="select_year">
-                        <option value="2024" selected>2024</option>
+                        @{
+                            foreach (var item in Model.YearList)
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        }
                     </select>
                 </div>
             </div>
@@ -872,7 +879,7 @@
     <div class="col-xl-7 d-flex flex-column">
         <!--register address-->
         <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard mb-3" style="height: 250px">
-            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recent register address</h5>
+            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recent Water Reading</h5>
 
             <div class="container-fluid container_data">
                 <div class="table-responsive">

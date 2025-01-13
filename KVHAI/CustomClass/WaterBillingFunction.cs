@@ -11,6 +11,7 @@ namespace KVHAI.CustomClass
         private readonly WaterBillRepository _waterBillRepository;
         private readonly AddressRepository _addressRepository;
         private readonly ForecastingRepo _forecasting;
+        private readonly ListRepository _listRepository;
 
         //FOR BOTH READINg AND BILLING
         public double WaterRate { get; set; } = 18.0;
@@ -94,7 +95,7 @@ namespace KVHAI.CustomClass
         public HtmlString GenerateSelect = new HtmlString("");
 
         int index = 1;
-        public WaterBillingFunction(WaterReadingRepository waterReadingRepository, WaterBillRepository waterBillRepository, AddressRepository addressRepository, ForecastingRepo forecasting)
+        public WaterBillingFunction(WaterReadingRepository waterReadingRepository, WaterBillRepository waterBillRepository, AddressRepository addressRepository, ForecastingRepo forecasting, ListRepository listRepository)
         {
             _waterReadingRepository = waterReadingRepository;
             _waterBillRepository = waterBillRepository;
@@ -102,17 +103,21 @@ namespace KVHAI.CustomClass
             CubicMeter = new List<double>();
             BillAmount = new List<Double>();
             _forecasting = forecasting;
+            _listRepository = listRepository;
         }
 
         //FOR WATER READING
-        public async Task WaterReading(string location = "", string dateFrom = "", string dateTo = "", string addressID = "", string residentID = "")
+        public async Task WaterReading(string location = "", string dateFrom = "", string dateTo = "", string addressID = "", string residentID = "", string _year = "")
         {
             var prevReading = await _waterReadingRepository.GetPreviousReading(location, dateFrom);
             var currentReading = await _waterReadingRepository.GetCurrentReading(location, dateTo);
 
             if (!string.IsNullOrEmpty(addressID))
             {
-                var allReadingResident = await _waterReadingRepository.GetAllReadingByResident(addressID);
+                var wrList = await _listRepository.WaterReadingList();
+                var allReadingResident = await _waterReadingRepository.GetAllReadingByResident(addressID, year: _year);
+
+                var wrListYear = wrList.Where(a => a.Address_ID == addressID).OrderByDescending(d => d.Date).ToList();
 
                 //var address = await _addressRepository.GetAddressById(residentID);
 
@@ -120,7 +125,7 @@ namespace KVHAI.CustomClass
                 //this.AddressList = address;
 
                 var yearLst = new List<int>();
-                foreach (var year in allReadingResident.AllWaterConsumptionByResident)
+                foreach (var year in wrListYear)
                 {
                     if (DateTime.TryParse(year.Date, out DateTime yearResult))
                     {
@@ -170,8 +175,16 @@ namespace KVHAI.CustomClass
 
         }
 
-        public async Task<Forecasting> GetGraphData(string addressID, string year = "") //List<WaterReading>
+        public async Task GetWaterReadingYears()
         {
+
+        }
+
+        /*public async Task<Forecasting> GetGraphData1(string addressID, string year = "") //List<WaterReading>
+        {
+            //add logic here to get value for forecasted data for january
+            var yearBefore = Convert.ToInt32(year) - 1;
+            var readingsBefore = await _waterReadingRepository.GerReadingForGraph(addressID, yearBefore.ToString());
             var readings = await _waterReadingRepository.GerReadingForGraph(addressID, year);
             // Sort readings by date
             var sortedReadings = readings.OrderBy(r => r.Date).ToList();
@@ -234,7 +247,359 @@ namespace KVHAI.CustomClass
             var forecastData = await _forecasting.GetPercentChange(data, yearList);
 
             return forecastData;
+        }*/
+
+        /*public async Task<Forecasting> GetGraphDataOrig(string addressID, string year = "")
+        {
+            var readings = await _waterReadingRepository.GerReadingForGraph(addressID, year);
+            var sortedReadings = readings.OrderBy(r => r.Date).ToList();
+
+            var forecast = new Forecasting();
+            var forecastList = new List<Forecasting>();
+            var yearList = new List<string>();
+            var graphData = new List<WaterReading>();
+            var monthList = new List<int>();
+            var consumptionList = new List<double?>();
+
+            string _year = "";
+
+            int currentYear = int.Parse(year);
+
+
+            for (int i = 1; i < sortedReadings.Count; i++)
+            {
+                var currentReading = sortedReadings[i];
+                var previousReading = sortedReadings[i - 1];
+
+                var consumptionDifference = Convert.ToInt32(currentReading.Consumption) - Convert.ToInt32(previousReading.Consumption);
+
+                if (DateTime.TryParse(currentReading.Date, out DateTime currentDate))
+                {
+                    var month = currentDate.ToString("MM");
+                    _year = currentDate.ToString("yyyy");
+
+                    consumptionList.Add(consumptionDifference);
+                    monthList.Add(Convert.ToInt32(month));
+
+                    if (!yearList.Contains(_year))
+                    {
+                        yearList.Add(_year);
+                    }
+
+                    graphData.Add(new WaterReading
+                    {
+                        DateMonth = month,
+                        CubicConsumption = consumptionDifference.ToString()
+                    });
+
+
+
+
+                }
+            }
+
+            int dYear = Convert.ToInt32(year);
+            //forecastList.Add(
+            //    forecast.YearlyData[dYear] = new YearData
+            //    {
+            //        ActualData = ""
+            //    }
+            //    );
+
+            // Ensure we have sufficient data for forecasting
+            if (consumptionList.Count >= 5)
+            {
+                var data = new YearData
+                {
+                    ActualData = consumptionList,
+                    ConsumptionMonth = monthList
+                };
+
+                this.GraphYear = yearList;
+                this.GraphData = graphData;
+
+                // Call forecasting logic
+                //var forecastData = await _forecasting.GetPercentChange(data, yearList);
+                var forecastData = await _forecasting.GetPercentChange(data, yearList);
+
+                return forecastData;
+            }
+            else
+            {
+                throw new InvalidOperationException("Not enough data to calculate forecast.");
+            }
+        }*/
+
+        //test
+        public async Task<Forecasting> GetGraphData(string addressID, string year = "")
+        {
+            try
+            {
+                string _year = "";
+                int currentYear = int.Parse(year);
+
+                var forecast = new Forecasting();
+                var yearList = new List<string>();
+
+                var consumptionList = new List<double?>();
+                var monthList = new List<int>();
+                var yearlyConsumptionData = new Dictionary<string, List<double>>();
+
+                var forecastList = new List<Forecasting>();
+                var readingPrevious = new List<WaterReading>();
+                var combinedReadings = new List<WaterReading>();
+                var graphData = new List<WaterReading>();
+
+
+                // Fetch and sort readings
+                var readings = await _waterReadingRepository.GerReadingForGraph1(addressID, year);
+                var sortedReadings = readings.OrderBy(r => r.Date).ToList();
+
+                if (readings.Count < 5)
+                {
+                    var date = sortedReadings.Select(d => d.Date).LastOrDefault();
+                    var monthNumber = !string.IsNullOrEmpty(date) ? DateTime.ParseExact(date, "yyyy-MM-dd HH:mm:ss", null).Month : 0;
+                    int yearPrevious = Convert.ToInt32(year);
+
+                    readingPrevious = await _waterReadingRepository.GerReadingForGraphCompensate(addressID, monthNumber, readings.Count, yearPrevious.ToString());
+
+                    // Combine the lists, with readingPrevious first
+                    //combinedReadings = readingPrevious.Concat(sortedReadings).ToList();
+                    sortedReadings = readingPrevious.Concat(sortedReadings).ToList();
+                }
+
+
+                for (int i = 1; i < sortedReadings.Count; i++)
+                {
+                    var currentReading = sortedReadings[i];
+                    var previousReading = sortedReadings[i - 1];
+
+                    var consumptionDifference = Convert.ToInt32(currentReading.Consumption) - Convert.ToInt32(previousReading.Consumption);
+
+                    if (DateTime.TryParse(currentReading.Date, out DateTime currentDate))
+                    {
+                        var month = currentDate.ToString("MM");
+                        _year = currentDate.ToString("yyyy");
+
+                        consumptionList.Add(consumptionDifference);
+                        monthList.Add(Convert.ToInt32(month));
+
+
+                        // Add consumption difference to yearly data
+                        if (!yearlyConsumptionData.ContainsKey(_year))
+                        {
+                            yearlyConsumptionData[_year] = new List<double>();
+                        }
+                        yearlyConsumptionData[_year].Add(consumptionDifference);
+
+                        // Add the year to the year list
+                        if (!yearList.Contains(_year))
+                        {
+                            yearList.Add(_year);
+                        }
+
+
+                        // Prepare graph data
+                        graphData.Add(new WaterReading
+                        {
+                            DateMonth = currentDate.ToString("MM"),
+                            CubicConsumption = consumptionDifference.ToString()
+                        });
+                    }
+                }
+
+                //Prepare data for forecasting
+                var data = new YearData
+                {
+                    ActualData = consumptionList,
+                    ConsumptionMonth = monthList
+                };
+                //var data = new YearData
+                //{
+                //    ActualData = yearlyConsumptionData[currentYear.ToString()]?.Select(value => (double?)value).ToList(),
+                //    ConsumptionMonth = yearlyConsumptionData[currentYear.ToString()]?.Select((_, index) => index + 1).ToList()
+                //};
+                int count = yearlyConsumptionData.Count;
+
+                this.GraphYear = yearList;
+                this.GraphData = graphData;
+
+                // Ensure we have sufficient data for forecasting
+                if (consumptionList.Count >= 5)
+                {
+                    // Call forecasting logic
+                    //var forecastData = await _forecasting.GetPercentChangeCopy(data, yearList, yearlyConsumptionData);
+                    var forecastData = await _forecasting.GetPercentDuplicate(data, year, yearlyConsumptionData);
+                    //var forecastData = await _forecasting.GetPercentDuplicate(data, year);
+                    return forecastData;
+                    //return forecast;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Not enough data to calculate forecast.");
+                }
+            }
+            catch (Exception)
+            {
+                throw new InvalidOperationException("Not enough data to calculate forecast.");
+
+            }
         }
+
+        //current
+        public async Task<Forecasting> GetGraphDataReplicate(string addressID, string year = "")
+        {
+            try
+            {
+                string _year = "";
+                int currentYear = int.Parse(year);
+
+                var forecast = new Forecasting();
+                var yearList = new List<string>();
+
+                var consumptionList = new List<double?>();
+                var monthList = new List<int>();
+                var yearlyConsumptionData = new Dictionary<string, List<double>>();
+
+                var forecastList = new List<Forecasting>();
+                var readingPrevious = new List<WaterReading>();
+                var combinedReadings = new List<WaterReading>();
+                var graphData = new List<WaterReading>();
+
+
+                // Fetch and sort readings
+                var readings = await _waterReadingRepository.GerReadingForGraph1(addressID, year);
+                var sortedReadings = readings.OrderBy(r => r.Date).ToList();
+
+                if (readings.Count < 5)
+                {
+                    var date = sortedReadings.Select(d => d.Date).LastOrDefault();
+                    var monthNumber = !string.IsNullOrEmpty(date) ? DateTime.ParseExact(date, "yyyy-MM-dd HH:mm:ss", null).Month : 0;
+                    int yearPrevious = Convert.ToInt32(year);
+
+                    readingPrevious = await _waterReadingRepository.GerReadingForGraphCompensate(addressID, monthNumber, readings.Count, yearPrevious.ToString());
+
+                    // Combine the lists, with readingPrevious first
+                    //combinedReadings = readingPrevious.Concat(sortedReadings).ToList();
+                    sortedReadings = readingPrevious.Concat(sortedReadings).ToList();
+                }
+
+
+                for (int i = 1; i < sortedReadings.Count; i++)
+                {
+                    var currentReading = sortedReadings[i];
+                    var previousReading = sortedReadings[i - 1];
+
+                    var consumptionDifference = Convert.ToInt32(currentReading.Consumption) - Convert.ToInt32(previousReading.Consumption);
+
+                    if (DateTime.TryParse(currentReading.Date, out DateTime currentDate))
+                    {
+                        var month = currentDate.ToString("MM");
+                        _year = currentDate.ToString("yyyy");
+
+                        consumptionList.Add(consumptionDifference);
+                        monthList.Add(Convert.ToInt32(month));
+
+
+                        // Add consumption difference to yearly data
+                        if (!yearlyConsumptionData.ContainsKey(_year))
+                        {
+                            yearlyConsumptionData[_year] = new List<double>();
+                        }
+                        yearlyConsumptionData[_year].Add(consumptionDifference);
+
+                        // Add the year to the year list
+                        if (!yearList.Contains(_year))
+                        {
+                            yearList.Add(_year);
+                        }
+
+                        // Prepare graph data
+                        graphData.Add(new WaterReading
+                        {
+                            DateMonth = currentDate.ToString("MM"),
+                            CubicConsumption = consumptionDifference.ToString()
+                        });
+                    }
+                }
+
+                //Prepare data for forecasting
+                var data = new YearData
+                {
+                    ActualData = consumptionList,
+                    ConsumptionMonth = monthList
+                };
+                //var data = new YearData
+                //{
+                //    ActualData = yearlyConsumptionData[currentYear.ToString()]?.Select(value => (double?)value).ToList(),
+                //    ConsumptionMonth = yearlyConsumptionData[currentYear.ToString()]?.Select((_, index) => index + 1).ToList()
+                //};
+                int count = yearlyConsumptionData.Count;
+
+                this.GraphYear = yearList;
+                this.GraphData = graphData;
+
+                // Ensure we have sufficient data for forecasting
+                if (consumptionList.Count >= 5)
+                {
+                    // Call forecasting logic
+                    //var forecastData = await _forecasting.GetPercentChangeCopy(data, yearList, yearlyConsumptionData);
+                    var forecastData = await _forecasting.GetPercentDuplicate(data, year, yearlyConsumptionData);
+                    return forecastData;
+                    //return forecast;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Not enough data to calculate forecast.");
+                }
+            }
+            catch (Exception)
+            {
+                throw new InvalidOperationException("Not enough data to calculate forecast.");
+
+            }
+        }
+
+        //user
+        public async Task<Forecasting> GetGraphDataDatabase(string addressID, string year = "")
+        {
+            try
+            {
+                var forecast = await _forecasting.GetPercentDatabase(addressID, year);
+
+                return forecast;
+            }
+            catch (Exception)
+            {
+                throw new InvalidOperationException("Not enough data to calculate forecast.");
+
+            }
+        }
+
+        //admin side
+        public async Task<Forecasting> GetGraphDataDatabaseAdmin(string year = "")
+        {
+            try
+            {
+                var forecast = await _forecasting.GetPercentDatabaseAdmin(year);
+
+                return forecast;
+            }
+            catch (Exception)
+            {
+                throw new InvalidOperationException("Not enough data to calculate forecast.");
+
+            }
+        }
+
+        //public async Task GetChartData(string addressID, string year = "")
+        //{
+        //    var readings = await _waterReadingRepository.GerReadingForGraph1(addressID, year);
+
+        //}
+
+
+
 
         public async Task<List<string>> GetWaterBillNumberList()
         {

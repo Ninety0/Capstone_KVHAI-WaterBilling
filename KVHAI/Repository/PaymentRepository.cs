@@ -258,7 +258,7 @@ namespace KVHAI.Repository
 
                             var resident = await _listRepository.ResidentList();
                             var lname = resident.Where(r => r.Res_ID == payment.Resident_ID.ToString())
-                                .Select(l => l.Lname).ToString();
+                                .Select(l => l.Lname).FirstOrDefault();
                             var notif = new Notification
                             {
                                 Title = "Water Billing",

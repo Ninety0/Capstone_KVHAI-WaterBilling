@@ -328,7 +328,7 @@ namespace KVHAI.Repository
                 var addressList = new List<Address>();
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
-                    using (var command = new SqlCommand("SELECT * FROM address_tb WHERE is_verified = 'true'AND addr_id = @id", connection))
+                    using (var command = new SqlCommand("SELECT * FROM address_tb WHERE addr_id = @id", connection))
                     {
                         command.Parameters.AddWithValue("@id", adddressID);
                         using (var reader = await command.ExecuteReaderAsync())

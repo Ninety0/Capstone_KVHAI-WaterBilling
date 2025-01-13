@@ -15,16 +15,20 @@ namespace KVHAI.Controllers.Staff.Admin
         private readonly PaymentRepository _paymentRepository;
         private readonly RequestDetailsRepository _requestDetailsRepository;
         private readonly NotificationRepository _notification;
+        private readonly WaterBillingFunction _waterBillingFunction;
+        private readonly WaterReadingRepository _waterReadingRepository;
 
 
 
-        public AdminDashboardController(ForecastingRepo forecasting, AddressRepository addressRepository, PaymentRepository paymentRepository, RequestDetailsRepository requestDetailsRepository, NotificationRepository notification)
+        public AdminDashboardController(ForecastingRepo forecasting, AddressRepository addressRepository, PaymentRepository paymentRepository, RequestDetailsRepository requestDetailsRepository, NotificationRepository notification, WaterBillingFunction waterBillingFunction, WaterReadingRepository waterReadingRepository)
         {
             _forecasting = forecasting;
             _addressRepository = addressRepository;
             _paymentRepository = paymentRepository;
             _requestDetailsRepository = requestDetailsRepository;
             _notification = notification;
+            _waterBillingFunction = waterBillingFunction;
+            _waterReadingRepository = waterReadingRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -33,19 +37,22 @@ namespace KVHAI.Controllers.Staff.Admin
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
             var username = User.Identity.Name;
 
+            var yearList = await _waterReadingRepository.GetYearList();
             var notifList = await _notification.GetNotificationByStaff(role);
 
             var viewmodel = new ModelBinding
             {
-                NotificationStaff = notifList
+                NotificationStaff = notifList,
+                YearList = yearList
             };
 
             return View("~/Views/Staff/Admin/Dashboard.cshtml", viewmodel);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GraphWaterConsumption()
+        public async Task<IActionResult> GraphWaterConsumption(string year)
         {
+            var forecastData = await _waterBillingFunction.GetGraphDataDatabaseAdmin(year);
             var model = await _forecasting.GetPercentChange();
             return Json(model);
         }

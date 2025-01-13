@@ -305,14 +305,12 @@
         </a>*@
     }
 
-<a href="/kvhai/resident/account/settings" class="nav_sidebar mb-3">
-    <div class="row">
-        <div class="col-4  d-flex justify-content-center">
-            <i class="fa-solid fa-gear"></i>
-        </div>
-        <div class="col  d-flex justify-content-start">
+<a href="/kvhai/resident/account/settings" class="nav_sidebar mb-3 ps-3">
+    <div class="d-flex">
+        <i class="fa-solid fa-gear"></i>
+        <span class="ms-3">
             Settings
-        </div>
+        </span>
 
     </div>
 </a>
@@ -385,132 +383,134 @@
 
                 </div>
             </div>
-            <div id="tableData">
-                <!-- Add the table and water history -->
-                <!--WATER RATE-->
-                <div class="row mb-4 g-3">
-                    <!-- Chart section -->
-                    <div class="col-12 col-lg-8">
-                        <div class="chart-container p-4 bg-white shadow-sm rounded border">
-                            <div class="row mb-3">
-                                <div class="col-9">
-                                    <h5 class="text-muted mb-3">Water Consumption Overview</h5>
-                                </div>
-                                <div class="col-3">
-                                    <select class="form-control" id="select_year">
-                                        @{
-                                            if (Model.YearList != null && Model.YearList.Count > 0)
+
+            <!-- Add the table and water history -->
+            <!--WATER RATE-->
+            <div class="row mb-4 g-3">
+                <!-- Chart section -->
+                <div class="col-12 col-lg-8">
+                    <div class="chart-container p-4 bg-white shadow-sm rounded border">
+                        <div class="row mb-3">
+                            <div class="col-9">
+                                <h5 class="text-muted mb-3">Water Consumption Overview</h5>
+                            </div>
+                            <div class="col-3">
+                                <select class="form-control" id="select_year">
+                                    @{
+                                        if (Model.YearList != null && Model.YearList.Count > 0)
+                                        {
+                                            for (int i = 0; i < Model.YearList.Count; i++)
                                             {
-                                                for (int i = 0; i < Model.YearList.Count; i++)
+                                                if (i == 0)
                                                 {
-                                                    if (i == 0)
-                                                    {
-                                                        <option value="@Model.YearList[i]" selected>@Model.YearList[i]</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@Model.YearList[i]">@Model.YearList[i]</option>
-                                                    }
+                                                    <option value="@Model.YearList[i]">@Model.YearList[i]</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@Model.YearList[i]">@Model.YearList[i]</option>
                                                 }
                                             }
                                         }
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="chart-placeholder">
-                                <canvas id="myChart"></canvas>
+                                    }
+                                </select>
                             </div>
                         </div>
-                    </div>
-                    <!-- Monthly Consumption Section -->
-                    <div class="col-12 col-lg-4">
-                        <div class="consumption-card bg-white border p-2 rounded shadow-sm">
-                            <div class="mb-3 mt-3">
-                                <h5 class="text-muted">Insights:</h5>
-                                <div class=" bg-white" id="insightContainer"></div>
-                            </div>
+                        <div class="chart-placeholder">
+                            <canvas id="myChart"></canvas>
                         </div>
                     </div>
                 </div>
-
-                <!--WATER HISTORY-->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="past-readings bg-white p-4 rounded shadow-sm border">
-                            <h5 class="mb-3 fw-bold">Past Reading Water Consumption</h5>
-                            <div class="table-responsive">
-                                <table class="table table-striped align-middle">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">
-                                                <span class="fw-bold text-muted">Date</span>
-                                            </th>
-                                            <th scope="col">
-                                                <span class="fw-bold text-muted">Water Reading</span>
-                                            </th>
-                                            <th scope="col">
-                                                <span class="fw-bold text-muted">Cubic Consumption</span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if (Model.AllWaterReadingByResident.Count > 0)
-                                        {
-                                            if (Model.AllWaterReadingByResident.Count > Model.CubicMeter.Count)
-                                            {
-                                                var listCubic = new List<double> { 0 };
-                                                listCubic.AddRange(Model.CubicMeter);
-
-                                                for (int i = 0; i < Model.AllWaterReadingByResident.Count; i++)
-                                                {
-                                                    var value = 0.0;
-                                                    if (i < listCubic.Count)
-                                                    {
-                                                        value = listCubic[i];
-
-                                                    }
-                                                    <tr>
-                                                        <td>@Model.AllWaterReadingByResident[i].Date</td>
-                                                        <td>@Model.AllWaterReadingByResident[i].Consumption</td>
-                                                        <td>@value</td>
-                                                    </tr>
-                                                }
-                                            }
-                                            else
-                                            {
-                                                for (int i = 0; i < Model.AllWaterReadingByResident.Count; i++)
-                                                {
-                                                    var value = 0.0;
-                                                    if (i < Model.CubicMeter.Count)
-                                                    {
-                                                        value = Model.CubicMeter[i];
-
-                                                    }
-                                                    <tr>
-                                                        <td>@Model.AllWaterReadingByResident[i].Date</td>
-                                                        <td>@Model.AllWaterReadingByResident[i].Consumption</td>
-                                                        <td>@value</td>
-                                                    </tr>
-                                                }
-                                            }
-
-
-
-
-                                        }
-                                        else
-                                        {
-                                            <tr>
-                                                <td colspan="2" class="text-center p-5">No Existing Data!</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
+                <!-- Monthly Consumption Section -->
+                <div class="col-12 col-lg-4">
+                    <div class="consumption-card bg-white border p-2 rounded shadow-sm">
+                        <div class="mb-3 mt-3">
+                            <h5 class="text-muted">Insights:</h5>
+                            <div class=" bg-white" id="insightContainer"></div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!--WATER HISTORY-->
+            <div id="tableData">
+                <div class="row">
+                <div class="col-12">
+                    <div class="past-readings bg-white p-4 rounded shadow-sm border">
+                        <h5 class="mb-3 fw-bold">Past Reading Water Consumption</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">
+                                            <span class="fw-bold text-muted">Date</span>
+                                        </th>
+                                        <th scope="col">
+                                            <span class="fw-bold text-muted">Water Reading</span>
+                                        </th>
+                                        <th scope="col">
+                                            <span class="fw-bold text-muted">Cubic Consumption</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.AllWaterReadingByResident.Count > 0)
+                                    {
+                                        if (Model.AllWaterReadingByResident.Count > Model.CubicMeter.Count)
+                                        {
+                                            var listCubic = new List<double> { 0 };
+                                            listCubic.AddRange(Model.CubicMeter);
+
+                                            for (int i = 0; i < Model.AllWaterReadingByResident.Count; i++)
+                                            {
+                                                var value = 0.0;
+                                                if (i < listCubic.Count)
+                                                {
+                                                    value = listCubic[i];
+
+                                                }
+                                                <tr>
+                                                    <td>@Model.AllWaterReadingByResident[i].Date</td>
+                                                    <td>@Model.AllWaterReadingByResident[i].Consumption</td>
+                                                    <td>@value</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (int i = 0; i < Model.AllWaterReadingByResident.Count; i++)
+                                            {
+                                                var value = 0.0;
+                                                if (i < Model.CubicMeter.Count)
+                                                {
+                                                    value = Model.CubicMeter[i];
+
+                                                }
+                                                <tr>
+                                                    <td>@Model.AllWaterReadingByResident[i].Date</td>
+                                                    <td>@Model.AllWaterReadingByResident[i].Consumption</td>
+                                                    <td>@value</td>
+                                                </tr>
+                                            }
+                                        }
+
+
+
+
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="2" class="text-center p-5">No Existing Data!</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
 
         </div>
     </div>
@@ -523,7 +523,7 @@
         $(document).ready(function () {
             var myChart = null; // Declare the global variable
 
-            GetGraphData();
+            GetGraphData();// PAUSE MUNA NATIN TO
 
             const waterConsumptionConnection = setupSignalRConnection("/resident/water-consumption", "Water Consumption Hub");
 
@@ -535,7 +535,8 @@
                 var addr_id = $('#select_address').val();
                 var _year = $('#select_year').val();
                 alert(`Address: ${addr_id}, Year: ${_year}`);
-                GetDataAndGraph(addr_id, _year);
+                /*GetDataAndGraph(addr_id, _year);*/
+                GetGraphData();
             })
 
 
@@ -543,12 +544,21 @@
                 var addr_id = $('#select_address').val();
                 var _year = $('#select_year').val();
 
+                //GetDataAndGraph(addr_id, _year);
+                GetGraphData();
+            });
+
+            $(document).on('change', '#select_year', function () {
+                var addr_id = $('#select_address').val();
+                var _year = $('#select_year').val();
+
                 GetDataAndGraph(addr_id, _year);
+                //GetGraphData();
             });
 
             function GetDataAndGraph(address_id, _year) {
                 $.ajax({
-                    type: "POST",
+                    type: "GET",
                     url: "/WaterConsumption/WaterReadingByAddress",
                     data: { addressID: address_id, year: _year },
                     success: function (response) {
@@ -556,8 +566,10 @@
                         console.log(response);
                         var html = response.html;
 
-                        var htmlResult = $(html).find('#tableData').html()
+                        var htmlResult = $(html).find('#tableData').html();
                         var waterText = $(html).find('#water_consumption').html();
+
+                        console.log(htmlResult)
 
                         $('#water_consumption').html(waterText);
                         $('#tableData').html(htmlResult);
@@ -594,6 +606,33 @@
                         console.log(insights);
 
                         chartDataSets(yearsData);
+
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function GetDataAndGraph1(address_id, _year) {
+                $.ajax({
+                    type: "POST",
+                    url: "/WaterConsumption/WaterReadingByAddress1",
+                    data: { addressID: address_id, year: _year },
+                    success: function (response) {
+                        // Update HTML with the new data
+                        console.log(response);
+                        var html = response.html;
+
+                        var htmlResult = $(html).find('#tableData').html()
+                        var waterText = $(html).find('#water_consumption').html();
+
+                        console.log(htmlResult);
+                        console.log(waterText);
+
+
+                        $('#water_consumption').html(waterText);
+                        $('#tableData').html(htmlResult);
 
                     },
                     error: function (xhr) {
@@ -675,6 +714,51 @@
 
             }
 
+            function chartDataSetsCopy(yearlyData) {
+                var selectedYear = $('#select_year').val();
+                var yearData = yearlyData[selectedYear]; // Get data for the selected year
+
+                if (!yearData) {
+                    toastr.error(`No data available for year: ${selectedYear}`);
+                    return;
+                }
+
+                // Filter out months with null values for actual and forecast data
+                var filteredMonths = [];
+                var actualDataFiltered = [];
+                var forecastDataFiltered = [];
+
+                yearData.actualData.forEach((value, index) => {
+                    if (value !== null) {
+                        filteredMonths.push(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][index]);
+                        actualDataFiltered.push(value);
+                        forecastDataFiltered.push(yearData.forecastData[index] || null);
+                    }
+                });
+
+                var actualData = {
+                    label: `Cubic Consumption ${selectedYear}`,
+                    data: actualDataFiltered,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1,
+                    borderColor: '#052771'
+                };
+
+                var forecastData = {
+                    label: `Forecast Data ${selectedYear}`,
+                    data: forecastDataFiltered,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderDash: [5, 5]
+                };
+
+                SetChartJs(actualData, forecastData, filteredMonths, yearData.insights);
+                DisplayInsights(yearData.insights);
+            }
+
             function SetChartJs(actualData, forecastData, insights) {
                 const ctx = $('#myChart');
 
@@ -689,6 +773,83 @@
                     data: {
                         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         datasets: [actualData, forecastData] // Pass both datasets (actual and forecast)
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Cubic Meter Consumption'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Months'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 12 },
+                                bodyColor: '#ffffff',
+                                titleColor: '#ffffff',
+                                borderColor: '#ffffff',
+                                borderWidth: 1,
+                                callbacks: {
+                                    // Tooltip content callback
+                                    afterLabel: function (tooltipItem) {
+                                        var index = tooltipItem.dataIndex;
+                                        var label = tooltipItem.label;
+                                        console.log(tooltipItem);
+                                        console.log(label);
+
+                                        var insight;
+                                        if (tooltipItem.datasetIndex === 1) {
+                                            insight = 'Expected cubic consumption for this month.';
+                                        }
+                                        //var insight = insights[index] || 'Expected cubic consumption for this month.';
+                                        highlightInsight(index); // Highlight the corresponding insight
+                                        return insight;
+                                    }
+                                }
+                            }
+                        },
+                        // Event listeners for when the tooltip is hidden (e.g., when the user moves away)
+                        onHover: function (event, chartElement) {
+                            if (chartElement.length === 0) {
+                                resetInsightHighlight(); // Reset highlight when no chart element is hovered
+                            }
+                        }
+                    }
+                });
+            }
+
+            function SetChartJsCopy(actualData, forecastData, months, insights) {
+                const ctx = $('#myChart');
+
+                if (myChart !== null) {
+                    myChart.destroy();
+                }
+
+                myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [actualData, forecastData]
                     },
                     options: {
                         responsive: true,

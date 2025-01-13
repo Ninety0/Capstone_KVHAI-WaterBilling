@@ -54,5 +54,39 @@ namespace KVHAI.Controllers.Homeowner
             return View("~/Views/Resident/LoggedIn/AccountSettings.cshtml", model);
             //return View("~/Views/Resident/LoggedIn/Bills.cshtml");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateResidentAccount(Resident resident)
+        {
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var residentResult = await _residentRepository.UpdateResidentInformation(residentID, resident);
+
+            if (residentResult < 1)
+            {
+                return BadRequest("There was an error updating your account.");
+            }
+
+            return Ok();
+            //return View("~/Views/Resident/LoggedIn/Bills.cshtml");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ValidatePassword(string password)
+        {
+            var residentID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var isAccountExist = await _residentRepository.IsPasswordCorrect(residentID, password);
+
+            if (isAccountExist)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+        }
     }
 }

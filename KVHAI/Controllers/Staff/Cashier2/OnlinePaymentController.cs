@@ -18,15 +18,17 @@ namespace KVHAI.Controllers.Staff.Cashier2
         private readonly PaymentRepository _paymentRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly NotificationRepository _notification;
+        private readonly ListRepository _listRepository;
 
 
-        public OnlinePaymentController(StreetRepository streetRepository, ResidentAddressRepository residentAddress, PaymentRepository paymentRepository, IWebHostEnvironment webHostEnvironment, NotificationRepository notification)
+        public OnlinePaymentController(StreetRepository streetRepository, ResidentAddressRepository residentAddress, PaymentRepository paymentRepository, IWebHostEnvironment webHostEnvironment, NotificationRepository notification, ListRepository listRepository)
         {
             _streetRepository = streetRepository;
             _residentAddress = residentAddress;
             _paymentRepository = paymentRepository;
             _webHostEnvironment = webHostEnvironment;
             _notification = notification;
+            _listRepository = listRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -38,6 +40,10 @@ namespace KVHAI.Controllers.Staff.Cashier2
             var notifList = await _notification.GetNotificationByStaff(role);
 
             var billNoList = await _paymentRepository.GetWaterBillingNumber();
+            var resident = await _listRepository.ResidentList();
+
+            var lname = resident.Where(r => r.Res_ID == "2")
+                                .Select(l => l.Lname).FirstOrDefault();
 
             var pagination1 = new Pagination<Payment>
             {

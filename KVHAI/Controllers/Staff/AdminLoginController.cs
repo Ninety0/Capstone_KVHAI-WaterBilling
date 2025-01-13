@@ -83,7 +83,8 @@ namespace KVHAI.Controllers.Staff
             }
             else if (role == "cashier1")
             {
-                return Ok(new { redirectUrl = "/kvhai/staff/offlinepayment/" });
+                return Ok(new { redirectUrl = "/kvhai/staff/offlinepayment/home" });
+                //return Ok(new { redirectUrl = "/kvhai/staff/offlinepayment/" });
             }
             else if (role == "cashier2")
             {

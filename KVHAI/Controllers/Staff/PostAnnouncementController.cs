@@ -121,7 +121,12 @@ namespace KVHAI.Controllers.Staff
                 Message_Type = "All"
             };
 
-            await _notification.InsertNotificationPersonal(notif);
+            int resultInsertNotification = await _notification.InsertNotificationPersonal(notif);
+
+            if (resultInsertNotification < 1)
+            {
+                return BadRequest("There was an error posting announcement.");
+            }
 
             var model = await _announcementRepository.ShowAnnouncement();
 

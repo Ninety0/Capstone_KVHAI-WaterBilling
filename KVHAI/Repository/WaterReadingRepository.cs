@@ -1,6 +1,7 @@
 ﻿using KVHAI.CustomClass;
 using KVHAI.Models;
 using System.Data.SqlClient;
+using System.Text;
 
 namespace KVHAI.Repository
 {
@@ -23,6 +24,7 @@ namespace KVHAI.Repository
         {
             try
             {
+                int result = 0;
                 waterReading.Date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
@@ -33,7 +35,14 @@ namespace KVHAI.Repository
                         command.Parameters.AddWithValue("@consumption", await _sanitize.HTMLSanitizerAsync(waterReading.Consumption));
                         command.Parameters.AddWithValue("@date", waterReading.Date);
 
-                        int result = await command.ExecuteNonQueryAsync();
+                        result = await command.ExecuteNonQueryAsync();
+
+
+                        // INSERT FORECAST DATA TOO IF POSSIBLE
+                        //var yearNumber = !string.IsNullOrEmpty(waterReading.Date) ? DateTime.ParseExact(waterReading.Date, "yyyy-MM-dd HH:mm:ss", null).Year : 0;
+                        //INSERT ACTUAL DATA IN DATABASE
+                        await InsertActualData(waterReading.Address_ID, waterReading.Date, waterReading.Consumption);
+
 
                         return result > 0 ? 1 : 0;
                     }
@@ -45,6 +54,141 @@ namespace KVHAI.Repository
             }
         }
 
+        public async Task InsertActualData(string addressID, string date, string current_consumption)
+        {
+            try
+            {
+                var waterReadingList = await _listRepository.WaterReadingList();
+                var readingCountByAddress = waterReadingList.Where(a => a.Address_ID == addressID).Select(c => c.Consumption).Count();
+
+                if (readingCountByAddress < 2)
+                {
+                    return;
+                }
+
+                var previousReading = await GetPreviousReadingForActualData(date, addressID);
+
+                var actualData = Convert.ToDouble(current_consumption) - Convert.ToDouble(previousReading.Consumption);
+                var actualDate = DateTime.TryParse(date, out DateTime _date) ? _date.AddMonths(-1) : DateTime.Now.AddMonths(-1);
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("INSERT INTO actual_data_tb(address_id,actual_data,date)VALUES(@id,@data,@date)", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", addressID);
+                        command.Parameters.AddWithValue("@data", actualData);
+                        command.Parameters.AddWithValue("@date", actualDate);
+
+                        await command.ExecuteNonQueryAsync();
+
+                        await InsertForecastData(addressID);
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+                //return 0;
+            }
+        }
+
+        public async Task InsertForecastData(string addressID)
+        {
+            try
+            {
+                var actualDataList = await _listRepository.ActualDataList();
+                var dataCountByAddress = actualDataList.Where(a => a.Address_ID == addressID).Count();
+                var sortedByDateDescending = actualDataList.Where(a => a.Address_ID == addressID)
+                    .OrderByDescending(a => a.Date).ToList();
+
+                var newDataList = new List<Double>();
+
+                if (dataCountByAddress < 5)
+                {
+                    return;
+                }
+
+                for (int i = 0; i < 5; i++)
+                {
+                    newDataList.Add(Convert.ToDouble(sortedByDateDescending[i].Actual_Data));
+                }
+
+                var average = newDataList.Average();
+                var forecastDate = DateTime.Now;
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand("INSERT INTO forecast_tb(address_id,forecast_data,date)VALUES(@id,@data,@date)", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", addressID);
+                        command.Parameters.AddWithValue("@data", average);
+                        command.Parameters.AddWithValue("@date", forecastDate);
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        public async Task<WaterReading> GetPreviousReadingForActualData(string date, string addressID)
+        {
+            // Validate inputs
+            if (string.IsNullOrEmpty(date) || string.IsNullOrEmpty(addressID))
+            {
+                return null;
+            }
+
+            var datePrevious = "";
+            if (DateTime.TryParse(date, out DateTime _date))
+            {
+                datePrevious = _date.AddMonths(-1).ToString("yyyy-MM");
+            }
+            else
+            {
+                return null; // Invalid date format
+            }
+
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                SELECT * FROM water_reading_tb
+                WHERE addr_id = @id 
+                AND FORMAT(date_reading, 'yyyy-MM') = @prevdate", connection))
+                    {
+                        command.Parameters.AddWithValue("@id", addressID);
+                        command.Parameters.AddWithValue("@prevdate", datePrevious);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return new WaterReading
+                                {
+                                    Reading_ID = reader.GetInt32(0).ToString(),
+                                    Address_ID = reader.GetInt32(2).ToString(),
+                                    Consumption = reader.GetInt32(3).ToString(),
+                                    Date = reader.GetDateTime(4).ToString(),
+                                };
+                            }
+                            return null; // No reading found for previous month
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                // You might want to use proper logging here
+                Console.WriteLine($"Error getting previous reading: {ex.Message}");
+                throw; // or return null depending on your error handling strategy
+            }
+        }
 
         ///////////
         // READ ///
@@ -180,23 +324,34 @@ namespace KVHAI.Repository
             return models;
         }
 
-        public async Task<ModelBinding> GetAllReadingByResident(string addressID, string residentID = "")
+        public async Task<ModelBinding> GetAllReadingByResident(string addressID, string residentID = "", string year = "")
         {
             var monthNow = DateTime.Now.ToString("yyyy-MM");
             var waterReading = new List<WaterReading>();
             var models = new ModelBinding();
 
-            using (var connection = await _dbConnect.GetOpenConnectionAsync())
-            {
-                using (var command = new SqlCommand(@"
-                    select * from water_reading_tb wr
+            var query = new StringBuilder();
+
+            query.AppendLine(@"select * from water_reading_tb wr
                     JOIN address_tb a ON wr.addr_id = a.addr_id
                     JOIN resident_tb r ON a.res_id = r.res_id
-                    WHERE a.addr_id = @addr_id
-                    ORDER BY date_reading DESC
-                ", connection)) //AND r.res_id = @res_id
+                    WHERE a.addr_id = @addr_id");
+            if (!string.IsNullOrEmpty(year))
+            {
+                query.AppendLine("AND FORMAT(date_reading, 'yyyy') = @year");
+            }
+            query.AppendLine("ORDER BY date_reading DESC");
+
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var command = new SqlCommand(query.ToString(), connection)) //AND r.res_id = @res_id
                 {
                     command.Parameters.AddWithValue("@addr_id", addressID);
+                    if (!string.IsNullOrEmpty(year))
+                    {
+                        command.Parameters.AddWithValue("@year", year);
+                    }
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
@@ -221,7 +376,7 @@ namespace KVHAI.Repository
             return models;
         }
 
-        public async Task<List<WaterReading>> GerReadingForGraph(string addressID, string year = "")
+        public async Task<List<WaterReading>> GerReadingForGraph1(string addressID, string year = "")
         {
             var monthNow = DateTime.Now.ToString("yyyy-MM");
             var waterReading = new List<WaterReading>();
@@ -255,6 +410,94 @@ namespace KVHAI.Repository
             }
             return waterReading;
         }
+
+        public async Task<List<WaterReading>> GerReadingForGraphCompensate(string addressID, int monthNum, int countData, string year = "")
+        {
+            var waterReading = new List<WaterReading>();
+            var currentYear = int.Parse(year);
+            var previousYear = currentYear - 1;
+
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                // Fetch data for the current year
+                //        using (var command = new SqlCommand(@"
+                //    SELECT * 
+                //    FROM water_reading_tb 
+                //    WHERE addr_id = @addr_id 
+                //      AND YEAR(date_reading) = @currentYear
+                //    ORDER BY date_reading
+                //", connection))
+                //        {
+                //            command.Parameters.AddWithValue("@addr_id", addressID);
+                //            command.Parameters.AddWithValue("@currentYear", currentYear);
+
+                //            using (var reader = await command.ExecuteReaderAsync())
+                //            {
+                //                while (await reader.ReadAsync())
+                //                {
+
+
+                //                    var wr = new WaterReading
+                //                    {
+                //                        Reading_ID = reader["reading_id"].ToString() ?? string.Empty,
+                //                        Address_ID = reader["addr_id"].ToString() ?? string.Empty,
+                //                        Consumption = reader["consumption"].ToString() ?? string.Empty,
+                //                        Date = reader["date_reading"] != DBNull.Value
+                //                            ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd HH:mm:ss")
+                //                            : string.Empty
+                //                    };
+                //                    monthNumber = !string.IsNullOrEmpty(wr.Date) ? DateTime.ParseExact(wr.Date, "yyyy-MM-dd HH:mm:ss", null).Month : 0;
+                //                    waterReading.Add(wr);
+                //                }
+                //            }
+                //        }
+
+                // Check if the current year has enough data (>= 5 months)
+                if (countData < 5)
+                {
+                    int monthReading = 0;
+                    if (monthNum < 5)
+                    {
+                        monthReading = 12 - (5 - monthNum);//12-
+                    }
+                    // Fetch additional data from the previous year (months >= 9)
+                    using (var command = new SqlCommand(@"
+                SELECT * 
+                FROM water_reading_tb 
+                WHERE addr_id = @addr_id 
+                  AND YEAR(date_reading) = @previousYear 
+                  AND MONTH(date_reading) >= @month
+                ORDER BY date_reading
+            ", connection))
+                    {
+                        command.Parameters.AddWithValue("@addr_id", addressID);
+                        command.Parameters.AddWithValue("@previousYear", previousYear);
+                        command.Parameters.AddWithValue("@month", monthReading);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var wr = new WaterReading
+                                {
+                                    Reading_ID = reader["reading_id"].ToString() ?? string.Empty,
+                                    Address_ID = reader["addr_id"].ToString() ?? string.Empty,
+                                    Consumption = reader["consumption"].ToString() ?? string.Empty,
+                                    Date = reader["date_reading"] != DBNull.Value
+                                        ? Convert.ToDateTime(reader["date_reading"]).ToString("yyyy-MM-dd HH:mm:ss")
+                                        : string.Empty
+                                };
+                                waterReading.Add(wr);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return waterReading.OrderBy(r => r.Date).ToList(); // Ensure the data is sorted by date
+        }
+
+
 
 
 
@@ -498,5 +741,26 @@ namespace KVHAI.Repository
                 return 0;
             }
         }
+
+        public async Task<List<int>> GetYearList()
+        {
+            var wrList = await _listRepository.WaterReadingList();
+            var orderByYear = wrList.OrderByDescending(d => d.Date).ToList();
+            var yearLst = new List<int>();
+            foreach (var year in orderByYear)
+            {
+                if (DateTime.TryParse(year.Date, out DateTime yearResult))
+                {
+                    int yearData = Convert.ToInt32(yearResult.ToString("yyyy"));
+                    if (!yearLst.Contains(yearData))
+                    {
+                        yearLst.Add(yearData);
+                    }
+                }
+            }
+
+            return yearLst;
+        }
+
     }
 }

@@ -116,7 +116,7 @@ namespace KVHAI.Repository
                                     Url = reader.IsDBNull(reader.GetOrdinal("url")) ? null : reader.GetString(reader.GetOrdinal("url")),
                                     Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
                                     Message_Type = reader.GetString(reader.GetOrdinal("message_type")),
-                                    Is_Read = reader.GetBoolean(reader.GetOrdinal("is_read")),
+                                    //Is_Read = reader.GetBoolean(reader.GetOrdinal("is_read")),
                                 };
                                 notifications.Add(announce);
                             }
@@ -514,6 +514,72 @@ namespace KVHAI.Repository
                     }
                 }
                 return waterRead;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<ActualData>> ActualDataList()
+        {
+            try
+            {
+                var actualData = new List<ActualData>();
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"SELECT * FROM actual_data_tb", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var ad = new ActualData
+                                {
+                                    CID = reader.GetInt32(0).ToString(),
+                                    Address_ID = reader.GetInt32(1).ToString(),
+                                    Actual_Data = reader.GetDouble(2).ToString(),
+                                    Date = reader.GetDateTime(3).ToString("yyyy-MM-dd"),
+                                };
+                                actualData.Add(ad);
+                            }
+                        }
+                    }
+                }
+                return actualData;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<ForecastData>> ForecastDataList()
+        {
+            try
+            {
+                var forecastData = new List<ForecastData>();
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"SELECT * FROM forecast_tb", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var fd = new ForecastData
+                                {
+                                    FID = reader.GetInt32(0).ToString(),
+                                    Address_ID = reader.GetInt32(1).ToString(),
+                                    Forecast_Data = reader.GetDouble(2).ToString(),
+                                    Date = reader.GetDateTime(3).ToString("yyyy-MM-dd"),
+                                };
+                                forecastData.Add(fd);
+                            }
+                        }
+                    }
+                }
+                return forecastData;
             }
             catch (Exception)
             {
