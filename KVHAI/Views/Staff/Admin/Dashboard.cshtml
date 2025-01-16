@@ -186,14 +186,14 @@
                 toastr.success("New data added");
 
                 GetGraphData();
-                GetNewRegister();
+                GetNewReading();
                 GetNewPayment();
                 GetRequestToday();
             });
 
             var myChart = null; // Declare the global variable
             GetGraphData();
-            GetNewRegister();
+            GetNewReading();
             GetNewPayment();
             GetRequestToday();
 
@@ -205,15 +205,15 @@
                 GetGraphData(); // Call chartDataSets with the selected year
             });
 
-            function GetNewRegister() {
+            function GetNewReading() {
                 $.ajax({
-                    url: '/AdminDashboard/GetRegisterAddress',
+                    url: '/AdminDashboard/GetNewReading',
                     type: 'GET',
                     success: function (response) {
                         console.log(response);
-                        var result = $(response).find('#table_address').html();
+                        var result = $(response).find('#table_reading').html();
                         var resultNumber = $(response).find('#number_address').html();
-                        $('#table_address').html(result);
+                        $('#table_reading').html(result);
                         $('#number_address').html(resultNumber);
 
                     },
@@ -304,10 +304,12 @@
                         var selectedYear = $('#select_year').val();
                         var yearData = yearsData[selectedYear]; // Get data for the selected year
                         var actualData = yearData.actualData[yearData.actualData.length - 1];
-                        var avgData = yearData.forecastData[yearData.forecastData.length - 1];
+                        var avgData = yearData.forecastData[yearData.actualData.length - 1];
 
                         $('#current_data').text(actualData);
                         $('#average_data').text(avgData);
+                        //console.log(`index=${yearData.forecastData.length - 1} ,average data= ${avgData}`);
+                        //console.log(`index=${yearData.actualData.length - 1} ,actual data= ${actualData}`);
 
                         chartDataSets(yearsData); // Call chartDataSets with the initial year
                     },
@@ -878,58 +880,105 @@
 <div class="row align-items-stretch">
     <div class="col-xl-7 d-flex flex-column">
         <!--register address-->
-        <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard mb-3" style="height: 250px">
-            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recent Water Reading</h5>
 
-            <div class="container-fluid container_data">
+
+        <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard mb-3" style="height: 250px; overflow: hidden;">
+            <div class="d-flex border-bottom border-2 p-2 mb-3">
+                <div class="">
+                    <h5 class="fw-bold text-muted ">Recent Water Reading</h5>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h6 class="fw-bold text-muted border rounded ms-3" style="
+            background-color: #e2e8f0;
+            color: white;
+            padding: 5px 10px;
+        ">
+                            @DateTime.Now.ToString("MMMM")
+                        </h6>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid container_data position-relative" style="max-height: 180px; overflow-y: auto;">
                 <div class="table-responsive">
-                    <table class="table table-borderless table-striped" id="table_address">
+                    <table class="table table-borderless table-striped" id="table_reading">
                         <thead>
                             <tr>
-                                <th scope="col">Name</th>
-                                <th scope="col">Block</th>
-                                <th scope="col">Lot</th>
-                                <th scope="col">Street</th>
-                                <th scope="col">Date</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Consumption</th>
+                                <th scope="col">Time</th>
+                                <th scope="col">Read By</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="overflow-y-auto position-relative">
                             @{
-                                if (Model.ResidentAddress != null)
+                                if (Model.WaterReadingList != null)
                                 {
-                                    if (Model.ResidentAddress.Count > 0)
+                                    if (Model.WaterReadingList.Count > 0)
                                     {
-                                        foreach (var item in Model.ResidentAddress)
+                                        for (int i = 0; i < Model.WaterReadingList.Count + 50; i++)
                                         {
-                                            <tr data-address="@item.Address_ID">
-                                                <td data-res="@item.Resident_ID">@item.Name</td>
-                                                <td>@item.Block</td>
-                                                <td>@item.Lot</td>
-                                                <td data-st="@item.Street_ID">@item.Street</td>
-                                                <td>@item.Register_At</td>
+                                            var employeeName = string.Join(", ",
+                                                Model.EmployeeList[0].Lname,
+                                                Model.EmployeeList[0].Fname,
+                                                Model.EmployeeList[0].Mname);
+
+                                            var address = string.Join(" ",
+                                                "Blk " + Model.AddressList[0].Block,
+                                                "Lot " + Model.AddressList[0].Lot,
+                                                Model.AddressList[0].Street_Name) + " St.";
+
+                                            var consumption = Model.WaterReadingList[0].Consumption;
+                                            var date = DateTime.TryParse(Model.WaterReadingList[0].Date, out DateTime hour) ?
+                                                hour.ToString("hh:mm tt") : "00:00";
+
+                                            <tr data-address="@Model.WaterReadingList[0].Reading_ID">
+                                                @*<td data-res="@Model.ResidentList[i].Res_ID">@name</td>*@
+                                                <td data_addr="@Model.AddressList[0].Address_ID">@address</td>
+                                                <td>@consumption</td>
+                                                <td>@date</td>
+                                                <td data-emp="@Model.EmployeeList[0].Emp_ID">@employeeName</td>
                                             </tr>
+
                                         }
                                     }
                                     else
                                     {
                                         <tr>
-                                            <td colspan="5">No Data Found.</td>
+                                            <td colspan="4">No Data Found.</td>
                                         </tr>
                                     }
                                 }
                             }
                         </tbody>
                     </table>
-
                 </div>
             </div>
         </div>
 
-        <!--Recently Paid-->
-        <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard" style="height: 300px">
-            <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Recently Paid</h5>
 
-            <div class="container-fluid container_data">
+        <!--Recently Paid-->
+        <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard" style="height: 300px; overflow: hidden;">
+            <div class="d-flex border-bottom border-2 p-2 mb-3">
+                <div class="">
+                    <h5 class="fw-bold text-muted">Recently Paid</h5>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h6 class="fw-bold text-muted border rounded ms-3" style="
+                        background-color: #e2e8f0;
+                        color: white;
+                        padding: 5px 10px;
+                    ">
+                            @DateTime.Now.ToString("MMMM")
+
+                        </h6>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid container_data" style="max-height: 220px; overflow-y: auto;">
                 <div class="table-responsive">
                     <table class="table table-borderless table-striped" id="table_payment">
                         <thead>
@@ -943,39 +992,33 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @{
-                                if (Model.PaymentList != null)
+                            @if (Model.PaymentList != null && Model.PaymentList.Count > 0)
+                            {
+                                foreach (var item in Model.PaymentList)
                                 {
-                                    if (Model.PaymentList.Count > 0)
-                                    {
-                                        foreach (var item in Model.PaymentList)
-                                        {
-                                            var occupancy = item.Is_Owner ? "Owner" : "Renter";
-                                            <tr data-address="@item.Payment_ID">
-                                                <td data-res="@item.Resident_ID">@item.Paid_By</td>
-                                                <td>Blk @item.Block Lot @item.Lot @item.Street St. </td>
-                                                <td>@item.Payment_Method</td>
-                                                <td>@item.Payment_Status</td>
-                                                <td>@item.Payment_Date</td>
-                                                <td>@occupancy</td>
-                                            </tr>
-                                        }
-                                    }
-
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="6" class="text-center">No Data Found.</td>
+                                    var occupancy = item.Is_Owner ? "Owner" : "Renter";
+                                    <tr data-address="@item.Payment_ID">
+                                        <td data-res="@item.Resident_ID">@item.Paid_By</td>
+                                        <td>Blk @item.Block Lot @item.Lot @item.Street St. </td>
+                                        <td>@item.Payment_Method</td>
+                                        <td>@item.Payment_Status</td>
+                                        <td>@item.Payment_Date</td>
+                                        <td>@occupancy</td>
                                     </tr>
                                 }
                             }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center">No Data Found.</td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
-
                 </div>
             </div>
         </div>
+
     </div>
 
     <div class="col-xl-5">

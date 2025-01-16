@@ -27,7 +27,61 @@
 }
 <div class="card shadow-sm">
     <div class="card-body">
-        <div id="calendars"></div>
+        <div class="row g-3">
+            <div class="col-md-6 border rounded shadow-sm p-3">
+                <div id="calendars"></div>
+            </div>
+            <div class="col-md-6 border rounded shadow-sm p-3">
+                <div class="row border mb-3">
+                    <div class="col">
+                        <!--LOCATION-->
+                        <label for="startDate" class="form-label fw-bold text-small text-muted">Location</label>
+                        <select id="location" class="form-select" aria-label="Default select example">
+                            <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                            <option value="2">Phase 1 (Blk 41 to  48)</option>
+                            <option value="3">Blk 24 to 40</option>
+                            <option value="4">Blk 7 to 23</option>
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label for="startDate" class="form-label fw-bold text-small text-muted">Status</label>
+                        <select id="location" class="form-select" aria-label="Default select example">
+                            <option selected value="">All</option>
+                            <option  value="1">Complete</option>
+                            <option value="4">Pending</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Consumption</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2</th>
+                                <td>Jacob</td>
+                                <td>Thornton</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3</th>
+                                <td colspan="2">Larry the Bird</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

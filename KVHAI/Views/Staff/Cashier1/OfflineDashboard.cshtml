@@ -34,7 +34,35 @@
             <h5 class="fw-bold text-muted border-bottom border-2 p-2 mb-3">Payment History</h5>
             <div class="header-border"></div>
             <!--EVO CALENDAR-->
+            <!-- Date Filter Section -->
+            <div class="row mb-3">
+                <!--START DATE-->
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <label for="startDate" class="form-label fw-bold text-small text-muted">Start Date</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
 
+                <!--End DATE-->
+                <div class="col-md-4">
+                    <label for="endDate" class="form-label fw-bold text-small text-muted">End Date</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+
+                <!--PRTIN-->
+                <div class="col-md-4 text-end d-flex justify-content-end align-items-end">
+                    <button type="button" class="btn btn-primary me-2" id="filterButton">Apply Filter</button>
+                    <button type="button" class="btn btn-secondary me-2" id="resetButton">Reset</button>
+                    <button type="button" class="btn btn-success" id="printButton">
+                        <i class="bi bi-printer"></i> Print
+                    </button>
+                </div>
+                @*<div class="col-md-12 mt-3 text-end">
+                <button type="button" class="btn btn-primary" id="filterButton">Apply Filter</button>
+                <button type="button" class="btn btn-secondary" id="resetButton">Reset</button>
+            </div>*@
+            </div>
+
+            <!-- Payment Table -->
             <table class="table" id="payment_table">
                 <thead>
                     <tr>
@@ -220,15 +248,17 @@
                 }
             });
 
-            function onpagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
+            function offpagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
 
                 var array = {
-                    page_index: i
+                    page_index: i,
+                    startDate: $("#startDate").val(),
+                    endDate: $("#endDate").val()
                 };
 
 
                 $.ajax({
-                    url: '/OnlinePayment/OnlinePaymentPagination',
+                    url: '/OfflinePayment/OfflinePaymentPagination',
                     type: "POST",
                     data: array,
                     success: function (response) {
@@ -254,6 +284,88 @@
                     }
                 });
             }
+
+            //RESET BUTTON
+            $(document).on('click', '#resetButton', function () {
+                console.log("click");
+                $("#startDate").val('');
+                $("#endDate").val('');
+                offpagination();
+            });
+
+            //APPLY FILTER
+            $(document).on('click', '#filterButton', function () {
+                offpagination();
+            });
+
+            $(document).on('click', '#printButton', function (e) {
+                e.preventDefault(); // Prevent default link behavior
+
+                // Clone the table
+                const clonedTable = $('#payment_table').clone();
+
+                // Remove the "Action" column
+                clonedTable.find('thead tr th:last-child').remove();
+                clonedTable.find('tbody tr td:last-child').remove();
+
+                // Remove any unwanted pagination rows (last row containing pagination controls)
+                clonedTable.find('tbody tr:last-child').remove();
+
+                // Add inline styles to the cloned table
+                clonedTable.css({
+                    "border-collapse": "collapse",
+                    "width": "100%"
+                });
+                clonedTable.find('th, td').css({
+                    "border": "1px solid #ddd",
+                    "padding": "8px",
+                    "text-align": "left"
+                });
+                clonedTable.find('th').css({
+                    "background-color": "#f2f2f2"
+                });
+
+                // Create the header element
+                const headerElement = $('<h1>', {
+                    text: 'Offline Payment Activity',
+                    css: {
+                        'text-align': 'center',
+                        'font-family': 'Arial, sans-serif',
+                        'margin-bottom': '20px'
+                    }
+                });
+
+                // Create the date filter element
+                const dateFilterElement = $('<div>', {
+                    html: `
+    <p style="margin-top: 16px; font-family: Arial, sans-serif;">
+        <strong>From:</strong> <span id="fromDate">${$('#startDate').val() || ''}</span>
+        <br/>
+        <strong>To:</strong> <span id="toDate">${$('#endDate').val() || ''}</span>
+    </p>
+`,
+                    css: {
+                        'text-align': 'left',
+                        'font-family': 'Arial, sans-serif',
+                        'margin-top': '20px'
+                    }
+                });
+
+                // Combine the header, table, and date filter
+                const styledContent = $('<div>')
+                    .append(headerElement)
+                    .append(dateFilterElement)
+                    .append(clonedTable);
+
+                // Create a print window and inject the styled content
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                printWindow.document.open();
+                printWindow.document.write(styledContent.html());
+
+                // Close the document and trigger the print dialog
+                printWindow.document.close();
+                printWindow.print();
+            });
         });
     </script>
 

@@ -1,11 +1,11 @@
-﻿.container_dashboard {
+.container_dashboard {
     /*height: auto;
     max-height:500px;*/
 }
 .container_data {
-    height: auto;
+    /*height: auto;
     max-height: 500px;
-    overflow-y: auto;
+    overflow-y: auto;*/
 }
 
 /* Large Devices */

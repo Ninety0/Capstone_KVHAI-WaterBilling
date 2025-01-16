@@ -47,11 +47,14 @@ namespace KVHAI.Models
         public List<WaterReading>? AllWaterConsumptionByResident { get; set; }
         public List<ResidentAddress> RequestAddressList { get; set; }
         public List<Renter> RenterList { get; set; }
-        public List<Resident> ResidentList { get; set; }
         public List<RequestDetails> RequestDetailList { get; set; }
 
         public List<int> YearList = new List<int>();
 
+        public List<Resident> ResidentList { get; set; }
+        public List<WaterReading> WaterReadingList { get; set; }
+        public List<Employee> EmployeeList { get; set; }
+        public List<Address> AddressList { get; set; }
 
     }
 }

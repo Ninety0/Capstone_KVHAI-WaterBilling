@@ -236,5 +236,54 @@ namespace KVHAI.Controllers.Staff.Cashier1
                 return BadRequest($"An error occurred: {ex.Message}");
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> OfflinePaymentPagination(int page_index, string startDate, string endDate)
+        {
+            try
+            {
+                // Parse and validate startDate and endDate
+                DateTime? parsedStartDate = DateTime.TryParse(startDate, out DateTime resultSD) ? resultSD : (DateTime?)null;
+                DateTime? parsedEndDate = DateTime.TryParse(endDate, out DateTime resultED) ? resultED : (DateTime?)null;
+
+                // Fetch total count for pagination
+                var numberOfData = await _paymentRepository.GetCountOnlinePayment("offline",
+                    parsedStartDate?.ToString("yyyy-MM-dd"),
+                    parsedEndDate?.ToString("yyyy-MM-dd"));
+
+                // Initialize and configure pagination
+                var pagination = new Pagination<Payment>
+                {
+                    NumberOfData = numberOfData,
+                    ScriptName = "offpagination"
+                };
+                pagination.set(10, 5, page_index);
+
+                // Fetch paginated data
+                pagination.ModelList = await _paymentRepository.GetRecentOnlinePayment(
+                    pagination.Offset,
+                    10,
+                    "offline",
+                    parsedStartDate?.ToString("yyyy-MM-dd"),
+                    parsedEndDate?.ToString("yyyy-MM-dd"));
+
+                // Prepare the view model
+                var viewmodel = new ModelBinding
+                {
+                    PaymentPagination = pagination
+                };
+
+                // Return the appropriate view
+                return View("~/Views/Staff/Cashier1/OfflineDashboard.cshtml", viewmodel);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception internally (replace with your logging framework)
+                Console.Error.WriteLine($"Error in OnlinePaymentPagination: {ex.Message}");
+
+                // Return a generic error message to the client
+                return BadRequest("An error occurred while processing your request. Please try again later.");
+            }
+        }
     }
 }

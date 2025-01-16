@@ -63,13 +63,20 @@ namespace KVHAI.Controllers.Staff.Cashier2
         }
 
         [HttpPost]
-        public async Task<IActionResult> OnlinePaymentPagination(int page_index)
+        public async Task<IActionResult> OnlinePaymentPagination1(int page_index, string startDate, string endDate)
         {
             try
             {
+                if (!string.IsNullOrEmpty(startDate))
+                    startDate = DateTime.TryParse(startDate, out DateTime resultSD) ? startDate : "";
+
+                if (!string.IsNullOrEmpty(endDate))
+                    endDate = DateTime.TryParse(endDate, out DateTime resultED) ? startDate : "";
+
+
                 var pagination2 = new Pagination<Payment>
                 {
-                    NumberOfData = await _paymentRepository.GetCountOnlinePayment("online"),
+                    NumberOfData = await _paymentRepository.GetCountOnlinePayment("online", startDate, endDate),
                     ScriptName = "onpagination"
                 };
                 pagination2.set(10, 5, page_index);
@@ -87,6 +94,55 @@ namespace KVHAI.Controllers.Staff.Cashier2
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> OnlinePaymentPagination(int page_index, string startDate, string endDate)
+        {
+            try
+            {
+                // Parse and validate startDate and endDate
+                DateTime? parsedStartDate = DateTime.TryParse(startDate, out DateTime resultSD) ? resultSD : (DateTime?)null;
+                DateTime? parsedEndDate = DateTime.TryParse(endDate, out DateTime resultED) ? resultED : (DateTime?)null;
+
+                // Fetch total count for pagination
+                var numberOfData = await _paymentRepository.GetCountOnlinePayment("online",
+                    parsedStartDate?.ToString("yyyy-MM-dd"),
+                    parsedEndDate?.ToString("yyyy-MM-dd"));
+
+                // Initialize and configure pagination
+                var pagination = new Pagination<Payment>
+                {
+                    NumberOfData = numberOfData,
+                    ScriptName = "onpagination"
+                };
+                pagination.set(10, 5, page_index);
+
+                // Fetch paginated data
+                pagination.ModelList = await _paymentRepository.GetRecentOnlinePayment(
+                    pagination.Offset,
+                    10,
+                    "online",
+                    parsedStartDate?.ToString("yyyy-MM-dd"),
+                    parsedEndDate?.ToString("yyyy-MM-dd"));
+
+                // Prepare the view model
+                var viewmodel = new ModelBinding
+                {
+                    PaymentPagination = pagination
+                };
+
+                // Return the appropriate view
+                return View("~/Views/Staff/Cashier2/OnlineDashboard.cshtml", viewmodel);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception internally (replace with your logging framework)
+                Console.Error.WriteLine($"Error in OnlinePaymentPagination: {ex.Message}");
+
+                // Return a generic error message to the client
+                return BadRequest("An error occurred while processing your request. Please try again later.");
             }
         }
 

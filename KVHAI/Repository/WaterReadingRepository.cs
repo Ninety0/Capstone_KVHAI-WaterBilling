@@ -694,10 +694,10 @@ namespace KVHAI.Repository
 
                 var _locationPercent = new LocationPercentage
                 {
-                    //Location = $"location{i}",
-                    //Percentage = percentLocation
                     Location = $"location{i}",
-                    Percentage = 25 * i
+                    Percentage = percentLocation
+                    //Location = $"location{i}",
+                    //Percentage = 25 * i
                 };
 
                 locationPercentList.Add(_locationPercent);
@@ -760,6 +760,95 @@ namespace KVHAI.Repository
             }
 
             return yearLst;
+        }
+
+        public async Task<ModelBinding> GetLatestReadingByMonth()
+        {
+            try
+            {
+                var waterRead = new List<WaterReading>();
+                var addressRead = new List<Address>();
+                var residentRead = new List<Resident>();
+                var empRead = new List<Employee>();
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+                        select * from water_reading_tb wr
+                        JOIN address_tb a ON wr.addr_id = a.addr_id
+                        JOIN street_tb s ON a.st_id = s.st_id
+                        JOIN resident_tb r ON a.res_id = r.res_id
+                        JOIN employee_tb e ON wr.emp_id = e.emp_id
+                        WHERE FORMAT(date_reading, 'yyyy-MM') = @date
+                        ORDER BY date_reading DESC
+                    ", connection))
+                    {
+                        command.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM"));
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var _wr = new WaterReading
+                                {
+                                    Reading_ID = reader["reading_id"].ToString(),
+                                    Emp_ID = reader["emp_id"].ToString(),
+                                    Address_ID = reader["addr_id"].ToString(),
+                                    Consumption = reader["consumption"].ToString(),
+                                    Date = reader.GetDateTime(4).ToString("yyyy-MM-dd HH:mm:ss"),
+                                };
+                                waterRead.Add(_wr);
+
+                                var _address = new Address
+                                {
+                                    Address_ID = Convert.ToInt32(reader["addr_id"].ToString()),
+                                    Resident_ID = Convert.ToInt32(reader["res_id"].ToString()),
+                                    Block = reader["block"].ToString(),
+                                    Lot = reader["lot"].ToString(),
+                                    Street_ID = Convert.ToInt32(reader["st_id"].ToString()),
+                                    Street_Name = reader["st_name"].ToString()
+                                };
+                                addressRead.Add(_address);
+
+                                var res = new Resident
+                                {
+                                    Res_ID = reader["res_id"].ToString(),
+                                    Lname = reader["lname"].ToString(),
+                                    Fname = reader["fname"].ToString(),
+                                    Mname = reader["mname"].ToString(),
+                                };
+                                residentRead.Add(res);
+
+                                var emp = new Employee
+                                {
+                                    Emp_ID = reader.GetInt32(0).ToString(),
+                                    Lname = reader.GetString(32).ToString(),
+                                    Fname = reader.GetString(33).ToString(),
+                                    Mname = reader.GetString(34).ToString(),
+                                };
+                                empRead.Add(emp);
+
+                            }
+                        }
+
+
+                        var model = new ModelBinding
+                        {
+                            WaterReadingList = waterRead,
+                            AddressList = addressRead,
+                            ResidentList = residentRead,
+                            EmployeeList = empRead
+                        };
+
+                        return model;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
     }

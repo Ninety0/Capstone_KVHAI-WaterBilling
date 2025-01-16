@@ -433,12 +433,12 @@ namespace KVHAI.Repository
                 using (var connection = await _dbConnect.GetOpenConnectionAsync())
                 {
                     using (var command = new SqlCommand(@"
-                        select r.lname,r.fname,r.mname,s.st_name, a.*,wb.*, r.account_number  
+                        select r.lname,r.fname,r.mname,s.st_name, a.*,wb.*
                         from water_billing_tb wb
                         JOIN address_tb a ON wb.addr_id = a.addr_id
                         JOIN street_tb s ON a.st_id = s.st_id
                         JOIN resident_tb r ON a.res_id = r.res_id
-                        WHERE waterbill_no = @num AND wb.location = @location", connection))
+                        WHERE waterbill_no = @num AND wb.location = @location", connection))//, r.account_number  
                     {
                         command.Parameters.AddWithValue("@num", WBNumber ?? "1");
                         command.Parameters.AddWithValue("@location", location);
@@ -478,7 +478,7 @@ namespace KVHAI.Repository
                                     Due_Date_To = reader.GetDateTime(26).ToString("MMMM yyyy"),
                                     Status = reader.GetString(27),
                                     WaterBill_No = reader.GetInt32(28).ToString(),
-                                    Account_Number = reader.GetString(29)
+                                    //Account_Number = reader.GetString(29)
 
 
                                 };

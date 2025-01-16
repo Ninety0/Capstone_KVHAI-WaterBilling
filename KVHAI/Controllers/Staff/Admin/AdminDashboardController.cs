@@ -54,23 +54,23 @@ namespace KVHAI.Controllers.Staff.Admin
         {
             var forecastData = await _waterBillingFunction.GetGraphDataDatabaseAdmin(year);
             var model = await _forecasting.GetPercentChange();
-            return Json(model);
+            return Json(forecastData);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetRegisterAddress()
+        public async Task<IActionResult> GetNewReading()
         {
+            var _model = await _waterReadingRepository.GetLatestReadingByMonth();
             var model = await _addressRepository.GetNewRegisteringAddress();
-            int count = model.Count;
-            var modelBinding = new ModelBinding
-            {
-                ResidentAddress = model,
-                CountData = count
+            //int count = model.Count;
+            //var modelBinding = new ModelBinding
+            //{
+            //    ResidentAddress = model,
+            //    CountData = count
 
-            };
-
+            //};
             //return Json(model);
-            return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
+            return View("~/Views/Staff/Admin/Dashboard.cshtml", _model);
         }
 
         [HttpGet]

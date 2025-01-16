@@ -2,6 +2,7 @@
 using KVHAI.Models;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text;
 
 namespace KVHAI.Repository
 {
@@ -435,7 +436,7 @@ namespace KVHAI.Repository
         }
 
 
-        public async Task<List<Payment>> GetRecentOnlinePayment(int offset, int limit, string paymentMethod)
+        public async Task<List<Payment>> GetRecentOnlinePayment1(int offset, int limit, string paymentMethod, string startDate = "", string endDate = "")
         {
             var paymentList = await _listRepository.PayList();
             var methodPay = string.IsNullOrEmpty(paymentMethod) ? "" : paymentMethod;
@@ -444,17 +445,31 @@ namespace KVHAI.Repository
             try
             {
                 var payList = new List<Payment>();
-                using (var connection = await _dBConnect.GetOpenConnectionAsync())
-                {
-                    using (var command = new SqlCommand($@"select p.payment_id, a.addr_id,p.res_id,    
+                var query = new StringBuilder();
+
+                query.AppendLine(@"select p.payment_id, a.addr_id,p.res_id,    
                                 p.transaction_id,a.block,
 	                            a.lot,s.st_name,p.paid_amount, p.bill,p.paid_by, 
 	                            p.payment_status, p.payment_date, payment_method from payment_tb p
                         JOIN address_tb a ON p.addr_id = a.addr_id
-                        JOIN street_tb s ON a.st_id = s.st_id 
-                        WHERE payment_method LIKE @method  ORDER BY payment_date DESC 
-                        OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY", connection))
+                        JOIN street_tb s ON a.st_id = s.st_id WHERE");
+                if (!string.IsNullOrEmpty(startDate))
+                {
+                    query.AppendLine(@"p.payment_date BETWEEN @sd AND @ed AND");
+                }
+                query.AppendLine(@"payment_method LIKE @method  ORDER BY payment_date DESC 
+                        OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY");
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(query.ToString(), connection))
                     {
+                        if (!string.IsNullOrEmpty(startDate))
+                        {
+                            command.Parameters.AddWithValue("@sd", startDate);
+                            command.Parameters.AddWithValue("@ed", string.IsNullOrEmpty(endDate) ?
+                                DateTime.Now.ToString("yyyy-MM-dd") : endDate);
+
+                        }
                         command.Parameters.AddWithValue("@method", "%" + methodPay + "%");
                         using (var reader = await command.ExecuteReaderAsync())
                         {
@@ -494,14 +509,145 @@ namespace KVHAI.Repository
 
         }
 
-        public async Task<int> GetCountOnlinePayment(string paymentMethod)
+        public async Task<List<Payment>> GetRecentOnlinePayment(int offset, int limit, string paymentMethod, string startDate = "", string endDate = "")
+        {
+            try
+            {
+                var payList = new List<Payment>();
+                var methodPay = string.IsNullOrEmpty(paymentMethod) ? "" : paymentMethod;
+
+                // Build the base query
+                var query = new StringBuilder();
+                query.AppendLine(@"
+            SELECT 
+                p.payment_id, a.addr_id, p.res_id,    
+                p.transaction_id, a.block, a.lot, s.st_name, 
+                p.paid_amount, p.bill, p.paid_by, 
+                p.payment_status, p.payment_date, p.payment_method 
+            FROM payment_tb p
+            JOIN address_tb a ON p.addr_id = a.addr_id
+            JOIN street_tb s ON a.st_id = s.st_id 
+            WHERE payment_method LIKE @method");
+
+                // Add date conditions dynamically if provided
+                if (!string.IsNullOrEmpty(startDate))
+                    query.Append(" AND payment_date >= @startDate");
+
+                if (!string.IsNullOrEmpty(endDate))
+                    query.Append(" AND payment_date <= @endDate");
+
+                query.AppendLine(@"
+            ORDER BY p.payment_date DESC 
+            OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY");
+
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(query.ToString(), connection))
+                    {
+                        // Add parameters
+                        command.Parameters.AddWithValue("@method", "%" + methodPay + "%");
+                        command.Parameters.AddWithValue("@offset", offset);
+                        command.Parameters.AddWithValue("@limit", limit);
+
+                        if (!string.IsNullOrEmpty(startDate))
+                            command.Parameters.AddWithValue("@startDate", DateTime.ParseExact(startDate, "yyyy-MM-dd", null));
+
+                        if (!string.IsNullOrEmpty(endDate))
+                            command.Parameters.AddWithValue("@endDate", DateTime.ParseExact(endDate, "yyyy-MM-dd", null));
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var payment = new Payment
+                                {
+                                    Payment_ID = reader.GetInt32(0),
+                                    Address_ID = reader.GetInt32(1),
+                                    Resident_ID = reader.GetInt32(2),
+                                    PayPal_TransactionId = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                                    Block = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                                    Lot = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                                    Street = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                                    Paid_Amount = reader.GetDecimal(7),
+                                    Bill = reader.GetDecimal(8),
+                                    Paid_By = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                                    Payment_Status = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+                                    Payment_Date = reader.GetDateTime(11).ToString("yyyy-MM-dd HH:mm:ss"), // Use consistent format
+                                    Payment_Method = reader.GetString(12),
+                                };
+
+                                payList.Add(payment);
+                            }
+                        }
+                    }
+                }
+
+                return payList;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception using a proper logging framework
+                // Example: _logger.LogError(ex, "Error fetching recent online payments");
+                Console.Error.WriteLine($"Error fetching recent online payments: {ex.Message}");
+                return new List<Payment>(); // Return an empty list to ensure the caller handles it safely
+            }
+        }
+
+
+
+        public async Task<int> GetCountOnlinePayment1(string paymentMethod, string startDate = "", string endDate = "")
         {
             var paymentList = await _listRepository.PayList();
 
-            var count = paymentList.Where(m => m.Payment_Method == paymentMethod).Count();
+            // Use LINQ to filter the payment list
+            var filteredPayments = paymentList
+                .Where(p => p.Payment_Method.Contains(paymentMethod, StringComparison.OrdinalIgnoreCase) &&
+                            DateTime.ParseExact(p.Payment_Date, "yyyy-MM-dd", null) >= DateTime.ParseExact(startDate, "yyyy-MM-dd", null) &&
+                            DateTime.ParseExact(p.Payment_Date, "yyyy-MM-dd", null) >= DateTime.ParseExact(endDate, "yyyy-MM-dd", null))
+                .ToList();
+
+            // Get the count of the filtered payments
+            var count = filteredPayments.Count();
+
+            //var count = paymentList.Where(m => m.Payment_Method == paymentMethod &&
+            //m.Payment_Date == startDate)
+            //    .Count();
 
             return count;
 
         }
+
+        public async Task<int> GetCountOnlinePayment(string paymentMethod, string startDate = "", string endDate = "")
+        {
+            try
+            {
+                var query = new StringBuilder("SELECT COUNT(*) FROM payment_tb WHERE payment_method LIKE @paymentMethod");
+
+                if (!string.IsNullOrEmpty(startDate))
+                    query.Append(" AND payment_date >= @startDate");
+
+                if (!string.IsNullOrEmpty(endDate))
+                    query.Append(" AND payment_date <= @endDate");
+
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(query.ToString(), connection))
+                    {
+                        command.Parameters.AddWithValue("@paymentMethod", "%" + paymentMethod + "%");
+                        if (!string.IsNullOrEmpty(startDate))
+                            command.Parameters.AddWithValue("@startDate", startDate);
+                        if (!string.IsNullOrEmpty(endDate))
+                            command.Parameters.AddWithValue("@endDate", endDate);
+
+                        return (int)await command.ExecuteScalarAsync();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0; // Handle exceptions appropriately
+            }
+        }
+
     }
 }
