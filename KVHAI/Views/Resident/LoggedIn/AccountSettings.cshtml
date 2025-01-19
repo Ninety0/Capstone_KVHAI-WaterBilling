@@ -4,7 +4,7 @@
 
 @{
     Layout = "/Views/Shared/ResidentLayout/_ResidentLayout.cshtml";
-    ViewBag.Title = "Settings";
+    ViewBag.Title = "Profile";
     var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
 }
@@ -182,17 +182,17 @@
             </a>*@
     }
 
-    <a href="/kvhai/resident/account/settings" class="nav_sidebar active mb-3">
-        <div class="row">
-            <div class="col-4  d-flex justify-content-center">
-                <i class="fa-solid fa-gear"></i>
-            </div>
-            <div class="col  d-flex justify-content-start">
-                Settings
-            </div>
-
+<a href="/kvhai/resident/account/settings" class="nav_sidebar active mb-3">
+    <div class="row">
+        <div class="col-4  d-flex justify-content-center">
+            <i class="fa-regular fa-user"></i>
         </div>
-    </a>
+        <div class="col  d-flex justify-content-start">
+            My Account
+        </div>
+
+    </div>
+</a>
 
 }
 
@@ -279,11 +279,10 @@
 
 <a href="/kvhai/resident/account/settings" class="nav_sidebar active mb-3 ps-3">
     <div class="d-flex">
-        <i class="fa-solid fa-gear"></i>
+        <i class="fa-regular fa-user"></i>
         <span class="ms-3">
-            Settings
+            My Account
         </span>
-
     </div>
 </a>
 

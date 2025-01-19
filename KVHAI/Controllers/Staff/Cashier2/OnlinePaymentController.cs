@@ -62,6 +62,11 @@ namespace KVHAI.Controllers.Staff.Cashier2
             return View("~/Views/Staff/Cashier2/OnlineDashboard.cshtml", model);
         }
 
+        public async Task<IActionResult> Remittance()
+        {
+            return View("~/Views/Staff/Cashier2/Remittance.cshtml");
+        }
+
         [HttpPost]
         public async Task<IActionResult> OnlinePaymentPagination1(int page_index, string startDate, string endDate)
         {

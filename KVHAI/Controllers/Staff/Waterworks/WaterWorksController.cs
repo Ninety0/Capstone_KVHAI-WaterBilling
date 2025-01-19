@@ -169,5 +169,18 @@ namespace KVHAI.Controllers.Staff.Waterworks
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetConsumptionByMonth(string status, string location)
+        {
+            var viewmodel = await _waterReadingRepository.GetWaterConsumptionByMonth(status, location);
+
+            if (viewmodel == null)
+            {
+                return BadRequest("There was an error fetching the data.");
+            }
+
+            return View("~/Views/Staff/Waterworks/HomeWaterwork.cshtml", viewmodel);
+        }
     }
 }

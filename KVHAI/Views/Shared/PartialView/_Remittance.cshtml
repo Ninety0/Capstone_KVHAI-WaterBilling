@@ -1,0 +1,85 @@
+﻿<div class="card shadow-sm">
+    <div class="card-body" id="waterReadingView">
+        <div class="row">
+            <div class="col">
+                <div class="d-flex flex-column align-items-start">
+                    <h5 class="fw-bold text-muted">Daily Remittance</h5>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid border " id="tableView">
+            <div class="row mt-3">
+                <div class="col-12 col-lg-6 d-flex">
+                    <!--START DATE-->
+                    <div class="d-flex">
+                        <label for="startDate" class="form-label text-small text-muted"> Date: </label>
+                        <input type="date" class="form-control ms-3" id="dateFilter">
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 d-flex justify-content-end">
+                    <div class="me-3">
+                        <button type="button" class="btn btn-success p-2" id="printButton">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            @{
+                double totalAmount = 0;
+
+                <div class="table-responsive ">
+                    <table class="table table-borderless table-striped" id="table_payment">
+                        <thead>
+                            <tr>
+                                <th scope="col">Paid By</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Method</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Occupancy</th>
+                                <th scope="col">Amount Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.PaymentList != null && Model.PaymentList.Count > 0)
+                            {
+                                foreach (var item in Model.PaymentList)
+                                {
+                                    totalAmount += Convert.ToDouble(item.Paid_Amount);
+
+                                    var occupancy = item.Is_Owner ? "Owner" : "Renter";
+                                    <tr data-address="@item.Payment_ID">
+                                        <td data-res="@item.Resident_ID">@item.Paid_By</td>
+                                        <td>Blk @item.Block Lot @item.Lot @item.Street St. </td>
+                                        <td>@item.Payment_Method</td>
+                                        <td>@item.Payment_Status</td>
+                                        <td>@item.Payment_Date</td>
+                                        <td>@occupancy</td>
+                                        <td>
+                                            @item.Paid_Amount
+                                             <input type="hidden" value="@totalAmount.ToString("F2")" id="totalAmount" />
+
+                                            </td>
+                                    </tr>
+                                }
+
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center">No Data Found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+        </div>
+
+
+    </div>
+</div>
+

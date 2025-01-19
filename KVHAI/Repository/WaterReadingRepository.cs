@@ -728,7 +728,7 @@ namespace KVHAI.Repository
                     WHERE CONVERT(VARCHAR, wr.date_reading, 23 ) LIKE @date AND location = @location
                     ", connection))
                     {
-                        command.Parameters.AddWithValue("@date", "%" + DateTime.Now.ToString("yyyy-MM") + "%");
+                        command.Parameters.AddWithValue("@date", "%" + DateTime.Now.ToString("yyyy-MM") + "%"); // to get current month
                         command.Parameters.AddWithValue("@location", location);
                         var result = await command.ExecuteScalarAsync();
 
@@ -848,6 +848,104 @@ namespace KVHAI.Repository
             {
 
                 throw;
+            }
+        }
+
+        //GetWaterConsumption per month
+        public async Task<ModelBinding> GetWaterConsumptionByMonth(string status, string location)
+        {
+            try
+            {
+                var address = await _listRepository.AddressList();
+
+                int readLocation = 0;
+                int countLocation = 0;
+
+                if (status == "all")
+                {
+                    readLocation = await GetCountReadingByLocation(Convert.ToInt32(location));
+                    countLocation = address.Where(l => l.Location == location).Count();
+                }
+
+                var addressList = new List<Address>();
+                var readingList = new List<WaterReading>();
+                var sqlQuery = new StringBuilder(@"
+                    	SELECT 
+                        a.addr_id, 
+                        a.block, 
+                        a.lot, 
+                        s.st_name,
+                        wb.date_reading,
+                        COALESCE(wb.consumption, 0) AS consumption
+                    FROM 
+                        address_tb a
+                    JOIN 
+                        street_tb s ON a.st_id = s.st_id
+                    LEFT JOIN 
+                        water_reading_tb wb 
+                    ON 
+                        a.addr_id = wb.addr_id
+                        AND YEAR(wb.date_reading) = YEAR(GETDATE())
+                        AND MONTH(wb.date_reading) = MONTH(GETDATE())
+                    WHERE 
+                        a.location = @location
+                    ");
+
+                if (status == "pending") //means null
+                {
+                    sqlQuery.AppendLine("AND COALESCE(wb.consumption, 0) = 0;");
+                }
+                if (status == "complete") //means not null
+                {
+                    sqlQuery.AppendLine("AND COALESCE(wb.consumption, 0) > 0;");
+                }
+
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(sqlQuery.ToString(), connection))
+                    {
+                        command.Parameters.AddWithValue("@location", location);
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            int count = 0;
+                            while (await reader.ReadAsync())
+                            {
+                                var _ad = new Address
+                                {
+                                    Address_ID = reader.GetInt32(0),
+                                    Block = reader.GetString(1),
+                                    Lot = reader.GetString(2),
+                                    Street_Name = reader.GetString(3)
+                                };
+                                addressList.Add(_ad);
+
+                                var _wr = new WaterReading
+                                {
+                                    Consumption = reader.GetInt32(5).ToString(),
+                                    Date = reader.IsDBNull(4) ? "null" : reader.GetDateTime(4).ToString("yyyy-MM-dd"),
+                                };
+                                readingList.Add(_wr);
+
+                                count++;
+                            }
+
+                            var _modelBinding = new ModelBinding
+                            {
+                                AddressList = addressList,
+                                WaterReadingList = readingList,
+                                ReadingCountByLocation = status != "all" ? count.ToString() : readLocation.ToString(),
+                                AddressCountByLocation = status != "all" ? count.ToString() : countLocation.ToString()
+                            };
+
+                            return _modelBinding;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 

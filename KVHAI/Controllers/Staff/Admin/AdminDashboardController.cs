@@ -49,6 +49,8 @@ namespace KVHAI.Controllers.Staff.Admin
             return View("~/Views/Staff/Admin/Dashboard.cshtml", viewmodel);
         }
 
+
+
         [HttpGet]
         public async Task<IActionResult> GraphWaterConsumption(string year)
         {
@@ -102,6 +104,58 @@ namespace KVHAI.Controllers.Staff.Admin
             //return Json(model);
             return View("~/Views/Staff/Admin/Dashboard.cshtml", modelBinding);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRemit(string date)
+        {
+            var payment = await _paymentRepository.GetNewPayment(date);
+            double totalAmount = 0;
+
+            if (payment == null)
+            {
+                return BadRequest("Null");
+            }
+
+            foreach (var item in payment)
+            {
+                totalAmount += Convert.ToDouble(item.Paid_Amount);
+            }
+
+            return Json(totalAmount.ToString("F2"));
+
+        }
+
+        #region WaterREADING
+        public async Task<IActionResult> WaterReading()
+        {
+            var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var username = User.Identity.Name;
+
+            var notifList = await _notification.GetNotificationByStaff(role);
+
+            var viewmodel = new ModelBinding
+            {
+                NotificationStaff = notifList,
+            };
+
+            return View("~/Views/Staff/Admin/WaterReading.cshtml", viewmodel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetConsumptionByMonth(string status, string location)
+        {
+            var viewmodel = await _waterReadingRepository.GetWaterConsumptionByMonth(status, location);
+
+            if (viewmodel == null)
+            {
+                return BadRequest("There was an error fetching the data.");
+            }
+
+            return View("~/Views/Staff/Admin/WaterReading.cshtml", viewmodel);
+
+        }
+        #endregion
 
     }
 }

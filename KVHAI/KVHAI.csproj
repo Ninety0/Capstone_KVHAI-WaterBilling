@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Views\Home\Print.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Staff\Cashier2\Remittance.cshtml" />
     <_ContentIncludedByDefault Remove="wwwroot\css\toastr.min.css" />
     <_ContentIncludedByDefault Remove="wwwroot\js\residentSignup.js" />
     <_ContentIncludedByDefault Remove="wwwroot\js\usableButTrahsRN.js" />
@@ -149,6 +150,10 @@
 
   <ItemGroup>
     <UpToDateCheckInput Remove="Views\Home\Print.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\Staff\Cashier2\Remittance.cshtml" />
   </ItemGroup>
 
 </Project>

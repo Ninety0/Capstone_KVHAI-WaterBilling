@@ -59,6 +59,12 @@ namespace KVHAI.Routes
                 pattern: "kvhai/staff/request-page/",
                 defaults: new { controller = "RequestPage", action = "Index" }
             );
+
+            endpoint.MapControllerRoute(
+                name: "AdminWaterReading",
+                pattern: "kvhai/staff/water-reading/",
+                defaults: new { controller = "AdminDashboard", action = "WaterReading" }
+            );
             #endregion
 
             #region CLERK
@@ -89,6 +95,12 @@ namespace KVHAI.Routes
                name: "CashierOnlinePayment",
                pattern: "/kvhai/staff/onlinepayment/home",
                defaults: new { controller = "OnlinePayment", action = "Index" }
+           );
+
+            endpoint.MapControllerRoute(
+               name: "Remittance",
+               pattern: "/kvhai/staff/remittance",
+               defaults: new { controller = "Remittance", action = "Index" }
            );
             #endregion
 

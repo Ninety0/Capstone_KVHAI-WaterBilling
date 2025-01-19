@@ -4,6 +4,16 @@
 
 @section head{
     <link href="/css/simple-calendar.css" rel="stylesheet" />
+    <style>
+        .home_wrapper {
+            /*height: calc(100vh - 220px);*/
+        }
+        #tbl_reading {
+            position: relative;
+            height: 305px; /* Adjust the table height to fit dynamically */
+            /*overflow-y: auto;*/ /* Enable scrolling for overflow content */
+        }
+    </style>
 }
 
 
@@ -25,72 +35,106 @@
         <i class="bi bi-pencil-square me-2"></i> Reading
     </a>
 }
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-6 border rounded shadow-sm p-3">
-                <div id="calendars"></div>
-            </div>
-            <div class="col-md-6 border rounded shadow-sm p-3">
-                <div class="row border mb-3">
-                    <div class="col">
-                        <!--LOCATION-->
-                        <label for="startDate" class="form-label fw-bold text-small text-muted">Location</label>
-                        <select id="location" class="form-select" aria-label="Default select example">
-                            <option selected value="1">Phase 2 (Blk 51 to  143)</option>
-                            <option value="2">Phase 1 (Blk 41 to  48)</option>
-                            <option value="3">Blk 24 to 40</option>
-                            <option value="4">Blk 7 to 23</option>
-                            <option value="">All</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <label for="startDate" class="form-label fw-bold text-small text-muted">Status</label>
-                        <select id="location" class="form-select" aria-label="Default select example">
-                            <option selected value="">All</option>
-                            <option  value="1">Complete</option>
-                            <option value="4">Pending</option>
-                        </select>
-                    </div>
+<div class="container-fluid home_wrapper">
+    <div class="row" >
+        <div class="col-md-6 mb-3 mb-md-0" >
+            <div class="card shadow-sm h-100">
+                <div class="card-body" >
+                    <div id="calendars"></div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Name</th>
-                                <th scope="col">Address</th>
-                                <th scope="col">Consumption</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Jacob</td>
-                                <td>Thornton</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td colspan="2">Larry the Bird</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3 mb-md-0" >
+            <div class="card shadow-sm h-100">
+                <div class="card-body" >
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="location" class="form-label fw-bold text-small text-muted">Location</label>
+                            <select id="location" class="form-select" aria-label="Default select example">
+                                <option selected value="1">Phase 2 (Blk 51 to 143)</option>
+                                <option value="2">Phase 1 (Blk 41 to 48)</option>
+                                <option value="3">Blk 24 to 40</option>
+                                <option value="4">Blk 7 to 23</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="select_status" class="form-label fw-bold text-small text-muted">Status</label>
+                            <select id="select_status" class="form-select" aria-label="Default select example">
+                                <option selected value="all">All</option>
+                                <option value="complete">Complete</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!--TABLE READING-->
+                    <div class="container-fluid" id="table_data">
+                        <div class="table-responsive" id="tbl_reading">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Address</th>
+                                        <th scope="col">Consumption</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.AddressList != null && Model.AddressList.Count > 0)
+                                    {
+                                        for (int i = 0; i < Model.AddressList.Count; i++)
+                                        {
+                                            var index = i + 1;
+                                            var address = $@"
+                                                        Blk {Model.AddressList[i].Block} 
+                                                        Lot {Model.AddressList[i].Block} 
+                                                        {Model.AddressList[i].Street_Name} St.";
+                                            <tr>
+                                                <th scope="row">@index</th>
+                                                <td>@address</td>
+                                                <td>@Model.WaterReadingList[i].Consumption</td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr class="text-center">
+                                            <td colspan="3">No Data Found.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="container-fluid mt-3 text-muted">
+                            @{
+                                var numberReading = string.IsNullOrEmpty(Model.ReadingCountByLocation)? "0": Model.ReadingCountByLocation;
+                                var numberAddress = string.IsNullOrEmpty(Model.AddressCountByLocation) ? "0" : Model.AddressCountByLocation;
+                            }
+                            @numberReading out of @numberAddress
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+
+
 </div>
 
 @section scripts{
-    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    @*<script src="~/js/signalr/dist/browser/signalr.min.js"></script>*@
     <script src="~/js/water-reading.js" defer></script>
     <script src="~/js/jquery.simple-calendar.min.js"></script>
     <script>
         $(document).ready(function () {
+            //CODE FOR SIGNALR
+            const readingConnection = setupSignalRConnection("/kvhai/staff/reading", "WaterWorks Hub");
+
+            readingConnection.on("ReceivedWaterReading", function () {
+                GetWaterReadingByMonth();
+            });
+            //END SIGNAL R
+
             var container = $("#calendars").simpleCalendar({
                 displayEvent: true,
                 displayYear: true,
@@ -106,9 +150,9 @@
 
                     for (let i = 0; i < 12; i++) {
                         const year = currentDate.getFullYear() + Math.floor((currentDate.getMonth() + i) / 12);
-                        console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
+                        //console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
                         const month = (currentDate.getMonth() + i) % 12;
-                        console.log(month);
+                        /*console.log(month);*/
 
 
                         for (let day = 3; day <= 24; day++) {
@@ -166,7 +210,7 @@
                         }
                     }
 
-                    console.log("Events to be set:", events);
+                    //console.log("Events to be set:", events);
 
                     // Try setting events directly in the options
                     container.simpleCalendar({
@@ -185,6 +229,33 @@
             // Try setting events immediately and after a delay
             setWaterReadingEvents();
             setTimeout(setWaterReadingEvents, 500);
+            GetWaterReadingByMonth();
+
+            $(document).on('change', '#select_status', function () {
+                GetWaterReadingByMonth();
+            })
+
+            $(document).on('change', '#location', function () {
+                GetWaterReadingByMonth();
+            })
+
+            function GetWaterReadingByMonth() {
+                var _status = $('#select_status').val();
+                var _location = $('#location').val();
+                console.log(_status);
+                $.ajax({
+                    type: 'GET',
+                    url: '/WaterWorks/GetConsumptionByMonth',
+                    data: { status: _status, location: _location},
+                    success: function (response) {
+                        var result = $(response).find('#table_data').html();
+                        $('#table_data').html(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
         });
     </script>
     <script>

@@ -10,7 +10,7 @@
         <i class="bi bi-file-earmark-text me-2"></i> Reading
     </a>
     <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center active">
-        <i class="bi bi-file-earmark-text me-2"></i> Billing
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
     
 }
@@ -22,7 +22,8 @@
         <i class="bi bi-file-earmark-text me-2"></i> Reading
     </a>
     <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center active">
-        <i class="bi bi-file-earmark-text me-2"></i> Billing
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
+
     </a>
 
 }
@@ -387,8 +388,12 @@
                             <select id="wbNumber" class="form-select w-75 mt-3 mb-3" aria-label="Default select example">
                                 @for (int i = 0; i < Model.WaterBillNumberList.Count; i++)
                                 {
-                                    var selected = (i == 0) ? "selected" : "";
-                                    <option selected value="@Model.WaterBillNumberList[i]">WaterBill No. @Model.WaterBillNumberList[i]</option>
+                                    //var _selected = (i == 0) ? "selected" : "";
+                                    //if (true)
+                                    //{
+
+                                    //}
+                                    <option  value="@Model.WaterBillNumberList[i]">WaterBill No. @Model.WaterBillNumberList[i]</option>
 
                                 }
 
@@ -417,9 +422,11 @@
                         </select>
                     </div>
                     <div class="col d-flex justify-content-end">
-                        <a id="btnPrint" class="btn btn-secondary me-2">PRINT</a>
+                        <button type="button" class="btn btn-success p-2 me-2" id="btnPrint">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
                         <div class="btn-group">
-                            <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button type="button" class="btn btn-primary p-2 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                 Save as
                             </button>
                             <ul class="dropdown-menu">
@@ -468,7 +475,7 @@
                                                 <div class="d-flex justify-content-between align-items-center pb-2 contentView text-muted">
                                                     <div class="d-flex flex-column align-items-center">
                                                         <span class="fw-bold">#</span>
-                                                        <span id="itemID" data-id="@Model.WaterBillingValues[i].WaterBill_ID">@(i+1)</span>
+                                                        <span id="itemID" data-id="@Model.WaterBillingValues[i].WaterBill_ID">@Model.WaterBillingValues[i].Reference_no</span>
                                                     </div>
                                                     <div class="d-flex flex-column align-items-center">
                                                         <span class="fw-bold">Account No.</span>

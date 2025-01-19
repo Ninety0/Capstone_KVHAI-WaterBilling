@@ -1,0 +1,195 @@
+﻿@{
+    ViewBag.Title = "Water Reading";
+}
+
+@section head{
+    <style>
+    </style>
+}
+
+
+@section sidebar{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-people me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Request
+        </a>*@
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-geo-alt me-2"></i>Streets
+    </a>
+    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center active">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+
+    </a>
+
+}
+@section mobilenav{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-people me-2"></i> Accounts
+
+    </a>
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Request
+        </a>*@
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="bi bi-geo-alt me-2"></i>Streets
+
+    </a>
+
+    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center active">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+
+    </a>
+
+}
+<div class="card shadow-sm h-100">
+    <div class="card-body">
+        <div class="container-fluid mb-3 d-flex">
+            <h5 class="fw-bold text-muted">Water Reading for month of </h5>
+            <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center">
+                    <h6 class="fw-bold text-muted border rounded ms-3" style="
+    background-color: #e2e8f0;
+    color: white;
+    padding: 5px 10px;
+">
+                        @DateTime.Now.ToString("MMMM")
+                    </h6>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid border rounded">
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="location" class="form-label fw-bold text-small text-muted">Location</label>
+                    <select id="location" class="form-select" aria-label="Default select example">
+                        <option selected value="1">Phase 2 (Blk 51 to 143)</option>
+                        <option value="2">Phase 1 (Blk 41 to 48)</option>
+                        <option value="3">Blk 24 to 40</option>
+                        <option value="4">Blk 7 to 23</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="select_status" class="form-label fw-bold text-small text-muted">Status</label>
+                    <select id="select_status" class="form-select" aria-label="Default select example">
+                        <option selected value="all">All</option>
+                        <option value="complete">Complete</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+            </div>
+
+            <!--TABLE READING-->
+            <div class="container-fluid" id="table_data">
+                <div class="table-responsive" id="tbl_reading">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Consumption</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.AddressList != null && Model.AddressList.Count > 0)
+                            {
+                                for (int i = 0; i < Model.AddressList.Count; i++)
+                                {
+                                    var index = i + 1;
+                                    var address = $@"
+                                                                                                                            Blk {Model.AddressList[i].Block}
+                                                                                                                            Lot {Model.AddressList[i].Block}
+                                                                                                                            {Model.AddressList[i].Street_Name} St.";
+                                    <tr>
+                                        <th scope="row">@index</th>
+                                        <td>@address</td>
+                                        <td>@Model.WaterReadingList[i].Consumption</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr class="text-center">
+                                    <td colspan="3">No Data Found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="container-fluid mt-3 text-muted">
+                    @{
+                        var numberReading = string.IsNullOrEmpty(Model.ReadingCountByLocation) ? "0" : Model.ReadingCountByLocation;
+                        var numberAddress = string.IsNullOrEmpty(Model.AddressCountByLocation) ? "0" : Model.AddressCountByLocation;
+                    }
+                    @numberReading out of @numberAddress
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    @*<script src="~/js/signalr/dist/browser/signalr.min.js"></script>*@
+    <script src="~/js/water-reading.js" defer></script>
+    <script src="~/js/jquery.simple-calendar.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            //CODE FOR SIGNALR
+            const readingConnection = setupSignalRConnection("/kvhai/staff/reading", "WaterWorks Hub");
+
+            readingConnection.on("ReceivedWaterReading", function () {
+                GetWaterReadingByMonth();
+            });
+            //END SIGNAL R
+
+            GetWaterReadingByMonth();
+
+            $(document).on('change', '#select_status', function () {
+                GetWaterReadingByMonth();
+            })
+
+            $(document).on('change', '#location', function () {
+                GetWaterReadingByMonth();
+            })
+
+            function GetWaterReadingByMonth() {
+                var _status = $('#select_status').val();
+                var _location = $('#location').val();
+                console.log(_status);
+                $.ajax({
+                    type: 'GET',
+                    url: '/AdminDashboard/GetConsumptionByMonth',
+                    data: { status: _status, location: _location },
+                    success: function (response) {
+                        var result = $(response).find('#table_data').html();
+                        $('#table_data').html(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+    </script>
+
+}

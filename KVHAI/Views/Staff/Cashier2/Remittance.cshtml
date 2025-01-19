@@ -1,0 +1,167 @@
+﻿@{
+    ViewBag.Title = "Remittance";
+}
+
+@section head{
+}
+
+
+@section sidebar{
+    <a href="/kvhai/staff/onlinepayment/home" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/onlinepayment/home" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-layout-text-sidebar-reverse me-2"></i> Remittance
+    </a>
+    @*<a href="/kvhai/staff/water-reading/" class="nav-link text-light mb-2 d-flex align-items-center ">
+            <i class="bi bi-file-earmark-text me-2"></i> Reading
+        </a>
+        <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-file-earmark-text me-2"></i> Billing
+        </a>*@
+
+}
+
+@section mobilenav{
+    <a href="/kvhai/staff/onlinepayment/home" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/onlinepayment/home" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="bi bi-layout-text-sidebar-reverse me-2"></i> Remittance
+    </a>
+    @*<a href="/kvhai/staff/water-reading/" class="nav-link text-light mb-2 d-flex align-items-center ">
+            <i class="bi bi-file-earmark-text me-2"></i> Reading
+        </a>
+        <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-file-earmark-text me-2"></i> Billing
+        </a>*@
+
+}
+
+
+@await Html.PartialAsync("PartialView/_Remittance")
+
+
+@section scripts{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/signalrSetupConnection.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            const today = new Date();
+            const formattedDate = today.getFullYear() + '-' +
+                String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                String(today.getDate()).padStart(2, '0');
+            $('#dateFilter').val(formattedDate);
+
+            GetNewPayment();
+
+            $(document).on('blur change', function () {
+                
+                GetNewPayment();
+                //console.log(selectedDate);
+            });
+
+            $(document).on('click', '#printButton', function (e) {
+                e.preventDefault(); // Prevent default link behavior
+
+                // Clone the table
+                const clonedTable = $('#table_payment').clone();
+
+                // Remove the "Action" column
+                //clonedTable.find('thead tr th:last-child').remove();
+                //clonedTable.find('tbody tr td:last-child').remove();
+
+                // Remove any unwanted pagination rows (last row containing pagination controls)
+                //clonedTable.find('tbody tr:last-child').remove();
+
+                // Add inline styles to the cloned table
+                clonedTable.css({
+                    "border-collapse": "collapse",
+                    "width": "100%"
+                });
+                clonedTable.find('th, td').css({
+                    "border": "1px solid #ddd",
+                    "padding": "8px",
+                    "text-align": "left"
+                });
+                clonedTable.find('th').css({
+                    "background-color": "#f2f2f2"
+                });
+
+                // Create the header element
+                const headerElement = $('<h1>', {
+                    text: 'Daily Remitance',
+                    css: {
+                        'text-align': 'center',
+                        'font-family': 'Arial, sans-serif',
+                        'margin-bottom': '20px'
+                    }
+                });
+
+                // Create the date filter element
+                const dateFilterElement = $('<div>', {
+                    html: `
+        <p style="margin-top: 16px; font-family: Arial, sans-serif;">
+            <strong>Date:</strong> <span id="fromDate">${$('#dateFilter').val() || ''}</span>
+        </p>
+`,
+                    css: {
+                        'text-align': 'left',
+                        'font-family': 'Arial, sans-serif',
+                        'margin-top': '20px'
+                    }
+                });
+
+                const footer = $('<div>', {
+                    html: `
+        <p style="margin-top: 16px; font-family: Arial, sans-serif;">
+            <strong>Total Amount Paid:</strong> <span id="fromDate">${$('#totalAmount').val() || ''}</span>
+        </p>
+`,
+                    css: {
+                        'text-align': 'right',
+                        'font-family': 'Arial, sans-serif',
+                        'margin-top': '20px',
+                        'margin-right': '1rem'
+                    }
+                });
+
+                // Combine the header, table, and date filter
+                const styledContent = $('<div>')
+                    .append(headerElement)
+                    .append(dateFilterElement)
+                    .append(clonedTable)
+                    .append(footer);
+
+                // Create a print window and inject the styled content
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                printWindow.document.open();
+                printWindow.document.write(styledContent.html());
+
+                // Close the document and trigger the print dialog
+                printWindow.document.close();
+                printWindow.print();
+            });
+
+            function GetNewPayment() {
+                var dateToday = $('#dateFilter').val();
+                $.ajax({
+                    type: 'GET',
+                    url: '/Remittance/GetPayments',
+                    data: { date: dateToday },
+                    success: function (response) {
+                        //console.log(response);
+                        var result = $(response).find('#table_payment').html();
+                        $('#table_payment').html(result);
+
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+    </script>
+
+}

@@ -55,6 +55,9 @@ namespace KVHAI.Models
         public List<WaterReading> WaterReadingList { get; set; }
         public List<Employee> EmployeeList { get; set; }
         public List<Address> AddressList { get; set; }
+        public string AddressCountByLocation { get; set; } = string.Empty;
+        public string ReadingCountByLocation { get; set; } = string.Empty;
+
 
     }
 }

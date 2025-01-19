@@ -10,7 +10,8 @@
         <i class="bi bi-file-earmark-text me-2"></i> Reading
     </a>
     <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-file-earmark-text me-2"></i> Billing
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
+
     </a>
     
 }
@@ -22,7 +23,7 @@
         <i class="bi bi-file-earmark-text me-2"></i> Reading
     </a>
     <a href="/kvhai/staff/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-file-earmark-text me-2"></i> Billing
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
 
 }
@@ -55,15 +56,23 @@
                         <option value="">All</option>
                     </select>
                 </div>
-                <div class="col-12 col-lg-6 d-flex justify-content-end" id="btngenerate_container">
-                    @{
-                        if (Model.GenerateButton != null)
-                        {
-                            @Model.GenerateButton
+                <div class="col-12 col-lg-6 d-flex justify-content-end">
+                    <div class="me-3">
+                        <button type="button" class="btn btn-success p-2" id="printButton">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                    </div>
+                    <div class="" id="btngenerate_container">
+                        @{
+                            if (Model.GenerateButton != null)
+                            {
+                                @Model.GenerateButton
+                            }
                         }
-                    }
 
+                    </div>
                 </div>
+                
             </div>
 
             <div class="table-responsive ">
@@ -194,7 +203,83 @@
             $(document).on('click', '#btnGenerate', InsertWaterBill);
 
             $(document).on('change', '#waterReadingSelect', GetWaterReadingByDateRange);
-            $('#dateCoverage').text("PERIOD COVER DATE " +$('#waterReadingSelect').val());
+            $('#dateCoverage').text("PERIOD COVER DATE " + $('#waterReadingSelect').val());
+
+            $(document).on('click', '#printButton', function (e) {
+                e.preventDefault(); // Prevent default link behavior
+
+                // Clone the table
+                const clonedTable = $('#tableData').clone();
+
+                // Add inline styles to the cloned table
+                clonedTable.css({
+                    "border-collapse": "collapse",
+                    "width": "100%"
+                });
+                clonedTable.find('th, td').css({
+                    "border": "1px solid #ddd",
+                    "padding": "8px",
+                    "text-align": "left"
+                });
+                clonedTable.find('th').css({
+                    "background-color": "#f2f2f2"
+                });
+
+                var waterSelectText = $('#waterReadingSelect').val();
+
+                var firstMonth = waterSelectText.split("-")[0];
+                var secondMonth = waterSelectText.split("-")[1];
+
+
+
+                // Create the header element
+                const headerElement = $('<div>', {
+                    html: `<h3>KVHAI WATERWORKS</h3>  
+                            <div>
+                            <span style="font-weight: bold;
+                                    font-size: 20px;">PERIOD COVER DATE</span>
+                            <span style="font-weight: bold;
+                                    font-size: 20px;"> ${firstMonth.substr(0, 3)} ${new Date().getFullYear()}  - 
+                                    ${secondMonth.substr(0, 3)} ${new Date().getFullYear()}</span>
+                            </div>
+                            `,
+                    css: {
+                        'font-family': 'Arial, sans-serif',
+                        'margin-bottom': '20px'
+                    }
+                });
+
+                // Create the date filter element
+                const dateFilterElement = $('<div>', {
+                    html: `
+    <p style="margin-top: 16px; font-family: Arial, sans-serif;">
+        <strong>From:</strong> <span id="fromDate">${$('#startDate').val() || ''}</span>
+        <br/>
+        <strong>To:</strong> <span id="toDate">${$('#endDate').val() || ''}</span>
+    </p>
+`,
+                    css: {
+                        'text-align': 'left',
+                        'font-family': 'Arial, sans-serif',
+                        'margin-top': '20px'
+                    }
+                });
+
+                // Combine the header, table, and date filter
+                const styledContent = $('<div>')
+                    .append(headerElement)
+                    //.append(dateFilterElement)
+                    .append(clonedTable);
+
+                // Create a print window and inject the styled content
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                printWindow.document.open();
+                printWindow.document.write(styledContent.html());
+
+                // Close the document and trigger the print dialog
+                printWindow.document.close();
+                printWindow.print();
+            });
 
             //FUNCTIONS
             function updateReadingTable() {

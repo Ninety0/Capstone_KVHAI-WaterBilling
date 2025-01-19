@@ -189,6 +189,7 @@
                 GetNewReading();
                 GetNewPayment();
                 GetRequestToday();
+                GetRemit();
             });
 
             var myChart = null; // Declare the global variable
@@ -196,6 +197,7 @@
             GetNewReading();
             GetNewPayment();
             GetRequestToday();
+            GetRemit();
 
             $(document).on('click', '#show_ingsight', function () {
                 $('#insightContainer').fadeToggle();
@@ -205,12 +207,28 @@
                 GetGraphData(); // Call chartDataSets with the selected year
             });
 
+            function GetRemit() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/AdminDashboard/GetRemit',
+                    success: function (response) {
+                        console.log("remit:"+response);
+                        var result = $('#remit').text(response);
+                        //$('#table_payment').html(result);
+
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
             function GetNewReading() {
                 $.ajax({
                     url: '/AdminDashboard/GetNewReading',
                     type: 'GET',
                     success: function (response) {
-                        console.log(response);
+                        //console.log(response);
                         var result = $(response).find('#table_reading').html();
                         var resultNumber = $(response).find('#number_address').html();
                         $('#table_reading').html(result);
@@ -550,9 +568,9 @@
 
                     for (let i = 0; i < 12; i++) {
                         const year = currentDate.getFullYear() + Math.floor((currentDate.getMonth() + i) / 12);
-                        console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
+                        //console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
                         const month = (currentDate.getMonth() + i) % 12;
-                        console.log(month);
+                        //console.log(month);
 
 
                         for (let day = 3; day <= 24; day++) {
@@ -612,9 +630,9 @@
 
                     for (let i = 0; i < 12; i++) {
                         const year = currentDate.getFullYear() + Math.floor((currentDate.getMonth() + i) / 12);
-                        console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
+                       // console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
                         const month = (currentDate.getMonth() + i) % 12;
-                        console.log(month);
+                       // console.log(month);
 
 
                         for (let day = 6; day <= 28; day++) {
@@ -672,7 +690,7 @@
                         }
                     }
 
-                    console.log("Events to be set:", events);
+                    //console.log("Events to be set:", events);
 
                     // Try setting events directly in the options
                     container.simpleCalendar({
@@ -700,20 +718,24 @@
     <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center active">
         <i class="bi bi-house-door me-2"></i> Dashboard
     </a>
-    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-people me-2"></i> Accounts
     </a>
     <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
-    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-person me-2"></i> Request
-    </a>
+    @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Request
+        </a>*@
     <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-person me-2"></i> Resident Address
     </a>
     <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-person me-2"></i> Streets
+        <i class="bi bi-geo-alt me-2"></i>Streets
+    </a>
+    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+
     </a>
 
 }
@@ -721,20 +743,27 @@
     <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center active">
         <i class="bi bi-house-door me-2"></i> Dashboard
     </a>
-    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-people me-2"></i> Accounts
+
     </a>
     <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
-    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-person me-2"></i> Request
-    </a>
+    @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Request
+        </a>*@
     <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-person me-2"></i> Resident Address
     </a>
     <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-person me-2"></i> Streets
+        <i class="bi bi-geo-alt me-2"></i>Streets
+
+    </a>
+
+    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+
     </a>
 
 }
@@ -742,7 +771,7 @@
 <!--ROW 1-->
 <div class="row g-4 mb-3">
     <!-- Water Consumption Card -->
-    <div class="col-12 col-md-6 col-lg-4">
+    <div class="col-12 col-md-6">
         <div class="card metric-card shadow-sm ">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -760,54 +789,21 @@
     </div>
 
     <!-- Number of Requests Card -->
-    <div class="col-12 col-md-6 col-lg-4">
+    <div class="col-12 col-md-6">
         <div class="card metric-card shadow-sm ">
             <div class="card-body" id="number_request">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class=" text-muted mb-0">Number of Requests</h5>
+                    <h5 class=" text-muted mb-0">Daily Remit</h5>
                     <div class="metric-icon bg-success bg-opacity-10">
-                        <i class="bi bi-chat-square-text-fill text-success"></i>
+                        @*<i class="bi bi-chat-square-text-fill text-success"></i>*@
+                        <i class="fa-solid fa-hand-holding-dollar text-success"></i>
                     </div>
                 </div>
-                @{
-                    if (Model.CountData != null)
-                    {
-                        <div class="card-value text-dark mb-2">0</div>
-                    }
-                    else
-                    {
-                        <div class="card-value text-dark mb-2">0</div>
-                    }
-                }
-                <a href="/kvhai/staff/request-page/" class="text-decoration-none small">View All</a>
+                <div class="card-value text-dark mb-2" id="remit">0</div>
             </div>
         </div>
     </div>
 
-    <!-- Registered Address Card -->
-    <div class="col-12 col-md-6 col-lg-4">
-        <div class="card metric-card shadow-sm ">
-            <div class="card-body" id="number_address">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class=" text-muted mb-0">Number of Registered Address</h5>
-                    <div class="metric-icon bg-warning bg-opacity-10">
-                        <i class="bi bi-house-fill text-warning"></i>
-                    </div>
-                </div>
-                @{
-                    if (Model.CountData != null)
-                    {
-                        <div class="card-value text-dark mb-2">@Model.CountData</div>
-                    }
-                    else
-                    {
-                        <div class="card-value text-dark mb-2">0</div>
-                    }
-                }
-                <a href="/kvhai/staff/resident-address/" class="text-decoration-none small">View All</a>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!--row-cols-1 row-cols-sm-1 row-cols-xl-2 g-1 d-flex justify-content-evenly-->
@@ -884,17 +880,21 @@
 
         <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard mb-3" style="height: 250px; overflow: hidden;">
             <div class="d-flex border-bottom border-2 p-2 mb-3">
-                <div class="">
-                    <h5 class="fw-bold text-muted ">Recent Water Reading</h5>
+                <div class="d-flex flex-grow-1">
+                    <h6 class="fw-bold text-white p-2 bg-dark rounded text-decoration-underline">
+                        @DateTime.Now.ToString("MMMM")
+                    </h6>
+                    &nbsp;&nbsp;
+                    <h5 class="fw-bold text-muted "> Water Reading</h5>
                 </div>
                 <div class="d-flex align-items-center">
                     <div class="d-flex align-items-center">
                         <h6 class="fw-bold text-muted border rounded ms-3" style="
-            background-color: #e2e8f0;
-            color: white;
-            padding: 5px 10px;
-        ">
-                            @DateTime.Now.ToString("MMMM")
+    background-color: #e2e8f0;
+    color: white;
+    padding: 5px 10px;
+">
+                            <a href="/kvhai/staff/water-reading/" class="text-decoration-none small">View All</a>
                         </h6>
                     </div>
                 </div>
@@ -917,28 +917,28 @@
                                 {
                                     if (Model.WaterReadingList.Count > 0)
                                     {
-                                        for (int i = 0; i < Model.WaterReadingList.Count + 50; i++)
+                                        for (int i = 0; i < Model.WaterReadingList.Count; i++)
                                         {
                                             var employeeName = string.Join(", ",
-                                                Model.EmployeeList[0].Lname,
-                                                Model.EmployeeList[0].Fname,
-                                                Model.EmployeeList[0].Mname);
+                                                Model.EmployeeList[i].Lname,
+                                                Model.EmployeeList[i].Fname,
+                                                Model.EmployeeList[i].Mname);
 
                                             var address = string.Join(" ",
-                                                "Blk " + Model.AddressList[0].Block,
-                                                "Lot " + Model.AddressList[0].Lot,
-                                                Model.AddressList[0].Street_Name) + " St.";
+                                                "Blk " + Model.AddressList[i].Block,
+                                                "Lot " + Model.AddressList[i].Lot,
+                                                Model.AddressList[i].Street_Name) + " St.";
 
-                                            var consumption = Model.WaterReadingList[0].Consumption;
-                                            var date = DateTime.TryParse(Model.WaterReadingList[0].Date, out DateTime hour) ?
+                                            var consumption = Model.WaterReadingList[i].Consumption;
+                                            var date = DateTime.TryParse(Model.WaterReadingList[i].Date, out DateTime hour) ?
                                                 hour.ToString("hh:mm tt") : "00:00";
 
-                                            <tr data-address="@Model.WaterReadingList[0].Reading_ID">
+                                            <tr data-address="@Model.WaterReadingList[i].Reading_ID">
                                                 @*<td data-res="@Model.ResidentList[i].Res_ID">@name</td>*@
-                                                <td data_addr="@Model.AddressList[0].Address_ID">@address</td>
+                                                <td data_addr="@Model.AddressList[i].Address_ID">@address</td>
                                                 <td>@consumption</td>
                                                 <td>@date</td>
-                                                <td data-emp="@Model.EmployeeList[0].Emp_ID">@employeeName</td>
+                                                <td data-emp="@Model.EmployeeList[i].Emp_ID">@employeeName</td>
                                             </tr>
 
                                         }
@@ -961,21 +961,7 @@
         <!--Recently Paid-->
         <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm container_dashboard" style="height: 300px; overflow: hidden;">
             <div class="d-flex border-bottom border-2 p-2 mb-3">
-                <div class="">
-                    <h5 class="fw-bold text-muted">Recently Paid</h5>
-                </div>
-                <div class="d-flex align-items-center">
-                    <div class="d-flex align-items-center">
-                        <h6 class="fw-bold text-muted border rounded ms-3" style="
-                        background-color: #e2e8f0;
-                        color: white;
-                        padding: 5px 10px;
-                    ">
-                            @DateTime.Now.ToString("MMMM")
-
-                        </h6>
-                    </div>
-                </div>
+                <h5 class="fw-bold text-muted">Paid Today</h5>
             </div>
 
             <div class="container-fluid container_data" style="max-height: 220px; overflow-y: auto;">
@@ -1017,6 +1003,8 @@
                     </table>
                 </div>
             </div>
+
+            <!--FOOTER-->
         </div>
 
     </div>

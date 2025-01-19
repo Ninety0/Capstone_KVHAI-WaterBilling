@@ -6,20 +6,24 @@
     <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-house-door me-2"></i> Dashboard
     </a>
-    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-people me-2"></i> Accounts
     </a>
     <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center active">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
-    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-person me-2"></i> Request
-    </a>
+    @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Request
+        </a>*@
     <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-person me-2"></i> Resident Address
     </a>
     <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-person me-2"></i> Streets
+        <i class="bi bi-geo-alt me-2"></i>Streets
+    </a>
+    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+
     </a>
 
 }
@@ -27,20 +31,27 @@
     <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-house-door me-2"></i> Dashboard
     </a>
-    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-file-earmark-text me-2"></i> Accounts
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-people me-2"></i> Accounts
+
     </a>
     <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center active">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
-    <a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-person me-2"></i> Request
-    </a>
+    @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Request
+        </a>*@
     <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-person me-2"></i> Resident Address
     </a>
     <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
-        <i class="bi bi-person me-2"></i> Streets
+        <i class="bi bi-geo-alt me-2"></i>Streets
+
+    </a>
+
+    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+
     </a>
 
 }
@@ -84,7 +95,7 @@
             });
 
             //edit
-            $(document).on('click','#btn_edit',function(){
+            $(document).on('click', '#btn_edit', function () {
                 // var id = $(this).parent().find('[data-announcement]').data('announcement')
                 announcement_id = $(this).closest('tr').data('announcement');
                 console.log(announcement_id);
@@ -94,17 +105,17 @@
 
                 // Extract values from all `td` elements within the `tr`
                 var values = [];
-                $tr.find('td').each(function() {
+                $tr.find('td').each(function () {
                     values.push($(this).text());
                 });
-                modalValues = values;    
+                modalValues = values;
                 console.log(modalValues);
 
                 $.ajax({
-                    type:'GET',
-                    url:'/PostAnnouncement/GetSingleData',
-                    data: {id: announcement_id},
-                    success:function(response){
+                    type: 'GET',
+                    url: '/PostAnnouncement/GetSingleData',
+                    data: { id: announcement_id },
+                    success: function (response) {
                         var result = response.announce
                         $('#m_title').val(result.title);
                         $('#m_content').val(result.contents);
@@ -116,7 +127,7 @@
 
                         $('#charCounts').text(currentLength + '/' + maxLength + ' characters');
                     },
-                    error:function(xhr){
+                    error: function (xhr) {
                         toastr.error(xhr.responseText);
                     }
                 });
@@ -220,8 +231,8 @@
                 });
             })
 
-            function SaveAnnouncement(formData){
-                
+            function SaveAnnouncement(formData) {
+
             }
 
             $(document).on('click', '#btn_cancel', function (e) {
@@ -335,19 +346,19 @@
             <div class="modal-body">
                 <form autocomplete="off" id="form_edit_announce" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
-                    
+
                     <input type="hidden" data-id="" name="Announcement_ID" id="m_id">
 
                     <div class="row mb-3">
                         <div class="col-12 mb-3">
                             <label for="Title" class="form-label fw-bold">Title</label>
-                            <input type="text" maxlength="50" class="form-control" name="Title" id="m_title"  required>
+                            <input type="text" maxlength="50" class="form-control" name="Title" id="m_title" required>
                             <div class="invalid-feedback">Required.</div>
                         </div>
 
                         <div class="col-12">
                             <label for="Image_URL" class="form-label fw-bold">Upload Image <small>(Optional)</small></label>
-                            <input type="file" class="form-control" name="Images"  id="m_image" multiple>
+                            <input type="file" class="form-control" name="Images" id="m_image" multiple>
                         </div>
                     </div>
 
@@ -374,7 +385,7 @@
 
         <!-- Announcements List Section -->
         <div class="container-fluid mb-4 border rounded shadow-sm p-3">
-            <table class="table table-striped" >
+            <table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col" style="width: 5%;">#</th>
@@ -389,7 +400,7 @@
                         if (Model.AnnouncementPagination.ModelList != null)
                         {
                             if (Model.AnnouncementPagination.ModelList.Count > 0)
-                            {   
+                            {
                                 int indexx = Model.AnnouncementPagination.Index + 1;
                                 foreach (var item in Model.AnnouncementPagination.ModelList)
                                 {
@@ -399,10 +410,10 @@
                                         <td class="text-truncate" style="max-width: 250px;">@item.Contents</td>
                                         <td>@item.Date_Created</td>
                                         <td class="text-end">
-                                            <button class="btn btn-outline-success btn-sm " id="btn_edit"  data-bs-toggle="modal" data-bs-target="#modal_announcement">
+                                            <button class="btn btn-outline-success btn-sm " id="btn_edit" data-bs-toggle="modal" data-bs-target="#modal_announcement">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </button>
-                                            <button class="btn btn-outline-danger btn-sm ms-2 delete-btn" id="btn_delete"  data-bs-toggle="tooltip" data-bs-placement="right" title="Delete">
+                                            <button class="btn btn-outline-danger btn-sm ms-2 delete-btn" id="btn_delete" data-bs-toggle="tooltip" data-bs-placement="right" title="Delete">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </td>
