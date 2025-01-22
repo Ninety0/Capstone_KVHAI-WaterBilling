@@ -596,7 +596,7 @@ namespace KVHAI.Repository
             }
         }
 
-        public async Task<(List<string> StartDate, List<string> EndDate)> WaterReadingList()
+        public async Task<(List<string> StartDate, List<string> EndDate)> WaterReadingList1()
         {
             try
             {
@@ -656,6 +656,74 @@ namespace KVHAI.Repository
             }
 
         }
+
+        public async Task<(List<string> StartDate, List<string> EndDate)> WaterReadingList()
+        {
+            try
+            {
+                var startListDate = new List<string>();
+                var endListDate = new List<string>();
+                var dateList = new List<DateTime>();
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(@"
+            SELECT DISTINCT CAST(date_reading AS DATE) AS reading_date
+            FROM water_reading_tb
+            ORDER BY reading_date;
+            ", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                if (DateTime.TryParse(reader["reading_date"].ToString() ?? string.Empty, out DateTime result))
+                                {
+                                    dateList.Add(result); // Store full DateTime values
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!dateList.Any())
+                {
+                    throw new Exception("No dates found in the database.");
+                }
+
+                // Get earliest and latest dates
+                var firstDate = dateList.Min();
+                var lastDate = dateList.Max();
+
+                // Start from the first month of the first date
+                var currentDate = new DateTime(firstDate.Year, firstDate.Month, 1);
+
+                while (currentDate <= lastDate)
+                {
+                    // Start date: First day of the current month
+                    string start = currentDate.ToString("yyyy-MM-dd");
+
+                    // End date: Last day of the next month
+                    var nextMonth = currentDate.AddMonths(1);
+                    string end = new DateTime(nextMonth.Year, nextMonth.Month, DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month)).ToString("yyyy-MM-dd");
+
+                    startListDate.Add(start);
+                    endListDate.Add(end);
+
+                    // Move to the next month
+                    currentDate = currentDate.AddMonths(1);
+                }
+
+                return (startListDate, endListDate);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return (null, null);
+            }
+        }
+
+
 
         public async Task DateRange()
         {

@@ -301,6 +301,10 @@ and the actual data from 2025 january is none
                 var forecast = new Forecasting();
                 var dataList = new List<Double?>();
                 var forecastedData = new List<Double?>();
+                var actuallyData = new List<Double?>();
+
+                var actualDataByAddress1 = actualDataList.Where(a => a.Address_ID == address_id &&
+                 DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Year.ToString() == year).ToList();
 
                 var actualDataByAddress = actualDataList.Where(a => a.Address_ID == address_id &&
                  DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Year.ToString() == year)
@@ -311,6 +315,25 @@ and the actual data from 2025 january is none
 
                 var percentChange = new List<double?>();
                 var insights = new List<string>();
+
+                if (actualDataByAddress1.Count > 0)
+                {
+                    // Find the start month of forecast data
+                    var firstDateString = actualDataByAddress1.Select(d => d.Date).FirstOrDefault();
+                    int startMonth = !string.IsNullOrEmpty(firstDateString)
+                        ? DateTime.ParseExact(firstDateString, "yyyy-MM-dd", null).Month
+                        : 1; // Default to January if no valid date
+
+                    // Initialize forecastedData with null values up to the start month
+                    actuallyData = Enumerable.Repeat<double?>(null, startMonth - 1).ToList();
+
+                    // Extract forecast data and append it to forecastedData
+                    var _ad = actualDataByAddress1.Where(a => a.Address_ID == address_id)
+                        .Select(a => (double?)Convert.ToDouble(a.Actual_Data))
+                        .ToList();
+
+                    actuallyData.AddRange(_ad);
+                }
 
                 if (forecastDataByAddress.Count > 0)
                 {
@@ -331,11 +354,169 @@ and the actual data from 2025 january is none
                     forecastedData.AddRange(_fd);
                 }
 
-                ProcessYearData(actualDataByAddress, forecastedData, percentChange, insights);
+                ProcessYearData(actuallyData, forecastedData, percentChange, insights);
 
                 forecast.YearlyData[Convert.ToInt32(year)] = new YearData
                 {
-                    ActualData = actualDataByAddress,
+                    ActualData = actuallyData,
+                    MovingAverage = forecastedData,
+                    PercentChange = percentChange,
+                    Insights = insights
+                };
+
+                return forecast;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<Forecasting> GetPercentDatabaseAdmin(string year)
+        {
+            try
+            {
+                var actualDataList = await _listRepository.ActualDataList();
+                var forecastDataList = await _listRepository.ForecastDataList();
+                var forecast = new Forecasting();
+                var percentChange = new List<double?>();
+                var insights = new List<string>();
+
+                var actuallyData = new List<double?>();
+                var forecastedData = new List<double?>();
+
+                // Group and calculate actual data by month
+                var actualDataByAddress = actualDataList.Where(a => DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Year.ToString() == year)
+                    .GroupBy(a => DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Month)
+                    .Select(g => new
+                    {
+                        Month = g.Key,
+                        TotalActual = (double?)g.Sum(a => Convert.ToDouble(a.Actual_Data))
+                    })
+                    .ToList();
+
+                // Group and calculate forecast data by month
+                var forecastDataByAddress = forecastDataList.Where(a => DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Year.ToString() == year)
+                    .GroupBy(a => DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Month)
+                    .Select(g => new
+                    {
+                        Month = g.Key,
+                        TotalForecast = (double?)g.Sum(a => Convert.ToDouble(a.Forecast_Data))
+                    })
+                    .ToList();
+
+                // Handle actual data
+                if (actualDataByAddress.Any())
+                {
+                    int firstActualMonth = actualDataByAddress.Min(a => a.Month);
+
+                    // Add nulls before the first valid month
+                    actuallyData.AddRange(Enumerable.Repeat<double?>(null, firstActualMonth - 1));
+
+                    // Add actual data values
+                    foreach (var data in actualDataByAddress)
+                    {
+                        actuallyData.Add(data.TotalActual);
+                    }
+                }
+
+                // Handle forecast data
+                if (forecastDataByAddress.Any())
+                {
+                    int firstForecastMonth = forecastDataByAddress.Min(f => f.Month);
+
+                    // Add nulls before the first valid month
+                    forecastedData.AddRange(Enumerable.Repeat<double?>(null, firstForecastMonth - 1));
+
+                    // Add forecast data values
+                    foreach (var data in forecastDataByAddress)
+                    {
+                        forecastedData.Add(data.TotalForecast);
+                    }
+                }
+
+                // Process year data
+                ProcessYearData(actuallyData, forecastedData, percentChange, insights);
+
+                // Populate forecast object
+                forecast.YearlyData[Convert.ToInt32(year)] = new YearData
+                {
+                    ActualData = actuallyData,
+                    MovingAverage = forecastedData,
+                    PercentChange = percentChange,
+                    Insights = insights
+                };
+
+                return forecast;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+
+        public async Task<Forecasting> GetPercentDatabaseAdminTest1(string year)
+        {
+            try
+            {
+                var actualDataList = await _listRepository.ActualDataList();
+                var forecastDataList = await _listRepository.ForecastDataList();
+                var forecast = new Forecasting();
+                var dataList = new List<Double?>();
+                var forecastedData = new List<Double?>();
+                var actuallyData = new List<Double?>();
+
+                var actualDataByAddress1 = actualDataList.Where(a => DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Year.ToString() == year).ToList();
+
+                var forecastDataByAddress = forecastDataList.Where(a => DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Year.ToString() == year).ToList();
+
+                var percentChange = new List<double?>();
+                var insights = new List<string>();
+
+                if (actualDataByAddress1.Count > 0)
+                {
+                    // Find the start month of forecast data
+                    var firstDateString = actualDataByAddress1.Select(d => d.Date).FirstOrDefault();
+                    int startMonth = !string.IsNullOrEmpty(firstDateString)
+                        ? DateTime.ParseExact(firstDateString, "yyyy-MM-dd", null).Month
+                        : 1; // Default to January if no valid date
+
+                    // Initialize forecastedData with null values up to the start month
+                    actuallyData = Enumerable.Repeat<double?>(null, startMonth - 1).ToList();
+
+                    // Extract forecast data and append it to forecastedData
+                    var _ad = actualDataByAddress1
+                        .Select(a => (double?)Convert.ToDouble(a.Actual_Data))
+                        .ToList();
+
+                    actuallyData.AddRange(_ad);
+                }
+
+                if (forecastDataByAddress.Count > 0)
+                {
+                    // Find the start month of forecast data
+                    var firstDateString = forecastDataByAddress.Select(d => d.Date).FirstOrDefault();
+                    int startMonth = !string.IsNullOrEmpty(firstDateString)
+                        ? DateTime.ParseExact(firstDateString, "yyyy-MM-dd", null).Month
+                        : 1; // Default to January if no valid date
+
+                    // Initialize forecastedData with null values up to the start month
+                    forecastedData = Enumerable.Repeat<double?>(null, startMonth - 1).ToList();
+
+                    // Extract forecast data and append it to forecastedData
+                    var _fd = forecastDataByAddress
+                        .Select(a => (double?)Convert.ToDouble(a.Forecast_Data))
+                        .ToList();
+
+                    forecastedData.AddRange(_fd);
+                }
+
+                ProcessYearData(actuallyData, forecastedData, percentChange, insights);
+
+                forecast.YearlyData[Convert.ToInt32(year)] = new YearData
+                {
+                    ActualData = actuallyData,
                     MovingAverage = forecastedData,
                     PercentChange = percentChange,
                     Insights = insights
@@ -350,7 +531,7 @@ and the actual data from 2025 january is none
         }
 
         //admin
-        public async Task<Forecasting> GetPercentDatabaseAdmin(string year)
+        public async Task<Forecasting> GetPercentDatabaseAdminTest(string year)
         {
             try
             {
@@ -359,10 +540,15 @@ and the actual data from 2025 january is none
                 var forecast = new Forecasting();
                 var dataList = new List<Double?>();
                 var forecastedData = new List<Double?>();
+                var actuallyData = new List<Double?>();
 
                 var actualDataByAddress = actualDataList.Where(a => DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Year.ToString() == year)
                     .GroupBy(a => DateTime.ParseExact(a.Date, "yyyy-MM-dd", null).Month)
-                    .Select(g => (double?)g.Sum(a => Convert.ToDouble(a.Actual_Data)))
+                    .Select(g => new
+                    {
+                        Month = g.Key,
+                        TotalForecast = (double?)g.Sum(a => Convert.ToDouble(a.Actual_Data))
+                    })
                     .ToList();
 
                 // Group forecast data by month and sum values
@@ -377,8 +563,16 @@ and the actual data from 2025 january is none
                     })
                     .ToList();
 
+                // Initialize actualData with null values for missing months
+                actuallyData = new List<double?>(new double?[12]); // 12 months initialized to null
+                foreach (var data in actualDataByAddress)
+                {
+                    actuallyData[data.Month - 1] = data.TotalForecast; // Assign total actual data for the month
+                }
+
                 // Initialize forecastedData with null values for missing months
-                forecastedData = new List<double?>(new double?[12]); // 12 months initialized to null
+                //forecastedData = new List<double?>(new double?[12]); // 12 months initialized to null
+                forecastedData = new List<double?>(new double?[forecastDataByAddress.Count]); // 12 months initialized to null
                 foreach (var data in forecastDataByAddress)
                 {
                     forecastedData[data.Month - 1] = data.TotalForecast; // Assign total forecast for the month
@@ -387,11 +581,11 @@ and the actual data from 2025 january is none
                 var percentChange = new List<double?>();
                 var insights = new List<string>();
 
-                ProcessYearData(actualDataByAddress, forecastedData, percentChange, insights);
+                ProcessYearData(actuallyData, forecastedData, percentChange, insights);
 
                 forecast.YearlyData[Convert.ToInt32(year)] = new YearData
                 {
-                    ActualData = actualDataByAddress,
+                    ActualData = actuallyData,
                     MovingAverage = forecastedData,
                     PercentChange = percentChange,
                     Insights = insights

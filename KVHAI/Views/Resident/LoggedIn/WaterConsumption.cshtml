@@ -523,6 +523,10 @@
             var myChart = null; // Declare the global variable
 
             GetGraphData();// PAUSE MUNA NATIN TO
+            var addr_id = $('#select_address').val();
+            var _year = $('#select_year').val();
+
+            GetDataAndGraph(addr_id, _year);
 
             const waterConsumptionConnection = setupSignalRConnection("/resident/water-consumption", "Water Consumption Hub");
 

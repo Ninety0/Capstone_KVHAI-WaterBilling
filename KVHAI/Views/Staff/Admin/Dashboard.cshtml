@@ -290,13 +290,14 @@
             }
 
             function GetGraphData() {
+                $('#average_data').text("0");
                 var selectedYear = $('#select_year').val();
                 $.ajax({
                     type: 'GET',
                     url: '@Url.Action("GraphWaterConsumption", "AdminDashboard")',
                     data: { year: selectedYear },
                     success: function (data) {
-                        //console.log(data);
+                        console.log(data);
                         var yearDropdown = $('#select_year');
                         console.log($(yearDropdown).val());
 
@@ -321,6 +322,8 @@
 
                         var selectedYear = $('#select_year').val();
                         var yearData = yearsData[selectedYear]; // Get data for the selected year
+                        //var actualData = yearData.actualData[yearData.actualData.length - 1];
+                        //var avgData = yearData.forecastData[yearData.actualData.length - 1];
                         var actualData = yearData.actualData[yearData.actualData.length - 1];
                         var avgData = yearData.forecastData[yearData.actualData.length - 1];
 
@@ -783,14 +786,14 @@
         <div class="card metric-card shadow-sm ">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class=" text-muted mb-0">Monthly Water Consumption</h5>
+                    <h5 class=" text-muted mb-0">Monthly Water  Consumption</h5>
                     <div class="metric-icon bg-primary bg-opacity-10">
                         <i class="bi bi-droplet-fill text-primary"></i>
                     </div>
                 </div>
-                <div class="card-value text-dark mb-2" id="current_data">0</div>
+                <div class="card-value text-dark mb-2" id="current_data">0 </div>
                 <div class="text-muted small">
-                    Average: <span class="text-success" id="average_data">0</span>
+                    Average: <span class="text-success" id="average_data">0 </span>
                 </div>
             </div>
         </div>
@@ -821,7 +824,7 @@
         <div class="container-fluid bg-white border border-2 p-2 rounded shadow-sm">
             <div class="row">
                 <div class="col-9">
-                    <h5 class="fw-bold text-muted p-2 mb-3 flex-grow-1">Water Consumption Analytics</h5>
+                    <h5 class="fw-bold text-muted p-2 mb-3 flex-grow-1">Cubic Water Consumption Analytics</h5>
                 </div>
                 <div class="col-3">
                     <select class="form-control text-center" id="select_year">
