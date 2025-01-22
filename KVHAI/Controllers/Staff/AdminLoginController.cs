@@ -78,8 +78,8 @@ namespace KVHAI.Controllers.Staff
             }
             else if (role == "clerk")
             {
-                return Ok(new { redirectUrl = "/kvhai/staff/water-reading/" });
-                //return Ok(new { redirectUrl = "/kvhai/staff/clerk/home" });
+                //return Ok(new { redirectUrl = "/kvhai/staff/water-reading/" });
+                return Ok(new { redirectUrl = "/kvhai/staff/clerkhome/" });
             }
             else if (role == "cashier1")
             {

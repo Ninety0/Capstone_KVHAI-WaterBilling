@@ -1,0 +1,365 @@
+﻿@{
+    ViewBag.Title = "Water Billing";
+}
+
+@section head{
+    <style>
+    </style>
+}
+
+
+@section sidebar{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-people me-2"></i> Accounts
+    </a>
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Request
+        </a>*@
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-geo-alt me-2"></i>Streets
+    </a>
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center ">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+
+    </a>
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
+    </a>
+
+}
+@section mobilenav{
+    <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-house-door me-2"></i> Dashboard
+    </a>
+    <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-people me-2"></i> Accounts
+
+    </a>
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-file-earmark-text me-2"></i> Announcement
+    </a>
+    @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Request
+        </a>*@
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-person me-2"></i> Resident Address
+    </a>
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center ">
+        <i class="bi bi-geo-alt me-2"></i>Streets
+
+    </a>
+
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center ">
+        <i class="bi bi-pencil-square me-2"></i> Reading
+    </a>
+
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center active">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
+    </a>
+
+}
+<div class="card shadow-sm h-100">
+    <div class="card-body">
+
+        <!-- Date Filter Section -->
+        <div class="row mb-3">
+            <div class="col-8 d-flex mb-3">
+                <label for="txtSearch" class="form-label fw-bold text-small text-muted me-2">Search: </label>
+                <input type="text" class="form-control" id="txtSearch" name="name" value="" />
+            </div>
+            <div class="col-4  d-flex align-items-end mb-3">
+                <select id="category" class="form-select" aria-label="Default select example">
+                    <option value="account_number">Account #</option>
+                    <option value="reference_no">Reference #</option>
+                </select>
+            </div>
+            <!--PRTIN-->
+            <div class="col-md-3 mb-3">
+                <label for="location" class="form-label fw-bold text-small text-muted">Location</label>
+                <select id="location" class="form-select" aria-label="Default select example">
+                    <option selected value="1">Phase 2 (Blk 51 to  143)</option>
+                    <option value="2">Phase 1 (Blk 41 to  48)</option>
+                    <option value="3">Blk 24 to 40</option>
+                    <option value="4">Blk 7 to 23</option>
+                    <option value="">All</option>
+                </select>
+
+            </div>
+
+            <!--START DATE-->
+            <div class="col-md-3 mb-md-0 mb-3">
+                <label for="startDate" class="form-label fw-bold text-small text-muted">Date</label>
+                <input type="date" class="form-control" id="billDate">
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label for="billStatus" class="form-label fw-bold text-small text-muted">Status</label>
+                <select id="billStatus" class="form-select" aria-label="Default select example">
+                    <option selected value="paid">Paid</option>
+                    <option value="unpaid">Unpaid</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end justify-content-end mb-3">
+                <button type="button" class="btn btn-sm p-2 btn-primary me-3" id="filterButton">Apply Filter</button>
+                <button type="button" class="btn btn-sm p-2 btn-secondary me-3" id="resetButton">Reset</button>
+                <button type="button" class="btn btn-sm p-2 btn-success" id="printButton">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+            </div>
+
+        </div>
+        <!--End DATE-->
+        <!-- Payment Table -->
+        <div class="table-responsive">
+            <table class="table" id="billTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Ref. #</th>
+                        <th scope="col">Account #</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Bill For</th>
+                        <th scope="col">Water Bill #</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Due</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+
+                        if (Model.WaterBillingPagination.ModelList != null)
+                        {
+                            if (Model.WaterBillingPagination.NumberOfData < 1)
+                            {
+                                <tr>
+                                    <td class="text-center text-uppercase p-5" colspan="14"><strong>No Data Found!</strong></td>
+                                </tr>
+                            }
+                            else
+                            {
+
+                                foreach (var item in Model.WaterBillingPagination.ModelList)
+                                {
+                                    var address = string.Join(" ", $"Blk {item.Block}", $"Lot {item.Lot}", $"{item.Street_Name} St.");
+                                    var billFor = DateTime.TryParse(item.Bill_For, out DateTime bill) ? bill.ToString("MMMM yyyy") : "";
+
+                                    string _dueDateLong = "";
+                                    string _dueDateShort = "";
+                                    string dueDateFromDay = "";
+                                    string dueDateToDay = "";
+                                    string dueDateMonthShort = "";
+
+                                    if (DateTime.TryParse(item.Due_Date_From, out DateTime dueFrom))
+                                    {
+                                        dueDateFromDay = dueFrom.ToString("dd");
+                                    }
+
+                                    if (DateTime.TryParse(item.Due_Date_To, out DateTime dueTo))
+                                    {
+                                        dueDateToDay = dueTo.ToString("dd");
+                                        dueDateMonthShort = dueTo.ToString("MMM");
+                                    }
+
+                                    //DUE DATE
+                                    _dueDateShort = $"{dueDateFromDay}-{dueDateMonthShort}-{dueDateToDay}";
+                                    <tr data-bill="@item.WaterBill_ID ">
+                                        <td class="">@item.Reference_No</td>
+                                        <td class="">@item.Account_Number  </td>
+                                        <td data-addr="@item.Address_ID " class="">@address </td>
+                                        <td class="">@billFor</td>
+                                        <td class="">@item.WaterBill_No</td>
+                                        <td class="">@item.Amount</td>
+                                        <td class="">@_dueDateShort</td>
+                                        <td class="">@item.Status </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    }
+
+                    <tr>
+                        <td colspan="13">
+                            <div class="container-fluid mt-3">
+                                @Model.WaterBillingPagination.Pagenation
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+</div>
+
+
+@section scripts{
+    @*<script src="~/js/signalr/dist/browser/signalr.min.js"></script>*@
+    <script src="~/js/water-reading.js" defer></script>
+    <script src="~/js/jquery.simple-calendar.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            //CODE FOR SIGNALR
+            const readingConnection = setupSignalRConnection("/kvhai/staff/reading", "WaterWorks Hub");
+
+            readingConnection.on("ReceivedWaterReading", function () {
+                GetWaterReadingByMonth();
+            });
+            //END SIGNAL R
+
+
+            $(document).on('change', '#select_status', function () {
+                GetWaterReadingByMonth();
+            })
+
+            $(document).on('change', '#location', function () {
+                GetWaterReadingByMonth();
+            })
+
+            $(document).on('click', '#printButton', function (e) {
+                e.preventDefault(); // Prevent default link behavior
+
+                // Clone the table
+                const clonedTable = $('#billTable').clone();
+
+                // Remove any unwanted pagination rows (last row containing pagination controls)
+                clonedTable.find('tbody tr:last-child').remove();
+
+                // Add inline styles to the cloned table
+                clonedTable.css({
+                    "border-collapse": "collapse",
+                    "width": "100%"
+                });
+                clonedTable.find('th, td').css({
+                    "border": "1px solid #ddd",
+                    "padding": "8px",
+                    "text-align": "left"
+                });
+                clonedTable.find('th').css({
+                    "background-color": "#f2f2f2"
+                });
+
+                // Create the header element
+                const headerElement = $('<h1>', {
+                    text: 'Water Billing List',
+                    css: {
+                        'font-family': 'Arial, sans-serif',
+                        'margin-bottom': '20px'
+                    }
+                });
+
+                // Create the date filter element
+                const dateFilterElement = $('<div>', {
+                    html: `
+        <p style="margin-top: 16px; font-family: Arial, sans-serif;">
+            <strong>Location:</strong> <span id="fromDate">${$("#location option:selected").text() || ''}</span>
+            <br/>
+            <strong>Status:</strong> <span id="toDate">${$("#billStatus option:selected").text() || ''}</span>
+        </p>
+`,
+                    css: {
+                        'text-align': 'left',
+                        'font-family': 'Arial, sans-serif',
+                        'margin-top': '20px'
+                    }
+                });
+
+                // Combine the header, table, and date filter
+                const styledContent = $('<div>')
+                    .append(headerElement)
+                    .append(dateFilterElement)
+                    .append(clonedTable);
+
+                // Create a print window and inject the styled content
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                printWindow.document.open();
+                printWindow.document.write(styledContent.html());
+
+                // Close the document and trigger the print dialog
+                printWindow.document.close();
+                printWindow.print();
+            });
+
+            //APPLY FILTER
+            $(document).on('click', '#filterButton', function () {
+                wbpagination();
+            });
+
+            $(document).on('click', '#resetButton', function () {
+                console.log("click");
+                $("#endDate").val('');
+                $("#billDate").val(''),
+                    $("#txtSearch").val(''),
+                    wbpagination();
+            });
+
+            function GetWaterReadingByMonth() {
+                var _status = $('#select_status').val();
+                var _location = $('#location').val();
+                console.log(_status);
+                $.ajax({
+                    type: 'GET',
+                    url: '/AdminDashboard/GetConsumptionByMonth',
+                    data: { status: _status, location: _location },
+                    success: function (response) {
+                        var result = $(response).find('#table_data').html();
+                        $('#table_data').html(result);
+                    },
+                    error: function (xhr) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function wbpagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
+                var array = {
+                    page_index: i,
+                    date: $("#billDate").val(),
+                    status: $("#billStatus").val(),
+                    location: $("#location").val(),
+                    search: $("#txtSearch").val(),
+                    category: $("#category").val(),
+                };
+
+                $.ajax({
+                    url: '/AdminDashboard/GetBilling',
+                    type: "POST",
+                    data: array,
+                    success: function (response) {
+                        var result = $(response).find("#billTable").html();
+                        console.log(result);
+                        $('#billTable').html(result)
+
+                        //var btnEdit = $('.btn-res-edit');
+                        //var btnDelete = $('.btn-res-delete');
+
+                        //if (_isActive) {
+                        //    $('.btn-res-edit').addClass('disabled');
+                        //    $('.btn-res-delete').addClass('disabled');
+
+                        //}
+                        //else {
+                        //    $('.btn-res-edit').removeClass('disabled');
+                        //    $('.btn-res-delete').removeClass('disabled');
+                        //}
+                    },
+                    error: function (xhr, status, error_m) {
+                        toastr.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+    </script>
+
+}

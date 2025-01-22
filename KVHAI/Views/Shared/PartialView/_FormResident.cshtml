@@ -12,6 +12,8 @@
             <form id="form-resident" autocomplete="off" class="needs-validation" novalidate>
                 @Html.AntiForgeryToken()
 
+                <input type="hidden" id="res_idHidden" value="">
+
                 <div class="modal-body">
                     <div class="container tab" id="information">
 
@@ -53,7 +55,7 @@
                             @* END PERSONAL INFO *@
                         </div>
 
-                            <hr />
+                        <hr />
 
                         <!--Address Details-->
                         <div class="row">
@@ -63,74 +65,74 @@
 
 
                             @* ADDRESS *@
-                        <div id="add_item">
-                            <div class="row_address">
-                                <div class="row">
+                            <div id="add_item">
+                                <div class="row_address">
+                                    <div class="row">
 
-                                    <!--BLOCK-->
-                                    <div class="col-md-5">
-                                        <div class="form-check mb-3">
-                                            <label for="Block" class="form-label fw-bold fs-6">Block</label>
-                                            <input type="text" min="1" class="form-control" id="rBlock" name="Block" required>
-                                            <div class="invalid-feedback">
-                                                Required.
+                                        <!--BLOCK-->
+                                        <div class="col-md-5">
+                                            <div class="form-check mb-3">
+                                                <label for="Block" class="form-label fw-bold fs-6">Block</label>
+                                                <input type="text" min="1" class="form-control" id="rBlock" name="Block" required>
+                                                <div class="invalid-feedback">
+                                                    Required.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!--LOT-->
+                                        <div class="col-md-5">
+                                            <div class="form-check mb-3">
+                                                <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
+                                                <input type="text" oninput="this.value = this.value.toUpperCase()" min="1" class="form-control" id="rLot" name="Lot" required>
+                                                <div class="invalid-feedback">
+                                                    Required.
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="row">
 
-                                    <!--LOT-->
-                                    <div class="col-md-5">
-                                        <div class="form-check mb-3">
-                                            <label for="Lot" class="form-label fw-bold fs-6">Lot</label>
-                                            <input type="text" oninput="this.value = this.value.toUpperCase()" min="1" class="form-control" id="rLot" name="Lot" required>
-                                            <div class="invalid-feedback">
-                                                Required.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
+                                        <!--STREET-->
+                                        <div class="col-md-5">
+                                            <div class="form-check mb-3">
+                                                <label for="fname" class="form-label fw-bold fs-6">Street</label>
 
-                                    <!--STREET-->
-                                    <div class="col-md-5">
-                                        <div class="form-check mb-3">
-                                            <label for="fname" class="form-label fw-bold fs-6">Street</label>
-
-                                            <select id="select-street1" class="form-select" aria-label="Default select example" required>
-                                                @{
-                                                    foreach (var item in Model.ListStreet)
-                                                    {
-                                                        <option value="@item.Street_ID">@item.Street_Name</option>
+                                                <select id="select-street1" class="form-select" aria-label="Default select example" required>
+                                                    @{
+                                                        foreach (var item in Model.ListStreet)
+                                                        {
+                                                            <option value="@item.Street_ID">@item.Street_Name</option>
+                                                        }
                                                     }
-                                                }
-                                            </select>
-                                            <div class="invalid-feedback">
-                                                Required.
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Required.
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <!--DATE RESIDENCY-->
-                                    <div class="col-md-5">
-                                        <div class="form-check mb-3">
-                                            <label for="Email" class="form-label fw-bold fs-6">Date Residency: </label>
-                                            <input type="date" class="form-control" id="Date_Residency" name="Date_Residency" required autocomplete="nope">
-                                            <div class="invalid-feedback">
-                                                Required.
+                                        <!--DATE RESIDENCY-->
+                                        <div class="col-md-5">
+                                            <div class="form-check mb-3">
+                                                <label for="Email" class="form-label fw-bold fs-6">Date Residency: </label>
+                                                <input type="date" class="form-control" id="Date_Residency" name="Date_Residency" required autocomplete="nope">
+                                                <div class="invalid-feedback">
+                                                    Required.
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <div class="form-check">
-                                            <label class="form-label fw-bold fs-6">&nbsp;</label>
-                                            <button type="button" class="btn_add btn btn-outline-success w-100" id="">ADD</button>
+                                        <div class="col-10 col-lg-2">
+                                            <div class="form-check">
+                                                <label class="form-label fw-bold fs-6">&nbsp;</label>
+                                                <button type="button" class="btn_add btn btn-outline-success w-100" id="">ADD</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
 
-                        </div>
-                            
 
 
                             @* END PERSONAL INFO *@

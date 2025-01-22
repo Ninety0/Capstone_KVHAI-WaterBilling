@@ -170,11 +170,14 @@
     <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-geo-alt me-2"></i>Streets
     </a>
-    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center">
         <i class="bi bi-pencil-square me-2"></i> Reading
 
     </a>
 
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
+    </a>
 }
 @section mobilenav{
     <a href="/kvhai/staff/admin/dashboard" class="nav-link text-light mb-2 d-flex align-items-center ">
@@ -198,9 +201,13 @@
 
     </a>
 
-    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center">
         <i class="bi bi-pencil-square me-2"></i> Reading
 
+    </a>
+
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
 
 }
@@ -252,7 +259,7 @@
                         </div>
                     </div>
                     <div class="col d-flex mt-3 justify-content-sm-start mt-sm-0 justify-content-md-end">
-                        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#modal-employee" style="background-color: #030712; color:white;">
+                        <button type="button" class="btn" data-bs-toggle="modal" id="modalOpen" data-bs-target="#modal-employee" style="background-color: #030712; color:white;">
                             <i class="fa-solid fa-plus"></i>
                             <span class="fw-bold ms-2" style="font-size:1rem;">Staff Account</span>
                         </button>

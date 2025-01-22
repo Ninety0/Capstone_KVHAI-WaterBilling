@@ -124,7 +124,7 @@
         const inputs = $('#form-reading input');
 
         inputs.each(function () {
-            if (this.id === 'input-block' || this.id === 'input-lot' || this.id === 'input-reading') {
+            if (this.id === 'input-block' || this.id === 'input-reading') {//this.id === 'input-lot'
                 $(this).on('keypress', function (e) {
                     var key = e.keyCode || e.which;
 

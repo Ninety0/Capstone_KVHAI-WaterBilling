@@ -26,6 +26,13 @@
         public string PreviousWaterBillAmount { get; set; } = string.Empty;
 
 
+        public int Resident_ID { get; set; }
+        public string Block { get; set; } = string.Empty;
+        public string Lot { get; set; } = string.Empty;
+        public string Street { get; set; } = string.Empty;
+        public int Street_ID { get; set; }
+        public string Street_Name { get; set; } = string.Empty;
+
 
     }
 }

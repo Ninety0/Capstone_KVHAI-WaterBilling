@@ -184,7 +184,8 @@ namespace KVHAI.Repository
             catch (Exception ex)
             {
                 // Optionally, log the exception here
-                throw new Exception("Error occurred during account validation", ex);
+                //throw new Exception("Error occurred during account validation", ex);
+                return 0;
             }
         }
 

@@ -90,6 +90,10 @@ namespace KVHAI.Controllers.Staff.Waterworks
         {
             try
             {
+                var empID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                waterReading.Emp_ID = empID;
+
                 var residentIDS = await _residentAddressRepository.GetResidentID(waterReading.Address_ID);
 
                 if (await _waterReadingRepository.CheckExistReading(waterReading.Address_ID))

@@ -212,7 +212,8 @@ namespace KVHAI.Repository
 
         }
 
-        public async Task<int> InsertPayment(Payment payment)
+        //OFFLINE PAYMENT
+        public async Task<int> InsertPaymentOffline(Payment payment)
         {
             try
             {
@@ -225,7 +226,83 @@ namespace KVHAI.Repository
                     using (var transaction = connection.BeginTransaction())
                     {
                         try
+                        {//add reference no
+                            using (var command = new SqlCommand(@"
+                        INSERT INTO payment_tb (addr_id, res_id, bill, paid_amount, remaining_balance, payment_method, payment_status, payment_date, paid_by, transaction_id, payer_id,payer_email) 
+                        VALUES (@address, @res, @bill, @amount, @remainingBalance, @method, @status, @date, @by, @transactionId, @payerId, @payerMail);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);", connection, transaction))
+                            {
+                                command.Parameters.AddWithValue("@address", payment.Address_ID);
+                                command.Parameters.AddWithValue("@res", payment.Resident_ID);
+                                command.Parameters.AddWithValue("@bill", payment.Bill);
+                                command.Parameters.AddWithValue("@amount", payment.Paid_Amount.ToString("F2"));
+                                command.Parameters.AddWithValue("@remainingBalance", 0); // Initially zero
+                                command.Parameters.AddWithValue("@method", payment.Payment_Method);
+                                command.Parameters.AddWithValue("@status", status);
+                                command.Parameters.AddWithValue("@date", date);
+                                command.Parameters.AddWithValue("@by", payment.Paid_By);
+                                command.Parameters.AddWithValue("@transactionId", payment.PayPal_TransactionId ?? (object)DBNull.Value); // Store transaction ID if online
+                                command.Parameters.AddWithValue("@payerId", payment.PayPal_PayerId ?? (object)DBNull.Value); // Store transaction ID if online
+                                command.Parameters.AddWithValue("@payerMail", payment.PayPal_PayerEmail ?? (object)DBNull.Value); // Store transaction ID if online
+
+
+                                result = (int)await command.ExecuteScalarAsync();
+                            }
+
+                            if (result > 0)
+                            {
+                                int updateResult = await UpdateBillsAfterPayment(result, payment, connection, transaction);
+                                if (updateResult < 1)
+                                {
+                                    throw new Exception("Error updating bills after payment");
+                                }
+                            }
+
+                            var resident = await _listRepository.ResidentList();
+                            var lname = resident.Where(r => r.Res_ID == payment.Resident_ID.ToString())
+                                .Select(l => l.Lname).FirstOrDefault();
+                            var notif = new Notification
+                            {
+                                Title = "Water Billing",
+                                Message = $"{lname} has just been paid water bill.",
+                                Url = "/kvhai/staff/onlinepayment/home",
+                                Message_Type = "Cashier1",
+                            };
+                            var notificationResult = await _notificationRepository.SendNotificationToAdmin(notif);
+
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
                         {
+                            transaction.Rollback();
+                            return 0;
+                        }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
+        //ONLINE PAYMENT
+        public async Task<int> InsertPaymentOnline(Payment payment)
+        {
+            try
+            {
+                int result = 0;
+                string status = await GetStatus(payment.Paid_Amount, payment.Bill); // Get payment status based on the amount
+                var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                using (var connection = await _dBConnect.GetOpenConnectionAsync())
+                {
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {//add reference no
                             using (var command = new SqlCommand(@"
                         INSERT INTO payment_tb (addr_id, res_id, bill, paid_amount, remaining_balance, payment_method, payment_status, payment_date, paid_by, transaction_id, payer_id,payer_email) 
                         VALUES (@address, @res, @bill, @amount, @remainingBalance, @method, @status, @date, @by, @transactionId, @payerId, @payerMail);
@@ -289,7 +366,6 @@ namespace KVHAI.Repository
 
 
 
-
         public async Task<DataTable> PrintWaterBilling(Payment payment)
         {
             // Adjust your implementation here to loop through the list of reportWaterBilling items
@@ -303,7 +379,7 @@ namespace KVHAI.Repository
             }
             try
             {
-                string paymentDate = DateTime.TryParse(payment.Payment_Date, out DateTime date) ? date.ToString("MMMM dd, yyyy") : "";
+                string paymentDate = DateTime.TryParse(payment.Payment_Date, out DateTime date) ? date.ToString("MMMM dd, yyyy") : DateTime.Now.ToString("MMMM dd, yyyy");
 
                 // Setup DataTable columns
                 dt.Columns.Add("Block");

@@ -15,21 +15,24 @@
     <a href="/kvhai/staff/admin/accounts" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-people me-2"></i> Accounts
     </a>
-    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
             <i class="bi bi-person me-2"></i> Request
         </a>*@
-    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-person me-2"></i> Resident Address
     </a>
-    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-geo-alt me-2"></i>Streets
     </a>
-    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center active">
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center active">
         <i class="bi bi-pencil-square me-2"></i> Reading
 
+    </a>
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
 
 }
@@ -41,23 +44,26 @@
         <i class="bi bi-people me-2"></i> Accounts
 
     </a>
-    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/announcement" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-file-earmark-text me-2"></i> Announcement
     </a>
     @*<a href="/kvhai/staff/request-page/" class="nav-link text-light mb-2 d-flex align-items-center">
             <i class="bi bi-person me-2"></i> Request
         </a>*@
-    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/resident-address/" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-person me-2"></i> Resident Address
     </a>
-    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
+    <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center ">
         <i class="bi bi-geo-alt me-2"></i>Streets
 
     </a>
 
-    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center active">
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center active">
         <i class="bi bi-pencil-square me-2"></i> Reading
+    </a>
 
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
 
 }
@@ -115,10 +121,7 @@
                                 for (int i = 0; i < Model.AddressList.Count; i++)
                                 {
                                     var index = i + 1;
-                                    var address = $@"
-                                                                                                                            Blk {Model.AddressList[i].Block}
-                                                                                                                            Lot {Model.AddressList[i].Block}
-                                                                                                                            {Model.AddressList[i].Street_Name} St.";
+                                    var address = $@"Blk {Model.AddressList[i].Block} Lot {Model.AddressList[i].Lot} {Model.AddressList[i].Street_Name} St.";
                                     <tr>
                                         <th scope="row">@index</th>
                                         <td>@address</td>

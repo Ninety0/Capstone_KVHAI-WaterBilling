@@ -1,5 +1,6 @@
 ﻿using KVHAI.Models;
 using System.Data.SqlClient;
+using System.Text;
 
 namespace KVHAI.Repository
 {
@@ -10,13 +11,15 @@ namespace KVHAI.Repository
         private readonly AddressRepository _addressRepository;
         private readonly NotificationRepository _notificationRepository;
         private readonly ResidentAddressRepository _residentAddressRepository;
+        private readonly StreetRepository _streetRepository;
 
-        public WaterBillRepository(DBConnect dBConnect, AddressRepository addressRepository, NotificationRepository notificationRepository, ResidentAddressRepository residentAddressRepository)//, WaterBillingFunction waterBillingFunction)
+        public WaterBillRepository(DBConnect dBConnect, AddressRepository addressRepository, NotificationRepository notificationRepository, ResidentAddressRepository residentAddressRepository, StreetRepository streetRepository)//, WaterBillingFunction waterBillingFunction)
         {
             _dbConnect = dBConnect;
             _addressRepository = addressRepository;
             _notificationRepository = notificationRepository;
             _residentAddressRepository = residentAddressRepository;
+            _streetRepository = streetRepository;
             //_waterBillingFunction = waterBillingFunction;
         }
 
@@ -160,6 +163,8 @@ namespace KVHAI.Repository
 
                             foreach (var item in waterBilling)
                             {
+
+
                                 using (var insertCommand = new SqlCommand(@"
                             INSERT INTO water_billing_tb (reference_no, addr_id, location ,prev_reading ,curr_reading, cubic_meter, bill_for ,bill_date_created , amount, date_issue_from, date_issue_to, due_date_from, due_date_to, status, waterbill_no)
                             VALUES (@ref, @addr, @loc, @prev, @current, @cubic, @bill_for, @bill_date, @amount, @issueFrom, @issueTo, @dueFrom, @dueTo, @status, @billno)", connection, transaction))
@@ -200,6 +205,8 @@ namespace KVHAI.Repository
                                     };
 
                                     await _notificationRepository.InsertNotificationPersonalToUser(notif);
+
+                                    ref_no += 1;
                                 }
                             }
 
@@ -451,6 +458,16 @@ namespace KVHAI.Repository
                                 var lname = reader.GetString(0);
                                 var fname = reader.GetString(1);
                                 var mname = reader.GetString(2);
+
+                                DateTime date = reader.GetDateTime(23);
+                                var dayFrom = DateTime.Now.ToString("dd");
+                                var dayTo = DateTime.Now.AddDays(-1).ToString("dd");
+                                var periodFrom = reader.GetDateTime(23).ToString($"MMM {dayFrom}, yyyy"); // july 01 2024
+                                var periodTo = date.AddMonths(1).ToString($"MMM {dayTo}, yyyy");
+
+                                var periodCoverDate = string.Join(" - ", periodFrom, periodTo);
+
+
                                 var _address = new Address
                                 {
                                     Street_Name = reader.GetString(3),
@@ -469,18 +486,18 @@ namespace KVHAI.Repository
                                     Previous_Reading = reader.GetInt32(19).ToString(),
                                     Current_Reading = reader.GetInt32(20).ToString(),
                                     Cubic_Meter = reader.GetString(21),
-                                    Bill_For = reader.GetDateTime(22).ToString("MMMM yyyy"),
-                                    Bill_Date_Created = reader.GetDateTime(23).ToString("MMMM yyyy"),
+                                    Bill_For = reader.GetDateTime(22).ToString("yyyy-MM-dd"),
+                                    Bill_Date_Created = reader.GetDateTime(23).ToString("yyyy-MM-dd"),
                                     Amount = reader.GetString(24),
-                                    Date_Issue_From = reader.GetDateTime(25).ToString("MMMM yyyy"),
-                                    Date_Issue_To = reader.GetDateTime(26).ToString("MMMM yyyy"),
-                                    Due_Date_From = reader.GetDateTime(27).ToString("MMMM yyyy"),
-                                    Due_Date_To = reader.GetDateTime(28).ToString("MMMM yyyy"),
+                                    Date_Issue_From = reader.GetDateTime(25).ToString("yyyy-MM-dd"),
+                                    Date_Issue_To = reader.GetDateTime(26).ToString("yyyy-MM-dd"),
+                                    Due_Date_From = reader.GetDateTime(27).ToString("yyyy-MM-dd"),
+                                    Due_Date_To = reader.GetDateTime(28).ToString("yyyy-MM-dd"),
                                     Status = reader.GetString(29),
                                     WaterBill_No = reader.GetInt32(30).ToString(),
-                                    Account_Number = reader.GetString(10)
+                                    Account_Number = reader.GetString(10),
 
-
+                                    DatePeriodCovered = periodCoverDate
                                 };
 
                                 address.Add(_address);
@@ -520,7 +537,7 @@ namespace KVHAI.Repository
                                 SELECT * FROM water_billing_tb 
                                 WHERE addr_id = @id 
                                     AND status = 'unpaid'
-                                    AND waterbill_no != @billnum
+                                    AND waterbill_no < @billnum
                             ", connection))//
 
                             {
@@ -787,13 +804,13 @@ namespace KVHAI.Repository
                                         Previous_Reading = reader.GetInt32(19).ToString(),
                                         Current_Reading = reader.GetInt32(20).ToString(),
                                         Cubic_Meter = reader.GetString(21),
-                                        Bill_For = reader.GetDateTime(22).ToString("MMMM yyyy"),
-                                        Bill_Date_Created = reader.GetDateTime(23).ToString("MMMM yyyy"),
+                                        Bill_For = reader.GetDateTime(22).ToString("yyyy-MM-dd"),
+                                        Bill_Date_Created = reader.GetDateTime(23).ToString("yyyy-MM-dd"),
                                         Amount = reader.GetString(24),
-                                        Date_Issue_From = reader.GetDateTime(25).ToString("MMMM yyyy"),
-                                        Date_Issue_To = reader.GetDateTime(26).ToString("MMMM yyyy"),
-                                        Due_Date_From = reader.GetDateTime(27).ToString("MMMM yyyy"),
-                                        Due_Date_To = reader.GetDateTime(28).ToString("MMMM yyyy"),
+                                        Date_Issue_From = reader.GetDateTime(25).ToString("yyyy-MM-dd"),
+                                        Date_Issue_To = reader.GetDateTime(26).ToString("yyyy-MM-dd"),
+                                        Due_Date_From = reader.GetDateTime(27).ToString("yyyy-MM-dd"),
+                                        Due_Date_To = reader.GetDateTime(28).ToString("yyyy-MM-dd"),
                                         Status = reader.GetString(29),
                                         WaterBill_No = reader.GetInt32(30).ToString(),
                                         Account_Number = reader.GetString(10),
@@ -1152,6 +1169,199 @@ namespace KVHAI.Repository
                 return wbaList;
             }
             catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        //PAGINATION
+        public async Task<int> CountNumberWaterBilling(string date, string status, string location, string search = "", string category = "")
+        {
+            try
+            {
+                var address = new List<Address>();
+                var waterBill = new List<WaterBilling>();
+
+                DateTime? parsedDate = DateTime.TryParse(date, out DateTime resultD) ? resultD : (DateTime?)null;
+
+                var sqlQuery = new StringBuilder(@"select Count(*) from water_billing_tb wb JOIN address_tb a ON wb.addr_id = a.addr_id WHERE");
+                sqlQuery.AppendLine(" wb.location = @location AND status = @status");
+                if (!string.IsNullOrEmpty(date))
+                    sqlQuery.AppendLine("AND MONTH(bill_for) = @month AND YEAR(bill_for) = @year");
+                if (!string.IsNullOrEmpty(search))
+                    sqlQuery.AppendLine($"AND {category} = @search");
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(sqlQuery.ToString(), connection))
+                    {
+                        command.Parameters.AddWithValue("@location", location);
+                        command.Parameters.AddWithValue("@status", status);
+                        if (!string.IsNullOrEmpty(date))
+                        {
+                            command.Parameters.AddWithValue("@month", parsedDate?.ToString("MM"));
+                            command.Parameters.AddWithValue("@year", parsedDate?.ToString("yyyy"));
+                        }
+
+                        if (!string.IsNullOrEmpty(search))
+                            command.Parameters.AddWithValue("@search", search);
+
+                        int result = Convert.ToInt32(await command.ExecuteScalarAsync());
+
+                        return result;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        //PAGINATION
+        public async Task<List<WaterBilling>> WaterBillingPagination(int offset, int limit, string date, string status, string location, string search = "", string category = "")
+        {
+            try
+            {
+                var address = new List<Address>();
+                var waterBill = new List<WaterBilling>();
+
+                DateTime? parsedDate = DateTime.TryParse(date, out DateTime resultD) ? resultD : (DateTime?)null;
+                var month = parsedDate?.ToString("MM");
+                var year = parsedDate?.ToString("yyyy");
+
+                var sqlQuery = new StringBuilder(@"select * from water_billing_tb wb JOIN address_tb a ON wb.addr_id = a.addr_id WHERE");
+                sqlQuery.AppendLine(" wb.location = @location AND status = @status");
+                if (!string.IsNullOrEmpty(date))
+                    sqlQuery.AppendLine(" AND MONTH(bill_for) = @month AND YEAR(bill_for) = @year");
+                if (!string.IsNullOrEmpty(search))
+                    sqlQuery.AppendLine($" AND {category} = @search ");
+
+                sqlQuery.AppendLine(@"
+            ORDER BY bill_for DESC 
+            OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY");
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(sqlQuery.ToString(), connection))
+                    {
+                        command.Parameters.AddWithValue("@location", location);
+                        command.Parameters.AddWithValue("@status", status);
+                        command.Parameters.AddWithValue("@offset", offset);
+                        command.Parameters.AddWithValue("@limit", limit);
+                        if (!string.IsNullOrEmpty(date))
+                        {
+                            command.Parameters.AddWithValue("@month", month);
+                            command.Parameters.AddWithValue("@year", year);
+                        }
+
+                        if (!string.IsNullOrEmpty(search))
+                            command.Parameters.AddWithValue("@search", search);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var _wb = new WaterBilling
+                                {
+                                    WaterBill_ID = reader.GetInt32(0).ToString(),
+                                    Reference_No = reader.GetInt32(1).ToString(),
+                                    Address_ID = reader.GetInt32(2).ToString(),
+                                    Location = reader.GetInt32(3).ToString(),
+                                    Previous_Reading = reader.GetInt32(4).ToString(),
+                                    Current_Reading = reader.GetInt32(5).ToString(),
+                                    Cubic_Meter = reader.GetString(6),
+                                    Bill_For = reader.GetDateTime(7).ToString("yyyy-MM-dd"),
+                                    Bill_Date_Created = reader.GetDateTime(8).ToString("yyyy-MM-dd"),
+                                    Amount = reader.GetString(9),
+                                    Date_Issue_From = reader.GetDateTime(10).ToString("yyyy-MM-dd"),
+                                    Date_Issue_To = reader.GetDateTime(11).ToString("yyyy-MM-dd"),
+                                    Due_Date_From = reader.GetDateTime(12).ToString("yyyy-MM-dd"),
+                                    Due_Date_To = reader.GetDateTime(13).ToString("yyyy-MM-dd"),
+                                    Status = reader.GetString(14),
+                                    WaterBill_No = reader.GetInt32(15).ToString(),
+
+                                    Resident_ID = reader.GetInt32(17),
+                                    Block = reader.GetString(18),
+                                    Lot = reader.GetString(19),
+                                    Street_Name = await _streetRepository.GetStreetName(reader.GetInt32(20).ToString()),
+                                    Account_Number = reader.GetString(22),
+                                };
+
+                                waterBill.Add(_wb);
+
+                            }
+
+                            return waterBill;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<WaterBilling>> WaterBillingPagination(string status, string location)
+        {
+            try
+            {
+                var address = new List<Address>();
+                var waterBill = new List<WaterBilling>();
+
+
+                var sqlQuery = new StringBuilder(@"select * from water_billing_tb wb JOIN address_tb a ON wb.addr_id = a.addr_id WHERE");
+                sqlQuery.AppendLine(" wb.location = @location AND status = @status");
+
+
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var command = new SqlCommand(sqlQuery.ToString(), connection))
+                    {
+                        command.Parameters.AddWithValue("@location", location);
+                        command.Parameters.AddWithValue("@status", status);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var _wb = new WaterBilling
+                                {
+                                    WaterBill_ID = reader.GetInt32(0).ToString(),
+                                    Reference_No = reader.GetInt32(1).ToString(),
+                                    Address_ID = reader.GetInt32(2).ToString(),
+                                    Location = reader.GetInt32(3).ToString(),
+                                    Previous_Reading = reader.GetInt32(4).ToString(),
+                                    Current_Reading = reader.GetInt32(5).ToString(),
+                                    Cubic_Meter = reader.GetString(6),
+                                    Bill_For = reader.GetDateTime(7).ToString("yyyy-MM-dd"),
+                                    Bill_Date_Created = reader.GetDateTime(8).ToString("yyyy-MM-dd"),
+                                    Amount = reader.GetString(9),
+                                    Date_Issue_From = reader.GetDateTime(10).ToString("yyyy-MM-dd"),
+                                    Date_Issue_To = reader.GetDateTime(11).ToString("yyyy-MM-dd"),
+                                    Due_Date_From = reader.GetDateTime(12).ToString("yyyy-MM-dd"),
+                                    Due_Date_To = reader.GetDateTime(13).ToString("yyyy-MM-dd"),
+                                    Status = reader.GetString(14),
+                                    WaterBill_No = reader.GetInt32(15).ToString(),
+
+                                    Resident_ID = reader.GetInt32(17),
+                                    Block = reader.GetString(18),
+                                    Lot = reader.GetString(19),
+                                    Street_Name = await _streetRepository.GetStreetName(reader.GetInt32(20).ToString()),
+                                    Account_Number = reader.GetString(22),
+                                };
+
+                                waterBill.Add(_wb);
+
+                            }
+
+                            return waterBill;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
             {
                 return null;
             }

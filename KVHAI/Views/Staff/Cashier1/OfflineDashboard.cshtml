@@ -63,84 +63,87 @@
             </div>
 
             <!-- Payment Table -->
-            <table class="table" id="payment_table">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Payment ID</th>
-                        <th scope="col">Address</th>
-                        <th scope="col">Amount</th>
-                        <th scope="col">Bill</th>
-                        <th scope="col">Paid By</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Method</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @{
+            <div class="table-responsive">
+                <table class="table" id="payment_table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Payment ID</th>
+                            <th scope="col">Address</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Bill</th>
+                            <th scope="col">Paid By</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Method</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
 
-                        if (Model.PaymentPagination.ModelList != null)
-                        {
-                            if (Model.PaymentPagination.NumberOfData < 1)
+                            if (Model.PaymentPagination.ModelList != null)
                             {
-                                <tr>
-                                    <td class="text-center text-uppercase p-5" colspan="14"><strong>No Data Found!</strong></td>
-                                </tr>
-                            }
-                            else
-                            {
-
-                                foreach (var item in Model.PaymentPagination.ModelList)
+                                if (Model.PaymentPagination.NumberOfData < 1)
                                 {
-                                    var address = string.Join(" ", $"Blk {item.Block}", $"Lot {item.Lot}", $"{item.Street} St.");
-                                    int indexx = Model.PaymentPagination.Index + 1;
-                                    <tr id="payment_row">
-                                        <td>@indexx</td>
-                                        <td>@item.Payment_ID</td>
-                                        <td data-addr="@item.Address_ID"
-                                            data-blk="@item.Block"
-                                            data-lot="@item.Lot"
-                                            data-st="@item.Street">
-                                            @address
-                                        </td>
-                                        <td>@item.Paid_Amount</td>
-                                        <td>@item.Bill</td>
-                                        <td data-res="@item.Resident_ID">@item.Paid_By</td>
-                                        <td>@item.Payment_Status</td>
-                                        <td>@item.Payment_Date</td>
-                                        <td>@item.Payment_Method</td>
-                                        <td>
-                                            <div class="">
-                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    ...
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" data-fileType="pdf" id="btnPdf" href="#">PDF</a></li>
-                                                    <li><a class="dropdown-item" data-fileType="excel" id="btnExcel" href="#">EXCEL</a></li>
-                                                    <li><a class="dropdown-item" data-fileType="doc" id="btnDocument" href="#">DOCUMENT</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
+                                    <tr>
+                                        <td class="text-center text-uppercase p-5" colspan="14"><strong>No Data Found!</strong></td>
                                     </tr>
+                                }
+                                else
+                                {
 
-                                    indexx++;
+                                    foreach (var item in Model.PaymentPagination.ModelList)
+                                    {
+                                        var address = string.Join(" ", $"Blk {item.Block}", $"Lot {item.Lot}", $"{item.Street} St.");
+                                        int indexx = Model.PaymentPagination.Index + 1;
+                                        <tr id="payment_row">
+                                            <td>@indexx</td>
+                                            <td>@item.Payment_ID</td>
+                                            <td data-addr="@item.Address_ID"
+                                                data-blk="@item.Block"
+                                                data-lot="@item.Lot"
+                                                data-st="@item.Street">
+                                                @address
+                                            </td>
+                                            <td>@item.Paid_Amount</td>
+                                            <td>@item.Bill</td>
+                                            <td data-res="@item.Resident_ID">@item.Paid_By</td>
+                                            <td>@item.Payment_Status</td>
+                                            <td>@item.Payment_Date</td>
+                                            <td>@item.Payment_Method</td>
+                                            <td>
+                                                <div class="">
+                                                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        ...
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" data-fileType="pdf" id="btnPdf" href="#">PDF</a></li>
+                                                        <li><a class="dropdown-item" data-fileType="excel" id="btnExcel" href="#">EXCEL</a></li>
+                                                        <li><a class="dropdown-item" data-fileType="doc" id="btnDocument" href="#">DOCUMENT</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        indexx++;
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    <tr>
-                        <td colspan="13">
-                            <div class="container-fluid mt-3">
-                                @Model.PaymentPagination.Pagenation
-                            </div>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td colspan="13">
+                                <div class="container-fluid mt-3">
+                                    @Model.PaymentPagination.Pagenation
+                                </div>
+                            </td>
+                        </tr>
 
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+
+            </div>
         </div>
     </div>
 </div>
@@ -182,6 +185,14 @@
     </script>
     <script>
         $(document).ready(function () {
+            //SIGNAL R CONNECTION
+            const wbConnection = setupSignalRConnection("/staff/waterbilling", "Offline Billing Hub");
+
+            wbConnection.on("ReceiveOfflinePayment", function () {
+                console.log("Resident has been paid.");
+                offpagination();
+            });
+
 
             $(document).on('click', '.dropdown-item', function () {
                 var _fileType = $(this).data('filetype'); // Get the file type from the clicked item

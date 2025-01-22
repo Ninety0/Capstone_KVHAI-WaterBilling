@@ -28,12 +28,11 @@
     });
 
     connection.on("GetAllStreets", function (streets) {
-        console.log("Na Receive Ko: " + streets);
+        //console.log("Na Receive Ko: " + streets);
         BindStreetToTable(streets);
     });
 
     connection.start().then(function () {
-        alert('Connected to dashboardHub');
         InvokeProducts();
 
     }).catch(function (err) {
@@ -249,7 +248,7 @@
     $(document).on('click', '.delete-btn', function () {
 
         st_id = $(this).data('id');
-        alert('Edit button clicked for Employee ID:' + st_id);
+        //alert('Edit button clicked for Employee ID:' + st_id);
         var arr = {
             id: st_id
         }
@@ -306,7 +305,7 @@
                 $('#tableData').html(result)
             },
             error: function (xhr, status, error_m) {
-                alert(status);
+                toastr.error(status);
             }
         });
     }

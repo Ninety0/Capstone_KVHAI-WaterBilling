@@ -22,9 +22,12 @@
     <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-geo-alt me-2"></i>Streets
     </a>
-    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center">
         <i class="bi bi-pencil-square me-2"></i> Reading
 
+    </a>
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
 
 }
@@ -50,9 +53,12 @@
 
     </a>
 
-    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center">
         <i class="bi bi-pencil-square me-2"></i> Reading
+    </a>
 
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
 
 }
@@ -205,7 +211,7 @@ $(document).on('click', '.btn_add', function (e) {
                     <div class="invalid-feedback">Required.</div>
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-10 col-lg-2">
                 <div class="form-check">
                     <label class="form-label fw-bold fs-6">&nbsp;</label>
                     <button type="button" class="btn_remove btn btn-outline-danger w-100">REMOVE</button>
@@ -240,6 +246,93 @@ $(document).on('click', '.btn_remove', function (e) {
         });
     </script>
 
+    <script>
+        $(document).ready(function () {
+            //GET METHOD TO FETCH DATA
+            $(document).on('click', '.edit-btn', function () {
+                $('#btn_update').removeClass('d-none');
+                $('#btn_register').addClass('d-none');
+                $('.btn_add').addClass('d-none');
+
+                //$('#form-emp').reset();
+
+                res_id = $(this).data('id');
+                //alert('Edit button clicked for Employee ID:' + emp_id);
+                var arr = {
+                    id: res_id
+                }
+
+                //$('#modal-resident').modal('show');
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/ResidentAddress/GetResident',
+                    data: arr,
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response) {
+                            var resident = response.residentAccount[0]; // Use lowercase 'residentAccount'
+                            console.log("Resident:", resident);
+                            $('#res_idHidden').val(resident.res_ID);
+                            $('#Lname').val(resident.lname);
+                            $('#Fname').val(resident.fname);
+                            $('#Mname').val(resident.mname);
+
+                            var address = response.addressAccount[0]; // Use lowercase 'addressAccount'
+                            console.log("Address:", address);
+                            $('#rBlock').val(address.block);
+                            $('#rLot').val(address.lot);
+                            $('#select-street1').val(address.street_Name);
+
+                            // Convert the date to 'YYYY-MM-DD' format
+                            var dateResidency = new Date(address.date_Residency); // Parse the date
+                            var formattedDate = dateResidency.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+
+                            // Set the value of the input
+                            $('#Date_Residency').val(formattedDate);
+
+                            $('#modal-resident').modal('show');
+                        }
+
+                        else {
+                            toastr.error('Failed to load employee data.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error('Failed to load employee data.');
+                    }
+                });
+
+                $('#modal-resident').on('hidden.bs.modal', function () {
+                    // Reset modal content when it's closed
+                    $('#form-resident')[0].reset();
+                });
+            });
+
+            $('#modal-resident').on('hidden.bs.modal', function () {
+                // Reset modal content when it's closed
+                $('#form-resident')[0].reset();
+                $('#btn_update').addClass('d-none');
+                $('#btn_register').removeClass('d-none');
+                $('.btn_add').removeClass('d-none');
+
+
+                //var rowItem = $(this).parent().parent().parent();
+                var rowItem = $('.btn_remove').closest('.row_address');
+                $(rowItem).remove();
+                //console.log(rowItem);
+
+                // Remove 'is-invalid' class on input
+                $('input, select').removeClass('is-invalid');
+                $('input, select').closest('form').removeClass('was-validated');
+            });
+
+            
+
+        });
+    </script>
+
     <!-- PAGINATION -->
 }
 
@@ -269,13 +362,24 @@ $(document).on('click', '.btn_remove', function (e) {
                             </div>
                         </div>
                     </div>
-                    <div class="col d-flex mt-3 justify-content-sm-start mt-sm-0 justify-content-md-end">
+                    <div class="col-12 col-lg-5 d-flex mt-3 justify-content-sm-start justify-content-md-end">
                         <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#modal-resident" style="background-color: #030712; color:white;">
                             <i class="fa-solid fa-plus"></i>
                             <span class="fw-bold ms-2" style="font-size:1rem;">Register Address</span>
                         </button>
                     </div>
                 </div>
+                @*<div class="row mb-3">
+                    <div class="col-md-6">
+                        <select id="location" class="form-select" aria-label="Default select example">
+                            <option selected hidden>--LOCATION--</option>
+                            <option value="1">Phase 2 (Blk 51 to 143)</option>
+                            <option value="2">Phase 1 (Blk 41 to 48)</option>
+                            <option value="3">Blk 24 to 40</option>
+                            <option value="4">Blk 7 to 23</option>
+                        </select>
+                    </div>
+                </div>*@
                 <div class="" id="res-tableData">
 
                     @{
@@ -308,6 +412,15 @@ $(document).on('click', '.btn_remove', function (e) {
                                             <div class="d-flex flex-column align-items-center">
                                                 <span class="fw-bold">Date residency</span>
                                                 <span>@item.Date_Residency</span>
+                                            </div>
+                                            <div class="">
+                                                <button class="btn btn-outline-success btn-sm edit-btn" data-id="@item.Res_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="edit">
+                                                    <!--data-bs-toggle="modal" data-bs-target="#modal-employee"-->
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                @*<button class="btn btn-outline-danger btn-sm ms-2 delete-btn" data-id="@item.Res_ID" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="delete">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>*@
                                             </div>
 
                                             <div>

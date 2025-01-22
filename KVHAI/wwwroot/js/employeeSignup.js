@@ -145,9 +145,14 @@
                 }
 
                 toastr.success('Registration Successful.');
+                $('#form-emp')[0].reset();
+
+
                 // Update your table here if needed
-                $('#modal-employee').modal('hide');
-                $(".modal-backdrop").remove();
+                var result = $(response).find("#tableData").html();
+                $('#tableData').html(result);
+
+                // Reset the form
 
                 var result = $(response).find("#tableData").html();
                 console.log("RESPONSE WHEN SUCCESS");
@@ -162,10 +167,10 @@
             }
         });
 
-        $('#modal-employee').on('hidden.bs.modal', function () {
-            // Reset modal content when it's closed
-            $('#form-emp')[0].reset();
-        });
+        //$('#modal-employee').on('hidden.bs.modal', function () {
+        //    // Reset modal content when it's closed
+        //    $('#form-emp')[0].reset();
+        //});
     }
 
     // Remove 'is-invalid' class on input
@@ -220,13 +225,20 @@
             }
         });
 
-        $('#modal-employee').on('hidden.bs.modal', function () {
-            // Reset modal content when it's closed
-            $('#form-emp')[0].reset();
-            $('#btn-update').addClass('d-none');
-            $('#btn-register').removeClass('d-none');
-        });
+        //$('#modal-employee').on('hidden.bs.modal', function () {
+        //    // Reset modal content when it's closed
+        //    $('#form-emp')[0].reset();
+        //    $('#btn-update').addClass('d-none');
+        //    $('#btn-register').removeClass('d-none');
+        //});
     }
+
+    $('#modal-employee').on('hidden.bs.modal', function () {
+        // Reset modal content when it's closed
+        $('#form-emp')[0].reset();
+        $('#btn-update').addClass('d-none');
+        $('#btn-register').removeClass('d-none');
+    });
 
     //POST METHOD TO DELETE EMPLOYEE
     $(document).on('click', '.delete-btn', function () {

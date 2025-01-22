@@ -24,6 +24,7 @@ namespace KVHAI.Models
         public Pagination<Streets>? StreetPagination { get; set; }
         public Pagination<AddressWithResident>? ResidentPagination { get; set; }
         public Pagination<Payment>? PaymentPagination { get; set; }
+        public Pagination<WaterBilling>? WaterBillingPagination { get; set; }
 
         public List<WaterReading>? PreviousReading { get; set; }
         public List<WaterReading>? CurrentReading { get; set; }
@@ -53,6 +54,7 @@ namespace KVHAI.Models
 
         public List<Resident> ResidentList { get; set; }
         public List<WaterReading> WaterReadingList { get; set; }
+        public List<WaterBilling> WaterBillingList { get; set; }
         public List<Employee> EmployeeList { get; set; }
         public List<Address> AddressList { get; set; }
         public string AddressCountByLocation { get; set; } = string.Empty;

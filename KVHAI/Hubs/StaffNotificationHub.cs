@@ -54,6 +54,12 @@ namespace KVHAI.Hubs
 
         }
 
+        public async Task SendNotificationPaymentOffline()
+        {
+            await Clients.All.SendAsync("ReceiveOfflinePayment");
+
+        }
+
 
 
         public async Task NotifyWaterBilling()

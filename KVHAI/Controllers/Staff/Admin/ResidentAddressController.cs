@@ -16,9 +16,10 @@ namespace KVHAI.Controllers.Staff.Admin
         private readonly IWebHostEnvironment _environment;
         private readonly NotificationRepository _notification;
         private readonly StreetRepository _streetRepository;
+        private readonly ListRepository _listRepository;
 
         public ResidentAddressController(ResidentRepository residentRepository, EmployeeRepository employeeRepository, AddressRepository addressRepository, IWebHostEnvironment environment, NotificationRepository notification
-            , StreetRepository streetRepository)
+            , StreetRepository streetRepository, ListRepository listRepository)
         {
             _residentRepository = residentRepository;
             _employeeRepository = employeeRepository;
@@ -26,6 +27,7 @@ namespace KVHAI.Controllers.Staff.Admin
             _environment = environment;
             _notification = notification;
             _streetRepository = streetRepository;
+            _listRepository = listRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -156,6 +158,58 @@ namespace KVHAI.Controllers.Staff.Admin
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetResident(string id)
+        {
+            // Fetch data from repositories
+            var resident = await _listRepository.ResidentList();
+            var street = await _listRepository.StreetList();
+            var address = await _listRepository.AddressList();
+
+            // Find resident and address accounts
+            var residentAccount = resident.Where(r => r.Res_ID == id).ToList();
+            var addressAccount = address.Where(r => r.Resident_ID == Convert.ToInt32(id)).ToList();
+
+            // Check if addressAccount is not empty before accessing FirstOrDefault
+            if (addressAccount.Any())
+            {
+                // Find the street name
+                var streetName = street
+                    .Where(i => i.Street_ID == addressAccount.FirstOrDefault().Street_ID.ToString())
+                    .Select(n => n.Street_Name)
+                    .FirstOrDefault();
+
+                // Add street name to the address objects
+                foreach (var addr in addressAccount)
+                {
+                    addr.Street_Name = streetName; // Assuming Address object has a Street_Name property
+                }
+            }
+
+            // Handle case where residentAccount is empty
+            if (!residentAccount.Any())
+            {
+                return NotFound();
+            }
+
+            // Return the data
+            return Ok(new
+            {
+                ResidentAccount = residentAccount,
+                AddressAccount = addressAccount
+            });
+
+        }
+
+        [HttpPost]
+        public IActionResult UpdateResident(int res_id, string lname, string fname, string mname, string block, string lot, string street_Name, DateTime date_Residency)
+        {
+            // Perform update logic here
+            // Example: Update resident and address in the database
+
+            return Ok(new { message = "Resident updated successfully!" });
         }
 
         //[HttpPost]

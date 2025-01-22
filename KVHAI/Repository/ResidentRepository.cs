@@ -843,8 +843,8 @@ namespace KVHAI.Repository
                                                     Message_Type = "admin"
                                                 };
 
-                                                var notificationAdminResult = await _notificationRepository.SendNotificationToAdmin(notifStaff);
-                                                await _staffhubContext.Clients.All.SendAsync("ReceivedNewRegisterAccount");
+                                                //var notificationAdminResult = await _notificationRepository.SendNotificationToAdmin(notifStaff);
+                                                //await _staffhubContext.Clients.All.SendAsync("ReceivedNewRegisterAccount");
                                                 return 1; // Success
                                             }
                                         }

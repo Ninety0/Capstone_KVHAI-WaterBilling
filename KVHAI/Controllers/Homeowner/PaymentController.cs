@@ -152,7 +152,7 @@ namespace KVHAI.Controllers.Homeowner
                             };
 
                             // Use your existing InsertPayment method with modifications for PayPal
-                            int paymentResult = await _paymentRepo.InsertPayment(payment);
+                            int paymentResult = await _paymentRepo.InsertPaymentOnline(payment);
 
                             if (paymentResult > 0)
                             {

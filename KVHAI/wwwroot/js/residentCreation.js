@@ -1,6 +1,7 @@
 ﻿$(document).ready(function () {
     InputKeyPress();
     $('#btn_register').click(handleRegistration);
+    $('#btn_update').click(handleUpdate);
 
 
     // When the modal is closed (using Bootstrap's modal events)
@@ -126,6 +127,63 @@
                 $('#form-resident')[0].reset();
                 $('#modal-resident').modal('hide');
                 GetRequestAddress();
+                console.log(response);
+            },
+            error: function (xhr) {
+                toastr.error(xhr.responseText);
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    //POST METHOD TO UPDATE EMPLOYEE
+    function handleUpdate(e) {
+        e.preventDefault();
+
+        if (!validateCurrentTab()) {
+            toastr.error('Please fill out all required fields correctly.');
+            return;
+        }
+
+        var formData = new FormData();
+
+        // Gather resident data
+        const residentData = {
+            Res_ID: $('#Res_ID').val(), // Assuming there's a hidden input for Res_ID
+            Lname: $('#Lname').val(),
+            Fname: $('#Fname').val(),
+            Mname: $('#Mname').val(),
+        };
+
+        // Add resident data to FormData
+        for (const key in residentData) {
+            formData.append(key, residentData[key]);
+        }
+
+        // Gather single address data
+        const addressData = {
+            Block: $('#rBlock').val(),
+            Lot: $('#rLot').val(),
+            Street_Name: $('#select-street1').val(),
+            Date_Residency: $('#Date_Residency').val(),
+        };
+
+        // Add address data to FormData
+        for (const key in addressData) {
+            formData.append(key, addressData[key]);
+        }
+
+        // AJAX Request
+        $.ajax({
+            type: 'POST',
+            url: '/ResidentAddress/UpdateResident', // Update the endpoint as necessary
+            data: formData,
+            processData: false, // Prevent jQuery from converting FormData to a string
+            contentType: false, // Set the Content-Type header to multipart/form-data
+            success: function (response) {
+                toastr.success(response.message);
+                $('#form-resident')[0].reset();
+                GetRequestAddress(); // Assuming this refreshes the address list
                 console.log(response);
             },
             error: function (xhr) {

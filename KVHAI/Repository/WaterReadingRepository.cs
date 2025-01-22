@@ -30,7 +30,7 @@ namespace KVHAI.Repository
                 {
                     using (var command = new SqlCommand("INSERT INTO water_reading_tb (emp_id,addr_id,consumption,date_reading) VALUES(@emp_id, @addr_id, @consumption, @date)", connection))
                     {
-                        command.Parameters.AddWithValue("@emp_id", 1);//this will nedd to change if admin has login form yet
+                        command.Parameters.AddWithValue("@emp_id", waterReading.Emp_ID);//this will nedd to change if admin has login form yet
                         command.Parameters.AddWithValue("@addr_id", waterReading.Address_ID);
                         command.Parameters.AddWithValue("@consumption", await _sanitize.HTMLSanitizerAsync(waterReading.Consumption));
                         command.Parameters.AddWithValue("@date", waterReading.Date);

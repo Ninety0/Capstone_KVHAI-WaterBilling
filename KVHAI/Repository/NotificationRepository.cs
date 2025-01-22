@@ -324,7 +324,12 @@ namespace KVHAI.Repository
                             }
                             else if (notification.Title.Contains("Water Billing"))
                             {
-                                await _staffHubContext.Clients.All.SendAsync("ReceiveOnlinePayment");
+                                if (notification.Message_Type == "Cashier2")
+                                    await _staffHubContext.Clients.All.SendAsync("ReceiveOnlinePayment");
+                                else
+                                    await _staffHubContext.Clients.All.SendAsync("ReceiveOfflinePayment");
+
+
                             }
                             else if (notification.Title.Contains("Register Address"))
                             {

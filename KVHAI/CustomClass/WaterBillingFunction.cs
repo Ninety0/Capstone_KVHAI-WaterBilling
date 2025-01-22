@@ -825,6 +825,12 @@ namespace KVHAI.CustomClass
                         {
                             previousWaterBillAmount = 0; // Default value if parsing fails
                         }
+
+                        if (i < unpaindBills.Count)
+                        {
+                            prevWaterBill = unpaindBills[i].PreviousWaterBill;
+                        }
+
                     }
 
                     //DUE DATE
@@ -889,7 +895,8 @@ namespace KVHAI.CustomClass
                             Total = total.ToString("F2"),
                             DueDate = dueDate,
                             DateIssued = dateIssued,
-                            Account_Number = billingAddress.WBilling[i].Account_Number
+                            Account_Number = billingAddress.WBilling[i].Account_Number,
+                            PeriodCoverDate = billingAddress.WBilling[i].DatePeriodCovered
                         });
                 }
             }
@@ -1399,6 +1406,8 @@ namespace KVHAI.CustomClass
                     }
 
                     total = Convert.ToDouble(billingAddress.WBilling[i].Amount) + previousWaterBillAmount;
+                    var billFor = DateTime.TryParse(billingAddress.WBilling[i].Bill_For, out DateTime outDate) ?
+                        outDate.ToString("MMMM yyyy") : billingAddress.WBilling[i].Bill_For;
 
                     WaterBillingValues.Add(
                         new HTMLValueForWaterBilling
@@ -1411,7 +1420,7 @@ namespace KVHAI.CustomClass
                             PreviousReading = billingAddress.WBilling[i].Previous_Reading,
                             CurrentReading = billingAddress.WBilling[i].Current_Reading,
                             CubicMeter = billingAddress.WBilling[i].Cubic_Meter,
-                            DateTextList = billingAddress.WBilling[i].Bill_For,
+                            DateTextList = billFor,
                             BillAmount = billingAddress.WBilling[i].Amount,
                             WaterBillNumber = billingAddress.WBilling[i].WaterBill_No,
                             PrevWaterBill = prevWaterBill,

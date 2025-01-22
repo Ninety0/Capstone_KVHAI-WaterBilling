@@ -630,9 +630,9 @@
 
                     for (let i = 0; i < 12; i++) {
                         const year = currentDate.getFullYear() + Math.floor((currentDate.getMonth() + i) / 12);
-                       // console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
+                        // console.log(`current: ${currentDate.getFullYear()} AND math:${Math.floor((currentDate.getMonth() + i) / 12)}`);
                         const month = (currentDate.getMonth() + i) % 12;
-                       // console.log(month);
+                        // console.log(month);
 
 
                         for (let day = 6; day <= 28; day++) {
@@ -733,9 +733,13 @@
     <a href="/kvhai/staff/admin/streets" class="nav-link text-light mb-2 d-flex align-items-center">
         <i class="bi bi-geo-alt me-2"></i>Streets
     </a>
-    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center">
         <i class="bi bi-pencil-square me-2"></i> Reading
 
+    </a>
+
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
 
 }
@@ -761,9 +765,13 @@
 
     </a>
 
-    <a href="/kvhai/staff/water-reading" class="nav-link text-light mb-2 d-flex  align-items-center">
+    <a href="/kvhai/staff/admin/water-reading/" class="nav-link text-light mb-2 d-flex  align-items-center">
         <i class="bi bi-pencil-square me-2"></i> Reading
 
+    </a>
+
+    <a href="/kvhai/staff/admin/water-billing/" class="nav-link text-light mb-2 d-flex align-items-center">
+        <i class="fa-solid fa-file-pen me-2"></i> Billing
     </a>
 
 }
@@ -894,7 +902,7 @@
     color: white;
     padding: 5px 10px;
 ">
-                            <a href="/kvhai/staff/water-reading/" class="text-decoration-none small">View All</a>
+                            <a href="/kvhai/staff/admin/water-reading/" class="text-decoration-none small">View All</a>
                         </h6>
                     </div>
                 </div>

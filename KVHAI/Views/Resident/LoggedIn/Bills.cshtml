@@ -139,7 +139,7 @@
 }
 
 @section scripts{
-    <script src="https://www.paypal.com/sdk/js?client-id=AXBtT9-C2rIsd4XNTA1pXAo3VBhkTQd_bQqnpYN7PfJDh0GhYYRAAK4hCo1Cvt21l35GMo8GRZn7Nspy&currency=PHP"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AXBtT9-C2rIsd4XNTA1pXAo3VBhkTQd_bQqnpYN7PfJDh0GhYYRAAK4hCo1Cvt21l35GMo8GRZn7Nspy&currency=PHP&disable-funding=card"></script>
     <script src="~/js/signalrSetupConnection.js"></script>
     <script>
         $(document).ready(function () {
@@ -317,21 +317,19 @@
                         })
 
                         const details = await response.json();
-
                         console.log(details);
 
-                        // Show success message to buyer
-                        /*alert(`Transaction completed by ${details.payer.name.given_name}`);*/
+                        // Check PayPal response status - typically you want to check specific properties
                         if (details == "success") {
                             toastr.success("The payment was successful!");
-                            GetBilling(Addr_ID);
-                            //$('#modalPassword').modal('hide');
-                            $('.pop_container').fadeOut('slow');
+                            //GetBilling(Addr_ID);
 
-
-                        }
-                        else {
-                            toastr.error("An error occured! Please retry later.");
+                            // This is correct way to reload after delay
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 2000);
+                        } else {
+                            toastr.error("An error occurred! Please retry later.");
                         }
                     },
 

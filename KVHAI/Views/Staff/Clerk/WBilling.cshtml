@@ -153,6 +153,7 @@
             $('#wbText').text("WaterBill No. " + $('#wbNumber').find('option:selected').val());
 
             $(document).on('change', '#location', GetWaterBillByLocation);
+            $(document).on('change', '#wbNumber', GetWaterBillByLocation);
             $(document).on('click', '#selectAll', SelectAllChkBox);
 
 
@@ -327,8 +328,11 @@
 
                         //var data = JSON.parse(response);
                         var result = $(response).find('#table-Data').html();
+                        var periodCover = $(response).find('#coverDate').html();
                         console.log(result);
+                        console.log("cover:"+periodCover);
                         $('#table-Data').html(result);
+                        $('#coverDateValue').text(periodCover);
 
                     },
                     error: function (xhr, status, err_m) {
@@ -393,7 +397,7 @@
                                     //{
 
                                     //}
-                                    <option  value="@Model.WaterBillNumberList[i]">WaterBill No. @Model.WaterBillNumberList[i]</option>
+                                    <option value="@Model.WaterBillNumberList[i]">WaterBill No. @Model.WaterBillNumberList[i]</option>
 
                                 }
 
@@ -401,10 +405,15 @@
                         }
                         else
                         {
-                            <div class="alert alert-warning container-fluid alert_warning" role="alert">
-                                <i class="fa-solid fa-triangle-exclamation txtWarning"></i>
-                                <span class="txtWarning fw-medium text-center">Complete water reading Consumption first before proceeding here! You will be directed to Water Reading in a second...</span>
+                            <div class="alert alert-warning  alert_warning d-flex" role="alert">
+                                <div class="flex-grow-1">
+                                    <i class="fa-solid fa-triangle-exclamation txtWarning me-3"></i>
+                                    <span class="txtWarning fw-medium text-center">Complete water reading Consumption first before proceeding here! </span>
+
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
+                           
                         }
                     }
 
@@ -425,6 +434,7 @@
                         <button type="button" class="btn btn-success p-2 me-2" id="btnPrint">
                             <i class="bi bi-printer"></i> Print
                         </button>
+                       
                         <div class="btn-group">
                             <button type="button" class="btn btn-primary p-2 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                 Save as
@@ -441,7 +451,11 @@
                     <div class="header-section bg-secondary p-2">
                         <div class="d-flex justify-content-between">
                             <span class="text-white fw-bold">WATERBILL NO.</span>
-                            <span class="text-white">PERIOD COVERED:</span>
+                            <span class="text-white">
+                                PERIOD COVERED: &nbsp;
+                                <span id="coverDateValue"></span>
+                            </span>
+                            
                         </div>
                     </div>
 
@@ -474,8 +488,9 @@
                                             <div class="tableContents mb-4 flex-grow-1">
                                                 <div class="d-flex justify-content-between align-items-center pb-2 contentView text-muted">
                                                     <div class="d-flex flex-column align-items-center">
-                                                        <span class="fw-bold">#</span>
+                                                        <span class="fw-bold">Ref #</span>
                                                         <span id="itemID" data-id="@Model.WaterBillingValues[i].WaterBill_ID">@Model.WaterBillingValues[i].Reference_no</span>
+                                                        <span class="visually-hidden" id="coverDate">@Model.WaterBillingValues[0].PeriodCoverDate</span>
                                                     </div>
                                                     <div class="d-flex flex-column align-items-center">
                                                         <span class="fw-bold">Account No.</span>

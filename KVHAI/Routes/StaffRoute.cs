@@ -62,8 +62,14 @@ namespace KVHAI.Routes
 
             endpoint.MapControllerRoute(
                 name: "AdminWaterReading",
-                pattern: "kvhai/staff/water-reading/",
+                pattern: "kvhai/staff/admin/water-reading/",
                 defaults: new { controller = "AdminDashboard", action = "WaterReading" }
+            );
+
+            endpoint.MapControllerRoute(
+                name: "AdminWaterBilling",
+                pattern: "kvhai/staff/admin/water-billing/",
+                defaults: new { controller = "AdminDashboard", action = "WaterBilling" }
             );
             #endregion
 

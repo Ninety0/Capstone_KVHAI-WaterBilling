@@ -101,7 +101,7 @@ namespace KVHAI.Controllers.Staff.Cashier1
         {
             try
             {
-                int result = await _paymentRepository.InsertPayment(payment);
+                int result = await _paymentRepository.InsertPaymentOffline(payment);
 
                 if (result < 1)
                 {
