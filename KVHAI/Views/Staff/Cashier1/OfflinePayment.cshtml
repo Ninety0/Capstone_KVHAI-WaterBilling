@@ -239,7 +239,7 @@
                 const inputs = $('#form-reading input');
 
                 inputs.each(function () {
-                    if (this.id === 'input-block' || this.id === 'input-lot' || this.id === 'input-reading' || this.id === 'pesos') {
+                    if (this.id === 'input-block' || this.id === 'input-reading' || this.id === 'pesos') {
                         $(this).on('keypress', function (e) {
                             var key = e.keyCode || e.which;
 
@@ -288,7 +288,7 @@
                             <div class="form-check mb-3 ps-0">
                                 <div class="input-group">
                                     <span class="input-group-text" id="basic-addon1">Lot</span>
-                                    <input type="text" class="form-control" name="Lot" id="input-lot" required>
+                                    <input type="text" oninput="this.value = this.value.toUpperCase()" class="form-control" name="Lot" id="input-lot" required>
                                 </div>
                                 <div class="invalid-feedback">
                                     Required.

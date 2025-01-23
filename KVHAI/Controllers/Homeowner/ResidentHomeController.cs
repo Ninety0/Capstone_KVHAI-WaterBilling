@@ -124,13 +124,14 @@ namespace KVHAI.Controllers.Homeowner
         public async Task<IActionResult> CancelRequest(string resident_address)
         {
             var cancelResult = await _residentAddress.CancelRequest(resident_address);
+            var delResult = await _residentAddress.DeleteRenter(resident_address);
 
-            if (cancelResult < 1)
+            if (delResult < 1)
             {
                 return BadRequest("There was an error processing your request. Please try again later.");
             }
 
-            return Ok("Your application was canceled.");
+            return Ok("Deleted Successfully.");
 
         }
     }

@@ -204,6 +204,72 @@ namespace KVHAI.Repository
 
         }
 
+        //UPDATE ADDRESS AND RESIDENT
+        public async Task<int> UpdateResident(Resident resident, List<Address> address)
+        {
+            SanitizeFormData(resident);
+            var dt = GetTimeDate();
+
+            var accountNumber = await AccountNumberCreation(address);
+
+
+            int insertResidentResult = 0;
+            try
+            {
+                using (var connection = await _dbConnect.GetOpenConnectionAsync())
+                {
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            using (var insertCommand = new SqlCommand(@"
+                        UPDATE resident_tb set lname = @lname, fname = @fname, mname= @mname) 
+                        ", connection, transaction))
+                            {
+                                //command.Parameters.AddWithValue("@id", res_id);
+                                insertCommand.Parameters.AddWithValue("@lname", resident.Lname);
+                                insertCommand.Parameters.AddWithValue("@fname", resident.Fname);
+                                insertCommand.Parameters.AddWithValue("@mname", resident.Mname);
+
+                                insertResidentResult = Convert.ToInt32(await insertCommand.ExecuteScalarAsync());
+
+                                //return insertResidentResult;
+                            }
+
+                            if (insertResidentResult < 1)
+                            {
+                                throw new Exception();
+                            }
+
+                            var createAddress = await CreateAddress(insertResidentResult.ToString(), transaction, connection, address, accountNumber);
+
+                            if (createAddress < 1)
+                            {
+                                throw new Exception();
+                            }
+
+                            transaction.Commit();
+
+                            return 1;
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            // Log the exception here
+                            return 0;
+                        }
+                    }
+
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
         //UPDATE RESIDENT
         public async Task<string> UpdateResidentDetails(Resident resident)
         {

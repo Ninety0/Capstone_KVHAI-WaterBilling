@@ -158,6 +158,50 @@ namespace KVHAI.Repository
             }
         }
 
+        public async Task<int> DeleteRenter(string res_id)
+        {
+            using (var connection = await _dbConnect.GetOpenConnectionAsync())
+            {
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var command = new SqlCommand(@"delete from resident_address_tb where res_id = @id", connection, transaction))
+                        {
+                            command.Parameters.AddWithValue("@id", res_id);
+
+                            int result = await command.ExecuteNonQueryAsync();
+
+                            if (result < 1)
+                            {
+                                throw new Exception();
+                            }
+
+                            using (var residentDelete = new SqlCommand(@"delete from resident_tb where res_id = @id", connection, transaction))
+                            {
+                                residentDelete.Parameters.AddWithValue("@id", res_id);
+
+                                int _result = await residentDelete.ExecuteNonQueryAsync();
+
+                                if (_result < 1)
+                                {
+                                    throw new Exception();
+                                }
+                                transaction.Commit();
+                                return result;
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        return 0;
+                    }
+                }
+
+            }
+        }
+
         public async Task<int> CancelRequest(string residentAddress_id)
         {
             try

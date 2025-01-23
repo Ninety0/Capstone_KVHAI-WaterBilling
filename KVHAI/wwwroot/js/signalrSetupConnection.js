@@ -5,7 +5,7 @@
         .build();
 
     connection.start().then(function () {
-        toastr.info(`Connected to ${hubName}`);
+        //toastr.info(`Connected to ${hubName}`);
     }).catch(function (err) {
         console.error(err.toString());
     });

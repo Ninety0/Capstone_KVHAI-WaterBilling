@@ -281,6 +281,7 @@ $(document).on('click', '.btn_remove', function (e) {
 
                             var address = response.addressAccount[0]; // Use lowercase 'addressAccount'
                             console.log("Address:", address);
+                            $('#addr_idHidden').val(address.address_ID);
                             $('#rBlock').val(address.block);
                             $('#rLot').val(address.lot);
                             $('#select-street1').val(address.street_Name);

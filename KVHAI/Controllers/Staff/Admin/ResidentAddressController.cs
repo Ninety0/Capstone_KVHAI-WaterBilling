@@ -204,10 +204,20 @@ namespace KVHAI.Controllers.Staff.Admin
         }
 
         [HttpPost]
-        public IActionResult UpdateResident(int res_id, string lname, string fname, string mname, string block, string lot, string street_Name, DateTime date_Residency)
+        public async Task<IActionResult> UpdateResident(int res_id, string lname, string fname, string mname, int addr_id, string block, string lot, string street_Name, DateTime date_Residency)
         {
             // Perform update logic here
             // Example: Update resident and address in the database
+
+            //var isAddressExist = await _addressRepository.IsAddressExist(block, lot);
+
+            //if (isAddressExist)
+            //{
+            //    return BadRequest("The address was already been registered.");
+
+            //}
+
+
 
             return Ok(new { message = "Resident updated successfully!" });
         }

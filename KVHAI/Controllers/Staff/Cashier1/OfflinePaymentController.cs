@@ -61,7 +61,7 @@ namespace KVHAI.Controllers.Staff.Cashier1
             {
                 ModelList = await _paymentRepository.GetRecentOnlinePayment(0, 10, "offline"),
                 NumberOfData = await _paymentRepository.GetCountOnlinePayment("offline"),
-                ScriptName = "onpagination"
+                ScriptName = "offpagination"
             };
             pagination1.set(10, 5, 1);
 

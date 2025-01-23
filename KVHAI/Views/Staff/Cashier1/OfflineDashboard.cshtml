@@ -92,11 +92,12 @@
                                 }
                                 else
                                 {
+                                    var index = 1;
+                                    int indexx = Model.PaymentPagination.Index + 1;
 
                                     foreach (var item in Model.PaymentPagination.ModelList)
                                     {
                                         var address = string.Join(" ", $"Blk {item.Block}", $"Lot {item.Lot}", $"{item.Street} St.");
-                                        int indexx = Model.PaymentPagination.Index + 1;
                                         <tr id="payment_row">
                                             <td>@indexx</td>
                                             <td>@item.Payment_ID</td>
@@ -257,6 +258,14 @@
                 } else {
                     alert("Please select at least one item to save.");
                 }
+            });
+
+            $(document).on('click', '.offpagination', function (event) {
+                event.preventDefault();
+                //const page = parseInt($(this).text(), 10);
+                var respage = parseInt($(this).data('offpagination'), 10);
+                console.log(respage);
+                offpagination(respage);
             });
 
             function offpagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko

@@ -244,7 +244,7 @@
     $(document).on('click', '.delete-btn', function () {
 
         emp_id = $(this).data('id');
-        alert('Edit button clicked for Employee ID:' + emp_id);
+        //alert('Edit button clicked for Employee ID:' + emp_id);
         var arr = {
             id: emp_id
         }

@@ -149,7 +149,7 @@
 
         // Gather resident data
         const residentData = {
-            Res_ID: $('#Res_ID').val(), // Assuming there's a hidden input for Res_ID
+            Res_ID: $('#res_idHidden').val(), // Assuming there's a hidden input for Res_ID
             Lname: $('#Lname').val(),
             Fname: $('#Fname').val(),
             Mname: $('#Mname').val(),
@@ -162,6 +162,7 @@
 
         // Gather single address data
         const addressData = {
+            addr_id: $('#addr_idHidden').val(), // Assuming there's a hidden input for Res_ID
             Block: $('#rBlock').val(),
             Lot: $('#rLot').val(),
             Street_Name: $('#select-street1').val(),

@@ -55,6 +55,8 @@ namespace KVHAI.CustomClass
 
         public HtmlString pageClass(int page_set)
         {
+            string onclickval = "";
+
             string paginationdata = "";
 
             string str1 = "<nav aria-label=\"Page navigation example\">";
@@ -66,8 +68,10 @@ namespace KVHAI.CustomClass
             {
                 int pageNumber = page + 1;
                 //onclick=\"" + onclickValue + "\"
+                //onclick=\" " + onclickval + "\"
+                onclickval = this.ScriptName + "(" + page.ToString() + ")";
                 paginationdata = page.ToString();
-                str1 += "<li class=\"page-item\"><a class=\"page-link " + (page == page_set ? "active" : "") + " " + ScriptName + " \" data-" + ScriptName + "=\" " + paginationdata + " \">" + page + "</a></li>";
+                str1 += "<li class=\"page-item\"><a class=\"page-link " + (page == page_set ? "active" : "") + " " + ScriptName + " \" data-" + ScriptName + "=\" " + paginationdata + " \" >" + page + "</a></li>";
 
 
             }

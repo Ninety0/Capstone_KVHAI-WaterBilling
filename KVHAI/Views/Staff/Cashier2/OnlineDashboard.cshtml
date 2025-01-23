@@ -257,6 +257,14 @@
                 }
             });
 
+            $(document).on('click', '.onpagination', function (event) {
+                event.preventDefault();
+                //const page = parseInt($(this).text(), 10);
+                var respage = parseInt($(this).data('offpagination'), 10);
+                console.log(respage);
+                onpagination(respage);
+            });
+
             function onpagination(i = 1) {//Yung i is default pero pwedeng ibang letter ilagay dyan [i] lang nilalagay ko
 
                 var array = {
