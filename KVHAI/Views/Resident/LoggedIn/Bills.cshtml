@@ -14,6 +14,14 @@
     {
         registerAddressURL = "/kvhai/resident/register/address";
     }
+
+    // Example data for detailed balances and summary (replace with actual data from the model)
+    var previousBalance = 500.00;
+    var paymentsMade = 300.00;
+    var adjustments = -50.00;
+    var totalUnpaid = 150.00; // Example total unpaid amount
+    var totalPaid = 300.00;  // Example total paid amount
+    var totalCollectible = totalUnpaid + totalPaid;
 }
 @section head{
     <link href="~/css/customModal.css" rel="stylesheet" />
@@ -919,5 +927,60 @@
 
             </div>
         </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h5 class="fw-bold">Summary of Balances</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Previous Balance:</strong> ₱ @previousBalance.ToString("N2")</p>
+                <p><strong>Payments Made:</strong> ₱ @paymentsMade.ToString("N2")</p>
+                <p><strong>Adjustments:</strong> ₱ @adjustments.ToString("N2")</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Total Unpaid:</strong> ₱ @totalUnpaid.ToString("N2")</p>
+                <p><strong>Total Paid:</strong> ₱ @totalPaid.ToString("N2")</p>
+                <p><strong>Total Collectible:</strong> ₱ @totalCollectible.ToString("N2")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h5 class="fw-bold">Detailed Balances</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Example rows (replace with actual data from the model) *@
+                <tr>
+                    <td>2023-10-01</td>
+                    <td>Water Bill - September</td>
+                    <td>₱ 500.00</td>
+                    <td>Unpaid</td>
+                </tr>
+                <tr>
+                    <td>2023-09-15</td>
+                    <td>Payment Received</td>
+                    <td>₱ -300.00</td>
+                    <td>Paid</td>
+                </tr>
+                <tr>
+                    <td>2023-09-20</td>
+                    <td>Adjustment</td>
+                    <td>₱ -50.00</td>
+                    <td>Adjusted</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
